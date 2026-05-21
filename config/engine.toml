@@ -1,0 +1,9 @@
+[window]
+width  = 800
+height = 800
+title  = "A3_GRAPHICENGINE"
+
+[renderer]
+fov  = 90.0
+near = 0.1
+far  = 100.0
