@@ -1,8 +1,21 @@
 #include "core/Window.h"
 #include "core/Log.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void Window::SetResizeCallback(std::function<void(int, int)> callback) {
+    m_ResizeCallback = callback;
+}
+
+void Window::framebuffer_size_callback(GLFWwindow* m_window, int width, int height)
 {
+    Window* window = static_cast<Window*>(glfwGetWindowUserPointer(m_window));
+    if (window) {
+        window->m_Width = width;
+        window->m_Height = height;
+
+        if (window->m_ResizeCallback) {
+            window->m_ResizeCallback(width, height);
+        }
+    }
     glViewport(0, 0, width, height);
 }
 
@@ -36,6 +49,7 @@ Window::Window(int width, int height, const std::string& title) {
     glfwMakeContextCurrent(m_Window);
 
     glViewport(0, 0, width, height);
+    glfwSetWindowUserPointer(m_Window, this);
     glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
     INFO(Window, "Window creation created: {}, {}x{}", title, width, height);
 }

@@ -8,6 +8,7 @@ public:
     Camera(float fov, float aspectRatio);
     glm::mat4 GetView();
     glm::mat4 GetProjection();
+    void SetProjection(float fov, float aspectRatio);
 private:
     glm::mat4 m_View;
     glm::mat4 m_Projection;

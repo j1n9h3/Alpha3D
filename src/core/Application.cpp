@@ -95,6 +95,10 @@ int main()
     Shader shader("shaders/test.vert", "shaders/test.frag");
 
     Camera camera(config.renderer.fov, mainWindow.GetAspectRatio());
+
+    mainWindow.SetResizeCallback([&](int width, int height) {
+        camera.SetProjection(config.renderer.fov, (float)width / height);
+    });
     
 
     glEnable(GL_DEPTH_TEST);

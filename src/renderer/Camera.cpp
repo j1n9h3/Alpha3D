@@ -13,3 +13,7 @@ glm::mat4 Camera::GetView() {
 glm::mat4 Camera::GetProjection() {
     return m_Projection;
 }
+
+void Camera::SetProjection(float fov, float aspectRatio) {
+    m_Projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+}
