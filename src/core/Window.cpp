@@ -9,8 +9,8 @@ void Window::framebuffer_size_callback(GLFWwindow* m_window, int width, int heig
 {
     Window* window = static_cast<Window*>(glfwGetWindowUserPointer(m_window));
     if (window) {
-        window->m_Width = width;
-        window->m_Height = height;
+        window->width = width;
+        window->height = height;
 
         if (window->m_ResizeCallback) {
             window->m_ResizeCallback(width, height);
@@ -26,8 +26,11 @@ void processInput(GLFWwindow* window)
 }
 
 Window::Window(int width, int height, const std::string& title) {
-    m_Width = width;
-    m_Height = height;
+
+    this->width = width;
+    this->height = height;
+
+    this->title = title;
     
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -40,49 +43,53 @@ Window::Window(int width, int height, const std::string& title) {
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // GLFW init
-    m_Window = glfwCreateWindow(width, height, "title", NULL, NULL);
-    if (m_Window == NULL)
+    glfw_window = glfwCreateWindow(this->width, this->height, this->title.c_str(), NULL, NULL);
+    if (glfw_window == NULL)
     {
-        ERROR(Window, "Window creation failed: {}, {}x{}", title, width, height);
+        LOG_ERROR(Window, "Window creation failed: {}, {}x{}", title, this->width, this->height);
         glfwTerminate();
     }
-    glfwMakeContextCurrent(m_Window);
+    glfwMakeContextCurrent(glfw_window);
 
     glViewport(0, 0, width, height);
-    glfwSetWindowUserPointer(m_Window, this);
-    glfwSetFramebufferSizeCallback(m_Window, framebuffer_size_callback);
-    INFO(Window, "Window creation created: {}, {}x{}", title, width, height);
+    glfwSetWindowUserPointer(glfw_window, this);
+    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
+    LOG_INFO(Window, "Window created: {}, {}x{}", title, this->width, this->height);
 }
 
 Window::~Window() {
-    glfwDestroyWindow(m_Window);
+    glfwDestroyWindow(glfw_window);
     glfwTerminate();
-    INFO(Window, "Window destroyed");
+    LOG_INFO(Window, "Window destroyed");
+}
+
+GLFWwindow* Window::GetGLFWWindow() {
+    return this->glfw_window;
 }
 
 float Window::GetWidth() {
-    return m_Width;
+    return this->width;
 }
 
 float Window::GetHeight() {
-    return m_Height;
+    return this->height;
 }
 
 void Window::Update() {
     glfwPollEvents();
-    glfwSwapBuffers(m_Window);
+    glfwSwapBuffers(this->glfw_window);
 }
 
 
 bool Window::ShouldClose() {
-    return glfwWindowShouldClose(m_Window);
+    return glfwWindowShouldClose(this->glfw_window);
 }
 
 void Window::ProcessInput() {
-    if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(m_Window, true);
+    if (glfwGetKey(this->glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(this->glfw_window, true);
 }
 
 float Window::GetAspectRatio() {
-    return (float)m_Width / (float)m_Height;
+    return (float)this->width / (float)this->height;
 }

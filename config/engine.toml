@@ -1,7 +1,7 @@
 [window]
 width  = 1920
 height = 1080
-title  = "A3_GRAPHICENGINE"
+title  = "Alpha3D"
 
 [renderer]
 fov  = 90.0

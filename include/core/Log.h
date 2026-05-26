@@ -3,24 +3,30 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-#define LOGGER(name) \
-    static std::shared_ptr<spdlog::logger>& Get##name##Logger() { return s_##name##Logger; } \
+#define LOG_MODULES \
+    X(Window)       \
+    X(Shader)       \
+    X(Texture)      \
+    X(Scene)        \
+    X(Mesh) \
+    X(Config)
 
-#define INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
-#define WARN(name, ...) Log::Get##name##Logger()->warn(__VA_ARGS__)
-#define ERROR(name, ...) Log::Get##name##Logger()->error(__VA_ARGS__)
+#define LOG_INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
+#define LOG_WARN(name, ...) Log::Get##name##Logger()->warn(__VA_ARGS__)
+#define LOG_ERROR(name, ...) Log::Get##name##Logger()->error(__VA_ARGS__)
 
 class Log {
 public:
     static void Init();
     static void Shutdown();
-    LOGGER(GLAD)
-    LOGGER(Window)
-    LOGGER(Shader)
-    LOGGER(Scene)
+
+    #define X(name) \
+        static std::shared_ptr<spdlog::logger>& Get##name##Logger() { return s_##name##Logger; }
+        LOG_MODULES
+    #undef X
+
 private:
-    static std::shared_ptr<spdlog::logger> s_GLADLogger;
-    static std::shared_ptr<spdlog::logger> s_WindowLogger;
-    static std::shared_ptr<spdlog::logger> s_ShaderLogger;
-    static std::shared_ptr<spdlog::logger> s_SceneLogger;
+    #define X(name) static std::shared_ptr<spdlog::logger> s_##name##Logger;
+        LOG_MODULES
+    #undef X
 };

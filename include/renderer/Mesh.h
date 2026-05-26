@@ -7,6 +7,6 @@ public:
     void Bind();
     void Draw();
 private:
-    unsigned int m_VAO, m_VBO;
-    unsigned int m_VertexCount;
+    unsigned int vao, vbo;
+    unsigned int vertex_count;
 };

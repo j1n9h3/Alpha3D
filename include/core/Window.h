@@ -17,13 +17,15 @@ public:
     void ProcessInput();
     float GetAspectRatio();
 
+    GLFWwindow* GetGLFWWindow();
 
     void SetResizeCallback(std::function<void(int, int)> callback);
 
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-    GLFWwindow* m_Window;
-    int m_Width, m_Height;
+    GLFWwindow* glfw_window;
+    int width, height;
+    std::string title;
 
     std::function<void(int, int)> m_ResizeCallback;
 };

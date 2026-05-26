@@ -22,10 +22,10 @@ Texture::Texture(const std::string& path) {
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
-        INFO(Window, "Texture loaded: {}", path);
+        LOG_INFO(Texture, "Texture loaded: {}", path);
     }
     else {
-        ERROR(Window, "Failed to load texture: {}", path);
+        LOG_ERROR(Texture, "Failed to load texture: {}", path);
     }
     stbi_image_free(data);
 }

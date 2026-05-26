@@ -4,15 +4,15 @@
 #include "renderer/Mesh.h"
 
 Mesh::Mesh(float* vertices, unsigned int size) {
-	m_VertexCount = size / (5 * sizeof(float)); // 每个顶点5个float (xyz + uv)
+	vertex_count = size / (5 * sizeof(float)); // 每个顶点5个float (xyz + uv)
 
 	// VAO
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	// VBO
-	glGenBuffers(1, &m_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
 	// position (location = 0)
@@ -25,21 +25,21 @@ Mesh::Mesh(float* vertices, unsigned int size) {
 
 	glBindVertexArray(0);
 
-	INFO(Window, "Mesh created, {} vertices", m_VertexCount);
+	LOG_INFO(Mesh, "Mesh created, {} vertices", vertex_count);
 }
 
 Mesh::~Mesh() {
-	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
-	INFO(Window, "Mesh destroyed");
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo);
+	LOG_INFO(Mesh, "Mesh destroyed");
 }
 
 void Mesh::Bind() {
-	glBindVertexArray(m_VAO);
+	glBindVertexArray(vao);
 }
 
 void Mesh::Draw() {
-	glBindVertexArray(m_VAO);
-	glDrawArrays(GL_TRIANGLES, 0, m_VertexCount);
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 	glBindVertexArray(0);
 }

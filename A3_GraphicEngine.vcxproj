@@ -49,6 +49,7 @@
     <ProjectGuid>{972ea4e1-d486-4e4d-b7d3-c3548aec6cc5}</ProjectGuid>
     <RootNamespace>A3GraphicEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Alpha3D</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -27,7 +27,7 @@ int main()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        ERROR(Window, "Failed to initialize GLAD");
+        LOG_ERROR(Window, "Failed to initialize GLAD");
         return -1;
     }
 
@@ -94,7 +94,7 @@ int main()
 
     Shader shader("shaders/test.vert", "shaders/test.frag");
 
-    Camera camera(config.renderer.fov, mainWindow.GetAspectRatio());
+    Camera camera(config.renderer.fov, mainWindow.GetAspectRatio(), mainWindow.GetWidth(), mainWindow.GetHeight());
 
     mainWindow.SetResizeCallback([&](int width, int height) {
         camera.SetProjection(config.renderer.fov, (float)width / height);
@@ -106,6 +106,7 @@ int main()
     while (!mainWindow.ShouldClose())
     {
         // input process
+        camera.ProcessInput(mainWindow.GetGLFWWindow());
         mainWindow.ProcessInput();
 
         // clear
