@@ -137,8 +137,11 @@ float vertices[] = {
         shader.setMat4("projection", camera.GetProjection());
         shader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
         shader.setVec3("lightColor", glm::vec3(0.0f, 1.0f, 0.0f));
+        shader.setVec3("viewPos", camera.GetPosition());
+
         
         shader.setVec3("lightPos", lightPos);
+
 
         // shader.setFloat("someUniform", 1.0f);
 
