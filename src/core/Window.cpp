@@ -1,6 +1,14 @@
 #include "core/Window.h"
 #include "core/Log.h"
 
+#include <windows.h>
+#include <imm.h>
+
+#pragma comment(lib, "imm32.lib")
+
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 void Window::SetResizeCallback(std::function<void(int, int)> callback) {
     ResizeCallback = callback;
 }
@@ -64,6 +72,11 @@ Window::Window(int width, int height, const std::string& title) {
     glViewport(0, 0, width, height);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
     LOG_INFO(Window, "Window created: {}, {}x{}", title, this->width, this->height);
+
+    #ifdef _WIN32
+        HWND hwnd = glfwGetWin32Window(glfw_window);
+        ImmAssociateContextEx(hwnd, NULL, IACE_IGNORENOCONTEXT);
+    #endif
 
     // set user pointer
     this->context.window = this;
