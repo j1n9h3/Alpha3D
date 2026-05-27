@@ -128,6 +128,7 @@ float vertices[] = {
         glm::mat4 light_trans = glm::translate(trans, lightPos);
         light_trans = glm::scale(light_trans, glm::vec3(0.2f));
 
+
         lightShader.setMat4("model", light_trans);
         cubeMesh.Draw();
 
@@ -136,7 +137,7 @@ float vertices[] = {
         shader.setMat4("view", camera.GetView());
         shader.setMat4("projection", camera.GetProjection());
         shader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-        shader.setVec3("lightColor", glm::vec3(0.0f, 1.0f, 0.0f));
+        shader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setVec3("viewPos", camera.GetPosition());
 
         
