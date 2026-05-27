@@ -18,9 +18,9 @@ void Config::Load(const std::string& path) {
         s_Config.renderer.nearClip = data["renderer"]["near"].value_or(0.1f);
         s_Config.renderer.farClip = data["renderer"]["far"].value_or(100.0f);
 
-        LOG_INFO(Config, "Config loaded: {}", path);
+        LOG_INFO(Config, "Config loaded: {}.", path);
     }
     catch (const toml::parse_error& e) {
-        LOG_INFO(Config, "Failed to load config: {}", e.what());
+        LOG_INFO(Config, "Failed to load config: {}.", e.what());
     }
 }

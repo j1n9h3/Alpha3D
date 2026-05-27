@@ -6,6 +6,7 @@
 Mesh::Mesh(float* vertices, unsigned int size) {
 	vertex_count = size / (5 * sizeof(float)); // 每个顶点5个float (xyz + uv)
 
+
 	// VAO
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -25,7 +26,17 @@ Mesh::Mesh(float* vertices, unsigned int size) {
 
 	glBindVertexArray(0);
 
-	LOG_INFO(Mesh, "Mesh created, {} vertices", vertex_count);
+	// light VAO VBO
+	glGenVertexArrays(1, &light_vao);
+	glBindVertexArray(light_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	// position (location = 0)
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+
+	LOG_INFO(Mesh, "Mesh created, {} vertices.", vertex_count);
 }
 
 Mesh::~Mesh() {

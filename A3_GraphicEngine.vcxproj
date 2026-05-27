@@ -31,6 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config\engine.toml" />
+    <None Include="shaders\light.frag" />
+    <None Include="shaders\light.vert" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>
