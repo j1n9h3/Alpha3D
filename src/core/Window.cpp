@@ -64,14 +64,14 @@ Window::Window(int width, int height, const std::string& title) {
     glfw_window = glfwCreateWindow(this->width, this->height, this->title.c_str(), NULL, NULL);
     if (glfw_window == NULL)
     {
-        LOG_ERROR(Window, "Window creation failed: {}, {}x{}", title, this->width, this->height);
+        LOG_ERROR(Window, "Window creation failed: {}, {}x{}!", title, this->width, this->height);
         glfwTerminate();
     }
     glfwMakeContextCurrent(glfw_window);
 
     glViewport(0, 0, width, height);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
-    LOG_INFO(Window, "Window created: {}, {}x{}", title, this->width, this->height);
+    LOG_INFO(Window, "Window created: {}, {}x{}.", title, this->width, this->height);
 
     #ifdef _WIN32
         HWND hwnd = glfwGetWin32Window(glfw_window);
@@ -88,7 +88,7 @@ Window::Window(int width, int height, const std::string& title) {
 Window::~Window() {
     glfwDestroyWindow(glfw_window);
     glfwTerminate();
-    LOG_INFO(Window, "Window destroyed");
+    LOG_INFO(Window, "Window destroyed.");
 }
 
 GLFWwindow* Window::GetGLFWWindow() {

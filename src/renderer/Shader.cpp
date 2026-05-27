@@ -1,78 +1,87 @@
 #include "renderer/Shader.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
-{
-    // 1. 从文件路径中获取顶点/片段着色器
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // 保证ifstream对象可以抛出异常：
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+std::string ReadFromShader(const char* shaderpath) {
+    std::string shaderCode;
     try
     {
-        // 打开文件
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
-        std::stringstream vShaderStream, fShaderStream;
-        // 读取文件的缓冲内容到数据流中
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
-        // 关闭文件处理器
-        vShaderFile.close();
-        fShaderFile.close();
-        // 转换数据流到string
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
+        // open file
+        std::ifstream shaderFile;
+        shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        shaderFile.open(shaderpath);
+        std::stringstream shaderStream;
+        // read file
+        shaderStream << shaderFile.rdbuf();
+        // close file
+        shaderFile.close();
+        // convert data to string
+        shaderCode = shaderStream.str();
     }
     catch (std::ifstream::failure e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        LOG_ERROR(Shader, "Failed when reading shader file: {}!", shaderpath);
     }
-    const char* vShaderCode = vertexCode.c_str();
-    const char* fShaderCode = fragmentCode.c_str();
+    LOG_INFO(Shader, "Suceess import shader: {}.", shaderpath);
+    return shaderCode;
+}
 
-    unsigned int vertex, fragment;
-    int success;
+struct shaderId {
+    unsigned int vShaderId;
+    unsigned int fShaderId;
+};
+
+unsigned int CompileShader(const char* shaderCode, const char* shaderpath, GLenum shaderType) {
     char infoLog[512];
-
-    // 顶点着色器
-    vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
-    glCompileShader(vertex);
-    // 打印编译错误（如果有的话）
-    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+    int success;
+    unsigned int shaderId = glCreateShader(shaderType);
+    glShaderSource(shaderId, 1, &shaderCode, NULL);
+    glCompileShader(shaderId);
+    // compile error
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
+        LOG_ERROR(Shader, "Failed when compiling vertex shader: {}!", shaderpath);
     };
+    LOG_INFO(Shader, "Suceess compile vertex shader: {}.", shaderpath);
+    return shaderId;
+}
 
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
-    glCompileShader(fragment);
-    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+unsigned int LinkShader(
+    unsigned int vShaderId, unsigned int fShaderId,
+    const char* vShaderPath, const char* fShaderPath
+) {
+    char infoLog[512];
+    int success;
+    unsigned int programId = glCreateProgram();
+    glAttachShader(programId, vShaderId);
+    glAttachShader(programId, fShaderId);
+    glLinkProgram(programId);
+    glGetProgramiv(programId, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    };
-    
-    ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
-    glLinkProgram(ID);
-    // 打印连接错误（如果有的话）
-    glGetProgramiv(ID, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(ID, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        glGetProgramInfoLog(programId, 512, NULL, infoLog);
+        LOG_ERROR(Shader, "Failed when linking shaders: {}, {}.", vShaderPath, fShaderPath);
     }
+    LOG_INFO(Shader, "Success linking shaders: {} and {}.", vShaderPath, fShaderPath);
+    glDeleteShader(vShaderId);
+    glDeleteShader(fShaderId);
+    return programId;
+}
 
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
+Shader::Shader(const char* vShaderPath, const char* fShaderPath)
+{
+    // get vertex
+    std::string vShaderCode_str = ReadFromShader(vShaderPath);
+    std::string fShaderCode_str = ReadFromShader(fShaderPath);
+
+    const char* vShaderCode = vShaderCode_str.c_str();
+    const char* fShaderCode = fShaderCode_str.c_str();
+
+    // vertex shader compiling
+    unsigned int vShaderId = CompileShader(vShaderCode, vShaderPath, GL_VERTEX_SHADER);
+    unsigned int fShaderId = CompileShader(fShaderCode, fShaderPath, GL_FRAGMENT_SHADER);
+
+    ID = LinkShader(vShaderId, fShaderId, vShaderPath, fShaderPath);
 };
 
 void Shader::use()
@@ -91,6 +100,14 @@ void Shader::setInt(const std::string& name, int value) const
 void Shader::setFloat(const std::string& name, float value) const
 {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+void Shader::setVec3(const std::string& name, glm::vec3 value) const
+{
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+}
+void Shader::setMat3(const std::string& name, glm::mat3 value) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 void Shader::setMat4(const std::string& name, glm::mat4 value) const
 {

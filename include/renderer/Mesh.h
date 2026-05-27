@@ -8,5 +8,6 @@ public:
     void Draw();
 private:
     unsigned int vao, vbo;
+    unsigned int light_vao, light_vbo;
     unsigned int vertex_count;
 };
