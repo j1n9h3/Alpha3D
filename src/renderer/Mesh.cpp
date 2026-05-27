@@ -4,7 +4,7 @@
 #include "renderer/Mesh.h"
 
 Mesh::Mesh(float* vertices, unsigned int size) {
-	vertex_count = size / (5 * sizeof(float)); // 每个顶点5个float (xyz + uv)
+	vertex_count = size / (8 * sizeof(float)); // 每个顶点5个float (xyz + uv)
 
 
 	// VAO
@@ -17,12 +17,16 @@ Mesh::Mesh(float* vertices, unsigned int size) {
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 
 	// position (location = 0)
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// texcoord (location = 1)
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	// normal (location = 1)
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	// texcoord (location = 2)
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
 
