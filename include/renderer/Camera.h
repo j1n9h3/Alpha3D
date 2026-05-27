@@ -16,7 +16,7 @@ public:
     glm::mat4 GetProjection();
     void SetProjection(float fov, float aspectRatio);
     void ProcessInput(GLFWwindow * window);
-    void ProcessMouseMovement(GLFWwindow* window, double xpos, double ypos);
+    void ProcessMouseMovement(float xpos, float ypos);
 private:
     // camera direction
     glm::vec3 position;

@@ -4,12 +4,13 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 #define LOG_MODULES \
-    X(Window)       \
-    X(Shader)       \
-    X(Texture)      \
-    X(Scene)        \
+    X(Window) \
+    X(Shader) \
+    X(Texture) \
+    X(Scene) \
     X(Mesh) \
-    X(Config)
+    X(Config) \
+    X(Camera)
 
 #define LOG_INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
 #define LOG_WARN(name, ...) Log::Get##name##Logger()->warn(__VA_ARGS__)

@@ -38,6 +38,7 @@
     <ClInclude Include="include\core\Config.h" />
     <ClInclude Include="include\core\Log.h" />
     <ClInclude Include="include\core\Window.h" />
+    <ClInclude Include="include\core\WindowContext.h" />
     <ClInclude Include="include\renderer\Camera.h" />
     <ClInclude Include="include\renderer\Mesh.h" />
     <ClInclude Include="include\renderer\Shader.h" />

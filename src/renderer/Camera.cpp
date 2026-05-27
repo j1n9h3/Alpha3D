@@ -1,13 +1,26 @@
 ﻿// Camera.cpp
 #include "renderer/Camera.h"
+#include "core/WindowContext.h"
+#include "core/Log.h"
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+void mouse_callback(GLFWwindow* glfw_window, double xpos, double ypos)
 {
-    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    camera->ProcessMouseMovement(window, xpos, ypos);
+    WindowContext* context = static_cast<WindowContext*>(glfwGetWindowUserPointer(glfw_window));
+    if (!context) {
+        LOG_ERROR(Camera, "No Window Context Get from GLFW UserPointer!");
+        return;
+    }
+
+    Camera* camera = context->camera;
+    if (!context->camera) {
+        LOG_ERROR(Camera, "No Camera Pointer in Window Context!");
+        return;
+    }
+
+    camera->ProcessMouseMovement(xpos, ypos);
 }
 
-void Camera::ProcessMouseMovement(GLFWwindow* window, double xpos, double ypos) {
+void Camera::ProcessMouseMovement(float xpos, float ypos) {
 
     if (first_mouse) {
         lastX = xpos;
@@ -39,31 +52,29 @@ void Camera::ProcessMouseMovement(GLFWwindow* window, double xpos, double ypos) 
     this->direction = glm::normalize(front);
 }
 
-void Camera::ProcessInput(GLFWwindow* window)
+void Camera::ProcessInput(GLFWwindow* glfw_window)
 {
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+    if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
         float cameraSpeed = 0.05f; // adjust accordingly
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        if (glfwGetKey(glfw_window, GLFW_KEY_W) == GLFW_PRESS)
             position += cameraSpeed * direction;
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        if (glfwGetKey(glfw_window, GLFW_KEY_S) == GLFW_PRESS)
             position -= cameraSpeed * direction;
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        if (glfwGetKey(glfw_window, GLFW_KEY_A) == GLFW_PRESS)
             position -= glm::normalize(glm::cross(direction, up)) * cameraSpeed;
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
             position += glm::normalize(glm::cross(direction, up)) * cameraSpeed;
 
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
+            glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-        glfwSetWindowUserPointer(window, this);
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(window, mouse_callback);
+        glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(glfw_window, mouse_callback);
 
         view = glm::lookAt(position, position + direction, up);
     }
     else {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         this->first_mouse = true;
     }
 }

@@ -2,18 +2,24 @@
 #include "core/Log.h"
 
 void Window::SetResizeCallback(std::function<void(int, int)> callback) {
-    m_ResizeCallback = callback;
+    ResizeCallback = callback;
 }
 
-void Window::framebuffer_size_callback(GLFWwindow* m_window, int width, int height)
+void Window::framebuffer_size_callback(GLFWwindow* glfw_window, int width, int height)
 {
-    Window* window = static_cast<Window*>(glfwGetWindowUserPointer(m_window));
+    WindowContext* context = (static_cast<WindowContext*>(glfwGetWindowUserPointer(glfw_window)));
+    if (!context || !context->window) {
+        LOG_ERROR(Window, "GLFW UserPointer get failed!");
+        return;
+    }
+
+    Window* window = context->window;
     if (window) {
         window->width = width;
         window->height = height;
 
-        if (window->m_ResizeCallback) {
-            window->m_ResizeCallback(width, height);
+        if (window->ResizeCallback) {
+            window->ResizeCallback(width, height);
         }
     }
     glViewport(0, 0, width, height);
@@ -25,11 +31,15 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
+WindowContext& Window::GetWindowContext() {
+    return this->context;
+}
+
 Window::Window(int width, int height, const std::string& title) {
 
+    // set window properties
     this->width = width;
     this->height = height;
-
     this->title = title;
     
     glfwInit();
@@ -52,9 +62,14 @@ Window::Window(int width, int height, const std::string& title) {
     glfwMakeContextCurrent(glfw_window);
 
     glViewport(0, 0, width, height);
-    glfwSetWindowUserPointer(glfw_window, this);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
     LOG_INFO(Window, "Window created: {}, {}x{}", title, this->width, this->height);
+
+    // set user pointer
+    this->context.window = this;
+    this->context.camera = nullptr;
+    glfwSetWindowUserPointer(glfw_window, &this->context);
+    LOG_INFO(Window, "Window Context created.");
 }
 
 Window::~Window() {

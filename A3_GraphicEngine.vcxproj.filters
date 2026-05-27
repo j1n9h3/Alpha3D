@@ -82,5 +82,8 @@
     <ClInclude Include="include\core\Config.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="include\core\WindowContext.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

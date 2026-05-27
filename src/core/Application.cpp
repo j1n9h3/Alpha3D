@@ -94,7 +94,9 @@ int main()
 
     Shader shader("shaders/test.vert", "shaders/test.frag");
 
+    // camera init
     Camera camera(config.renderer.fov, mainWindow.GetAspectRatio(), mainWindow.GetWidth(), mainWindow.GetHeight());
+    mainWindow.GetWindowContext().camera = &camera;
 
     mainWindow.SetResizeCallback([&](int width, int height) {
         camera.SetProjection(config.renderer.fov, (float)width / height);

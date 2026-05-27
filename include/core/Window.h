@@ -3,6 +3,8 @@
 #include <string>
 #include <functional>
 
+#include "core/WindowContext.h"
+
 class Window {
 public:
     Window(int width, int height, const std::string& title);
@@ -19,6 +21,9 @@ public:
 
     GLFWwindow* GetGLFWWindow();
 
+    WindowContext& GetWindowContext();
+    // void SetWindowContext();
+
     void SetResizeCallback(std::function<void(int, int)> callback);
 
 private:
@@ -26,6 +31,7 @@ private:
     GLFWwindow* glfw_window;
     int width, height;
     std::string title;
+    WindowContext context;
 
-    std::function<void(int, int)> m_ResizeCallback;
+    std::function<void(int, int)> ResizeCallback;
 };
