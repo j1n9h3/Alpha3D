@@ -19,6 +19,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource\Models">
+      <UniqueIdentifier>{3cb00292-770c-4337-9581-29ea712f166d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource\Textures">
+      <UniqueIdentifier>{92389da1-f2d8-437e-839f-cd012aad8400}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
@@ -48,6 +54,9 @@
     <ClCompile Include="src\renderer\Texture.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\Model.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.vert">
@@ -69,6 +78,12 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="shaders\light_obj.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\phong.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\phong.vert">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
@@ -97,16 +112,19 @@
     <ClInclude Include="include\core\WindowContext.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="include\renderer\Model.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\diffuse.png">
-      <Filter>Resource</Filter>
-    </Image>
-    <Image Include="textures\wall.jpg">
-      <Filter>Resource</Filter>
+      <Filter>Resource\Textures</Filter>
     </Image>
     <Image Include="textures\specular.png">
-      <Filter>Resource</Filter>
+      <Filter>Resource\Textures</Filter>
+    </Image>
+    <Image Include="textures\wall.jpg">
+      <Filter>Resource\Textures</Filter>
     </Image>
   </ItemGroup>
 </Project>

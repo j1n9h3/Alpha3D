@@ -3,3 +3,8 @@ build
 .vs
 x64
 Debug
+vcpkg_installed
+.obj
+.png
+.jpg
+models

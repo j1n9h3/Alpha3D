@@ -9,6 +9,7 @@
     X(Texture) \
     X(Scene) \
     X(Mesh) \
+    X(Model) \
     X(Config) \
     X(Camera)
 

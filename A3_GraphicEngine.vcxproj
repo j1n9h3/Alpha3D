@@ -26,6 +26,7 @@
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\renderer\Camera.cpp" />
     <ClCompile Include="src\renderer\Mesh.cpp" />
+    <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
   </ItemGroup>
@@ -35,6 +36,8 @@
     <None Include="shaders\light.vert" />
     <None Include="shaders\light_obj.frag" />
     <None Include="shaders\light_obj.vert" />
+    <None Include="shaders\phong.frag" />
+    <None Include="shaders\phong.vert" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>
@@ -45,6 +48,7 @@
     <ClInclude Include="include\core\WindowContext.h" />
     <ClInclude Include="include\renderer\Camera.h" />
     <ClInclude Include="include\renderer\Mesh.h" />
+    <ClInclude Include="include\renderer\Model.h" />
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
   </ItemGroup>
@@ -107,8 +111,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\lib;$(LibraryPath)</LibraryPath>
-    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\lib;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>build</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -149,7 +153,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

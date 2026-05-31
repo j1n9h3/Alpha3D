@@ -1,12 +1,12 @@
 
+
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "renderer/Shader.h"
-#include "stb/stb_image.h"
+
 
 #include "core/Window.h"
 #include "core/Config.h"
@@ -15,6 +15,13 @@
 #include "renderer/Mesh.h"
 #include "renderer/Camera.h"
 #include "renderer/Texture.h"
+#include "renderer/Model.h"
+#include "renderer/Shader.h"
+
+
+
+
+#include <assimp/Importer.hpp>
 
 int main()
 {
@@ -95,8 +102,14 @@ float vertices[] = {
     Texture diffuseTexture("textures/diffuse.png");
     Texture specularTexture("textures/specular.png");
 
+    //Model Backpack(model_path.c_str());
+    std::string project_path = "C:/Users/17912/Projects/GraphicEngine/A3_GraphicEngine";
+    std::string model_path = project_path + "/" + "models/Backpack/backpack.obj";
+    Model Backpack(model_path.c_str());
+
     Shader shader("shaders/light_obj.vert", "shaders/light_obj.frag");
     Shader lightShader("shaders/light.vert", "shaders/light.frag");
+    Shader ourShader("shaders/phong.vert", "shaders/phong.frag");
 
     // camera init
     Camera camera(config.renderer.fov, mainWindow.GetAspectRatio(), mainWindow.GetWidth(), mainWindow.GetHeight());
@@ -162,18 +175,25 @@ float vertices[] = {
 
 
         // cube trans
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            trans = glm::mat4(1.0f);
-            trans = glm::translate(trans, cubePositions[i]);
-            trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
-            trans = glm::rotate(trans, (float)glfwGetTime() * 1, glm::vec3(0.0f, 1.0f, 1.0f));
-            shader.setMat4("model", trans);
-            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
-            shader.setMat3("normalMatrix", normalMatrix);
+        //for (unsigned int i = 0; i < 10; i++)
+        //{
+        //    trans = glm::mat4(1.0f);
+        //    trans = glm::translate(trans, cubePositions[i]);
+        //    trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
+        //    trans = glm::rotate(trans, (float)glfwGetTime() * 1, glm::vec3(0.0f, 1.0f, 1.0f));
+        //    shader.setMat4("model", trans);
+        //    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
+        //    shader.setMat3("normalMatrix", normalMatrix);
 
-            cubeMesh.Draw();
-        }
+        //    cubeMesh.Draw();
+        //}
+
+        ourShader.use();
+        ourShader.setMat4("projection", camera.GetProjection());
+        ourShader.setMat4("view", camera.GetView());
+        ourShader.setMat4("model", glm::mat4(1.0f));
+
+        Backpack.Draw(ourShader);
 
         // check events
         mainWindow.Update();
