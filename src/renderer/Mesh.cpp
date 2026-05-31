@@ -88,13 +88,15 @@ void Mesh::Draw(Shader& shader)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); 
 		std::string number;
-		std::string name = textures[i].GetTexName().C_Str();
-		if (name == "texture_diffuse")
+		std::string name = textures[i].GetTexName().C_Str(); 
+		name = name.substr(0, name.find_last_of('.'));  // "diffuse.jpg" to "diffuse"
+		if (name == "diffuse")
 			number = std::to_string(diffuseNr++);
-		else if (name == "texture_specular")
+		else if (name == "specular")
 			number = std::to_string(specularNr++);
 
 		shader.setInt(("material." + name + number).c_str(), i);
+		LOG_INFO(Shader, "Setting texture to object: {}", "material." + name + number);
 		glBindTexture(GL_TEXTURE_2D, textures[i].GetId());
 	}
 	glActiveTexture(GL_TEXTURE0);

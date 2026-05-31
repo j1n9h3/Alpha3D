@@ -66,7 +66,6 @@ Texture::Texture(aiString tex_name, const std::string& directory, const std::str
     this->mId = TextureFromFile(tex_name.C_Str(), directory);
     this->mType = typeName;
     this->mName = tex_name.C_Str();
-    
 }
 
 Texture::Texture(const std::string& path) {

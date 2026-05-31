@@ -140,7 +140,7 @@ float vertices[] = {
         lightShader.setMat4("view", camera.GetView());
         lightShader.setMat4("projection", camera.GetProjection());
         // light trans
-        glm::vec3 lightPos(0.0f, 1.0f, 1.0f);
+        glm::vec3 lightPos(0.0f, 1.0f, 2.0f);
         glm::mat4 light_trans = glm::translate(trans, lightPos);
         light_trans = glm::scale(light_trans, glm::vec3(0.2f));
 
@@ -152,21 +152,30 @@ float vertices[] = {
         shader.use();
         shader.setMat4("view", camera.GetView());
         shader.setMat4("projection", camera.GetProjection());
-        shader.setVec3("material.specular", glm::vec3(0.8f, 0.8f, 0.8f));
+        //shader.setVec3("material.specular", glm::vec3(0.8f, 0.8f, 0.8f));
         shader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
         shader.setVec3("light.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.setInt("material.diffuse", 0);
-        diffuseTexture.Bind(0);
-        shader.setInt("material.specular", 1);
-        specularTexture.Bind(1);
+        //shader.setInt("material.diffuse", 0);
+        //diffuseTexture.Bind(0);
+        //shader.setInt("material.specular", 1);
+        //specularTexture.Bind(1);
         shader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setFloat("material.shininess", 32.0f);
 
         shader.setVec3("viewPos", camera.GetPosition());
 
+
+        trans = glm::mat4(1.0f);
+        //trans = glm::translate(trans, cubePositions[i]);
+        //trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
+        //trans = glm::rotate(trans, (float)glfwGetTime() * 1, glm::vec3(0.0f, 1.0f, 1.0f));
+        shader.setMat4("model", trans);
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
+        shader.setMat3("normalMatrix", normalMatrix);
         
         shader.setVec3("lightPos", lightPos);
+        Backpack.Draw(shader);
 
 
         // shader.setFloat("someUniform", 1.0f);
@@ -188,12 +197,11 @@ float vertices[] = {
         //    cubeMesh.Draw();
         //}
 
-        ourShader.use();
-        ourShader.setMat4("projection", camera.GetProjection());
-        ourShader.setMat4("view", camera.GetView());
-        ourShader.setMat4("model", glm::mat4(1.0f));
+        //ourShader.use();
+        //ourShader.setMat4("projection", camera.GetProjection());
+        //ourShader.setMat4("view", camera.GetView());
+        //ourShader.setMat4("model", glm::mat4(1.0f));
 
-        Backpack.Draw(ourShader);
 
         // check events
         mainWindow.Update();
