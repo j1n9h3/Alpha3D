@@ -24,6 +24,23 @@ public:
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures); // for assimp
     ~Mesh();
 
+    // 禁用拷贝
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    // 允许移动
+    Mesh(Mesh&& other) noexcept
+        : vao(other.vao), vbo(other.vbo), ebo(other.ebo),
+        vertices(std::move(other.vertices)),
+        indices(std::move(other.indices)),
+        textures(std::move(other.textures)),
+        vertex_count(other.vertex_count)
+    {
+        other.vao = 0;  // 置0，析构时不会删除
+        other.vbo = 0;
+        other.ebo = 0;
+    }
+
     void Bind();
     
     void Draw();

@@ -1,10 +1,10 @@
-#include <glad/glad.h>
+ï»¿#include <glad/glad.h>
 #include "core/Log.h"
 
 #include "renderer/Mesh.h"
 
 Mesh::Mesh(float* vertices, unsigned int size) {
-	vertex_count = size / (8 * sizeof(float)); // Ã¿¸ö¶¥µã5¸öfloat (xyz + uv)
+	vertex_count = size / (8 * sizeof(float)); // æ¯ä¸ªé¡¶ç‚¹5ä¸ªfloat (xyz + uv)
 
 	// VAO
 	glGenVertexArrays(1, &vao);
@@ -65,9 +65,9 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 }
 
 Mesh::~Mesh() {
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
-	LOG_INFO(Mesh, "Mesh destroyed");
+	if (vao) glDeleteVertexArrays(1, &vao);
+	if (vbo) glDeleteBuffers(1, &vbo);
+	if (ebo) glDeleteBuffers(1, &ebo);
 }
 
 void Mesh::Bind() {
@@ -99,7 +99,7 @@ void Mesh::Draw(Shader& shader)
 	}
 	glActiveTexture(GL_TEXTURE0);
 
-	// »æÖÆÍø¸ñ
+	// ç»˜åˆ¶ç½‘æ ¼
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

@@ -20,7 +20,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
         {
             if (std::strcmp(textures_loaded[j].GetTexName().C_Str(), tex_name.C_Str()) == 0)
             {
-                textures.push_back(textures_loaded[j]);
+                textures.push_back(std::move(textures_loaded[j]));
                 skip = true;
                 break;
             }
@@ -28,6 +28,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
         if (!skip)
         {
             Texture texture(tex_name, this->directory, typeName);
+
             textures.push_back(texture);
             textures_loaded.push_back(texture);
         }
@@ -101,7 +102,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    //return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, std::move(textures));
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene)
@@ -109,7 +111,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        this->mMeshes.push_back(processMesh(mesh, scene));
+        this->mMeshes.push_back(std::move(processMesh(mesh, scene)));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)

@@ -26,6 +26,7 @@ unsigned int TextureFromFile(const char* tex_name, const std::string& directory)
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
+    stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
@@ -61,13 +62,15 @@ unsigned int TextureFromFile(const char* tex_name, const std::string& directory)
 }
 
 Texture::Texture(aiString tex_name, const std::string& directory, const std::string& typeName) {
-
+    this->mId = 0;
     this->mId = TextureFromFile(tex_name.C_Str(), directory);
     this->mType = typeName;
     this->mName = tex_name.C_Str();
+    
 }
 
 Texture::Texture(const std::string& path) {
+
     glGenTextures(1, &mId);
     glBindTexture(GL_TEXTURE_2D, mId);
 
@@ -91,7 +94,7 @@ Texture::Texture(const std::string& path) {
 }
 
 Texture::~Texture() {
-    glDeleteTextures(1, &mId);
+    //glDeleteTextures(1, &mId);
 }
 
 void Texture::Bind(unsigned int slot) {

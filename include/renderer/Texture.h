@@ -15,6 +15,7 @@ class Texture {
 public:
     Texture(const std::string&);
     Texture(aiString, const std::string&, const std::string&);
+
     ~Texture();
     aiString GetTexName();
     unsigned int GetId();
