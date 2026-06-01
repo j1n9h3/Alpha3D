@@ -11,7 +11,8 @@
     X(Mesh) \
     X(Model) \
     X(Config) \
-    X(Camera)
+    X(Camera) \
+    X(Editor)
 
 #define LOG_INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
 #define LOG_WARN(name, ...) Log::Get##name##Logger()->warn(__VA_ARGS__)

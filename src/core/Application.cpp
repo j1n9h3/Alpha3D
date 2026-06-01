@@ -8,10 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
-
 #include "core/Window.h"
 #include "core/Config.h"
 #include "core/Log.h"
@@ -23,6 +19,11 @@
 #include "renderer/Shader.h"
 
 #include <assimp/Importer.hpp>
+
+#include "core/Editor.h"
+
+#include <ImGuizmo/ImGuizmo.h>
+
 
 int main()
 {
@@ -120,42 +121,31 @@ float vertices[] = {
         camera.SetProjection(config.renderer.fov, (float)width / height);
     });
     
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    Editor editor(mainWindow.GetGLFWWindow());
 
-    float xscale, yscale;
-    glfwGetWindowContentScale(mainWindow.GetGLFWWindow(), &xscale, &yscale);
-    LOG_INFO(Window, std::to_string(xscale));
+    ImGuizmo::Style& style = ImGuizmo::GetStyle();
+    style.TranslationLineThickness = 10.0f;   // 轴线粗细
+    style.TranslationLineArrowSize = 16.0f;   // 箭头大小
+    style.RotationLineThickness = 10.0f;      // 旋转圆环粗细
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+    style.ScaleLineThickness = 10.0f;         // 缩放线粗细
 
     //std::string fontPath = std::string(std::getenv("WINDIR")) + "/Fonts/" + "JetBrains Mono/JetBrainsMono-Regular.ttf";
     std::string fontPath = "assets/fonts/JetBrainsMono-Regular.ttf";
-    io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 16.0f * xscale);
-    ImGui::GetStyle().ScaleAllSizes(xscale);
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(mainWindow.GetGLFWWindow(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-    ImGui_ImplOpenGL3_Init();
 
     glEnable(GL_DEPTH_TEST);
 
-
+    glm::mat4 trans2 = glm::mat4(1.0f);
+    glm::mat4 trans3 = glm::mat4(1.0f);
 
     while (!mainWindow.ShouldClose())
     {
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow(); // Show demo window! :)
-
+        editor.BeginFrame();
+        ImGuizmo::BeginFrame();
         // input process
 
-        if (!io.WantCaptureMouse && !io.WantCaptureKeyboard) {
+        if (!editor.Hover()) {
             camera.ProcessInput(mainWindow.GetGLFWWindow());
             mainWindow.ProcessKeyboardInput();
         }
@@ -168,6 +158,7 @@ float vertices[] = {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // rendering
+
 
         glm::mat4 trans = glm::mat4(1.0f);
 
@@ -195,25 +186,31 @@ float vertices[] = {
 
         shader.setVec3("viewPos", camera.GetPosition());
 
+        ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
 
-        trans = glm::mat4(1.0f);
-        shader.setMat4("model", trans);
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
+        //ImGuizmo::SetPlaneLimit(0.0f);
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(camera.GetView()),
+            glm::value_ptr(camera.GetProjection()),
+            ImGuizmo::TRANSLATE,
+            ImGuizmo::WORLD,
+            glm::value_ptr(trans2)
+        );
+
+        shader.setMat4("model", trans2);
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans2)));
         shader.setMat3("normalMatrix", normalMatrix);
         
         shader.setVec3("lightPos", lightPos);
         Backpack.Draw(shader);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        editor.EndFrame();
 
         // check events
         mainWindow.Update();
     }
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
     glfwTerminate();
 
     return 0;

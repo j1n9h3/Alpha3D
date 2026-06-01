@@ -28,6 +28,9 @@
     <Filter Include="Source\imgui">
       <UniqueIdentifier>{b3b2552e-ed17-4e6d-b845-6ae3e65448c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\ImGuizmo">
+      <UniqueIdentifier>{572cb9b9-2d8d-459e-b50a-0b0d243dd6d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
@@ -80,6 +83,12 @@
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui.cpp">
       <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Editor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
+      <Filter>Source\ImGuizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +147,12 @@
     </ClInclude>
     <ClInclude Include="include\renderer\Model.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Editor.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\ImGuizmo\ImGradient.h">
+      <Filter>Source\ImGuizmo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
