@@ -96,7 +96,7 @@ void Mesh::Draw(Shader& shader)
 			number = std::to_string(specularNr++);
 
 		shader.setInt(("material." + name + number).c_str(), i);
-		LOG_INFO(Shader, "Setting texture to object: {}", "material." + name + number);
+		// LOG_INFO(Shader, "Setting texture to object: {}", "material." + name + number);
 		glBindTexture(GL_TEXTURE_2D, textures[i].GetId());
 	}
 	glActiveTexture(GL_TEXTURE0);

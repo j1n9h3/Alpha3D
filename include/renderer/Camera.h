@@ -8,7 +8,7 @@
 
 class Camera {
 public:
-    Camera(float fov, float aspectRatio, float window_width, float window_height);
+    Camera(float fov, Window& window);
     
     glm::mat4 GetView();
     bool SetView();
@@ -16,6 +16,7 @@ public:
     glm::mat4 GetProjection();
     void SetProjection(float fov, float aspectRatio);
     glm::vec3 GetPosition();
+    void ResetMouseState();
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
 private:
@@ -34,5 +35,5 @@ private:
     float pitch = 0.0f;
     float lastX;
     float lastY;
-    bool first_mouse = true;
+    bool firstMouse = true;
 };

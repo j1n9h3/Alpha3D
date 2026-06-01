@@ -22,10 +22,10 @@ void mouse_callback(GLFWwindow* glfw_window, double xpos, double ypos)
 
 void Camera::ProcessMouseMovement(float xpos, float ypos) {
 
-    if (first_mouse) {
+    if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
-        first_mouse = false;
+        firstMouse = false;
     }
 
     float xoffset = xpos - lastX;
@@ -67,19 +67,23 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
 
         if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
             glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+        
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPosCallback(glfw_window, mouse_callback);
 
         view = glm::lookAt(position, position + direction, up);
     }
     else {
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        this->first_mouse = true;
+        this->firstMouse = true;
     }
 }
 
-Camera::Camera(float fov, float aspectRatio, float window_width, float window_height) {
+Camera::Camera(float fov, Window& window) {
+
+    float aspectRatio = window.GetAspectRatio();
+    float window_width = window.GetWidth(), window_height = window.GetHeight();
+
+    glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
 
     // init camera properties
     view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
@@ -116,4 +120,8 @@ glm::mat4 Camera::GetProjection() {
 
 void Camera::SetProjection(float fov, float aspectRatio) {
     projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+}
+
+void Camera::ResetMouseState() {
+    firstMouse = true;
 }

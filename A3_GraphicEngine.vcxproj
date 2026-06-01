@@ -29,6 +29,13 @@
     <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
+    <ClCompile Include="third_party\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="third_party\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="third_party\imgui\imgui.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\engine.toml" />
@@ -112,7 +119,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\lib;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\lib;$(LibraryPath)</LibraryPath>
-    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\imgui;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>build</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

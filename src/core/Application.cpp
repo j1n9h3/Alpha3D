@@ -1,12 +1,16 @@
 
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include "core/Window.h"
 #include "core/Config.h"
@@ -17,9 +21,6 @@
 #include "renderer/Texture.h"
 #include "renderer/Model.h"
 #include "renderer/Shader.h"
-
-
-
 
 #include <assimp/Importer.hpp>
 
@@ -112,21 +113,55 @@ float vertices[] = {
     Shader ourShader("shaders/phong.vert", "shaders/phong.frag");
 
     // camera init
-    Camera camera(config.renderer.fov, mainWindow.GetAspectRatio(), mainWindow.GetWidth(), mainWindow.GetHeight());
+    Camera camera(config.renderer.fov, mainWindow);
     mainWindow.GetWindowContext().camera = &camera;
 
     mainWindow.SetResizeCallback([&](int width, int height) {
         camera.SetProjection(config.renderer.fov, (float)width / height);
     });
     
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    float xscale, yscale;
+    glfwGetWindowContentScale(mainWindow.GetGLFWWindow(), &xscale, &yscale);
+    LOG_INFO(Window, std::to_string(xscale));
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+    //std::string fontPath = std::string(std::getenv("WINDIR")) + "/Fonts/" + "JetBrains Mono/JetBrainsMono-Regular.ttf";
+    std::string fontPath = "assets/fonts/JetBrainsMono-Regular.ttf";
+    io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 16.0f * xscale);
+    ImGui::GetStyle().ScaleAllSizes(xscale);
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(mainWindow.GetGLFWWindow(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
 
     glEnable(GL_DEPTH_TEST);
 
+
+
     while (!mainWindow.ShouldClose())
     {
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow(); // Show demo window! :)
+
         // input process
-        camera.ProcessInput(mainWindow.GetGLFWWindow());
-        mainWindow.ProcessInput();
+
+        if (!io.WantCaptureMouse && !io.WantCaptureKeyboard) {
+            camera.ProcessInput(mainWindow.GetGLFWWindow());
+            mainWindow.ProcessKeyboardInput();
+        }
+        else {
+            camera.ResetMouseState();
+        }
 
         // clear
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -152,13 +187,8 @@ float vertices[] = {
         shader.use();
         shader.setMat4("view", camera.GetView());
         shader.setMat4("projection", camera.GetProjection());
-        //shader.setVec3("material.specular", glm::vec3(0.8f, 0.8f, 0.8f));
         shader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
         shader.setVec3("light.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        //shader.setInt("material.diffuse", 0);
-        //diffuseTexture.Bind(0);
-        //shader.setInt("material.specular", 1);
-        //specularTexture.Bind(1);
         shader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setFloat("material.shininess", 32.0f);
@@ -167,9 +197,6 @@ float vertices[] = {
 
 
         trans = glm::mat4(1.0f);
-        //trans = glm::translate(trans, cubePositions[i]);
-        //trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
-        //trans = glm::rotate(trans, (float)glfwGetTime() * 1, glm::vec3(0.0f, 1.0f, 1.0f));
         shader.setMat4("model", trans);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
         shader.setMat3("normalMatrix", normalMatrix);
@@ -177,36 +204,17 @@ float vertices[] = {
         shader.setVec3("lightPos", lightPos);
         Backpack.Draw(shader);
 
-
-        // shader.setFloat("someUniform", 1.0f);
-        //diffuseTexture.Bind();
-        //wallTexture.Bind();
-
-
-        // cube trans
-        //for (unsigned int i = 0; i < 10; i++)
-        //{
-        //    trans = glm::mat4(1.0f);
-        //    trans = glm::translate(trans, cubePositions[i]);
-        //    trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
-        //    trans = glm::rotate(trans, (float)glfwGetTime() * 1, glm::vec3(0.0f, 1.0f, 1.0f));
-        //    shader.setMat4("model", trans);
-        //    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans)));
-        //    shader.setMat3("normalMatrix", normalMatrix);
-
-        //    cubeMesh.Draw();
-        //}
-
-        //ourShader.use();
-        //ourShader.setMat4("projection", camera.GetProjection());
-        //ourShader.setMat4("view", camera.GetView());
-        //ourShader.setMat4("model", glm::mat4(1.0f));
-
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // check events
         mainWindow.Update();
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
+
     return 0;
 }

@@ -16,7 +16,7 @@ public:
     float GetHeight();
 
     bool ShouldClose();
-    void ProcessInput();
+    void ProcessKeyboardInput();
     float GetAspectRatio();
 
     GLFWwindow* GetGLFWWindow();

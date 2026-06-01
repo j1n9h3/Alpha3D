@@ -25,6 +25,9 @@
     <Filter Include="Resource\Textures">
       <UniqueIdentifier>{92389da1-f2d8-437e-839f-cd012aad8400}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\imgui">
+      <UniqueIdentifier>{b3b2552e-ed17-4e6d-b845-6ae3e65448c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
@@ -56,6 +59,27 @@
     </ClCompile>
     <ClCompile Include="src\renderer\Model.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_widgets.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui_tables.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui\imgui.cpp">
+      <Filter>Source\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

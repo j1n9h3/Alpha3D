@@ -29,8 +29,9 @@ void Window::framebuffer_size_callback(GLFWwindow* glfw_window, int width, int h
         if (window->ResizeCallback) {
             window->ResizeCallback(width, height);
         }
+        glViewport(0, 0, window->width, window->height);
+
     }
-    glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow* window)
@@ -46,11 +47,16 @@ WindowContext& Window::GetWindowContext() {
 Window::Window(int width, int height, const std::string& title) {
 
     // set window properties
-    this->width = width;
-    this->height = height;
-    this->title = title;
     
     glfwInit();
+
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    this->width = mode->width;
+    this->height = mode->height;
+    this->title = title;
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -69,7 +75,7 @@ Window::Window(int width, int height, const std::string& title) {
     }
     glfwMakeContextCurrent(glfw_window);
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, this->width, this->height);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_size_callback);
     LOG_INFO(Window, "Window created: {}, {}x{}.", title, this->width, this->height);
 
@@ -87,7 +93,7 @@ Window::Window(int width, int height, const std::string& title) {
 
 Window::~Window() {
     glfwDestroyWindow(glfw_window);
-    glfwTerminate();
+    //glfwTerminate();
     LOG_INFO(Window, "Window destroyed.");
 }
 
@@ -113,7 +119,7 @@ bool Window::ShouldClose() {
     return glfwWindowShouldClose(this->glfw_window);
 }
 
-void Window::ProcessInput() {
+void Window::ProcessKeyboardInput() {
     if (glfwGetKey(this->glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(this->glfw_window, true);
 }
