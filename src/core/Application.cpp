@@ -24,6 +24,7 @@
 #include "core/Editor.h"
 
 #include <ImGuizmo/ImGuizmo.h>
+#include "imgui_internal.h"
 
 #include "scene/Scene.h"
 
@@ -85,10 +86,12 @@ int main()
     Entity& lightEntity    = scene.AddEntity("Light",    &cubeMesh, &lightShader);
 
     lightEntity.GetTransform().position = glm::vec3(0.0f, 1.0f, 2.0f);
-    lightEntity.GetTransform().scale    = glm::vec3(0.2f);
+    lightEntity.GetTransform().scale = glm::vec3(0.2f);
     lightEntity.GetTransform().SyncToMatrix();
 
     scene.SetSelected(backpackEntity.GetID());
+
+    ImGuizmo::OPERATION gizmoOp = ImGuizmo::TRANSLATE;
 
     while (!mainWindow.ShouldClose())
     {
@@ -106,7 +109,7 @@ int main()
         }
 
         // clear
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(0.235f, 0.235f, 0.235f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // rendering
@@ -128,21 +131,25 @@ int main()
         shader.setVec3("viewPos",  camera.GetPosition());
         shader.setVec3("lightPos", lightPos);
 
+
+
         Entity* selected = scene.GetSelected();
+        ImGuizmo::SetOrthographic(camera.IsOrtho());
         ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
         if (selected) {
             ImGuizmo::Manipulate(
                 glm::value_ptr(camera.GetView()),
                 glm::value_ptr(camera.GetProjection()),
-                ImGuizmo::TRANSLATE,
+                gizmoOp,
                 ImGuizmo::WORLD,
                 glm::value_ptr(selected->GetTransform().matrix)
             );
         }
 
         scene.Render();
-        scene.OnImGuiHierarchy();
-        scene.OnImGuiProperties();
+        //scene.OnImGuiHierarchy();
+        //scene.OnImGuiProperties();
+        camera.OnImGuiCamera(gizmoOp);
 
         editor.EndFrame();
 

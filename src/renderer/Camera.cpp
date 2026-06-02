@@ -85,25 +85,21 @@ Camera::Camera(float fov, Window& window) {
 
     glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
 
-    // init camera properties
-    view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+    m_Fov         = fov;
+    m_AspectRatio = aspectRatio;
 
-    position = glm::vec3(0.0f, 0.0f, 3.0f);
-    //target = glm::vec3(0.0f, 0.0f, 0.0f);
-    //direction = glm::normalize(position - target);
+    position  = glm::vec3(0.0f, 0.0f, 3.0f);
     direction = glm::vec3(0.0f, 0.0f, -1.0f);
 
     glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
     right = glm::normalize(glm::cross(world_up, direction));
+    up    = glm::cross(direction, right);
 
     this->lastX = window_width / 2;
     this->lastY = window_height / 2;
 
-    up = glm::cross(direction, right);
-
-    glm::mat4 view;
     view = glm::lookAt(position, position + direction, up);
+    RebuildProjection();
 }
 
 glm::vec3 Camera::GetPosition() {
@@ -118,10 +114,100 @@ glm::mat4 Camera::GetProjection() {
     return projection;
 }
 
+void Camera::RebuildProjection() {
+    if (m_IsOrtho)
+        projection = glm::ortho(
+            -m_OrthoSize * m_AspectRatio,  m_OrthoSize * m_AspectRatio,
+            -m_OrthoSize,                   m_OrthoSize,
+            m_Near, m_Far);
+    else
+        projection = glm::perspective(glm::radians(m_Fov), m_AspectRatio, m_Near, m_Far);
+}
+
 void Camera::SetProjection(float fov, float aspectRatio) {
-    projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+    m_Fov = fov;
+    m_AspectRatio = aspectRatio;
+    RebuildProjection();
+}
+
+void Camera::SetFov(float fov) {
+    m_Fov = fov;
+    RebuildProjection();
+}
+
+void Camera::SetOrtho(bool isOrtho) {
+    m_IsOrtho = isOrtho;
+    RebuildProjection();
 }
 
 void Camera::ResetMouseState() {
     firstMouse = true;
+}
+
+
+void Camera::OnImGuiCamera(ImGuizmo::OPERATION& gizmoOp) {
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+
+
+    float headbarWidth = viewport->Size.x / 3 * 2;
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    ImGui::SetNextWindowPos(ImVec2(
+        viewport->Pos.x + 2.0f,
+        viewport->Pos.y + menuBarHeight * 2 + 2.0f)
+    );
+    //ImGui::SetNextWindowSize(ImVec2(
+    //    headbarWidth,
+    //    menuBarHeight * 2)
+    //);
+
+    float menuBarH = ImGui::GetFrameHeight();
+    ImGui::SetNextWindowBgAlpha(0.0f);
+    constexpr ImGuiWindowFlags kToolbarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollbar |  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+    if (ImGui::Begin("##toolbar", nullptr, kToolbarFlags)) {
+
+        auto modeBtn = [&](const char* label, ImGuizmo::OPERATION op) {
+            bool active = (gizmoOp == op);
+            if (active) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            }
+            else {
+                ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+                color.x -= 0.2f;
+                color.y -= 0.2f;
+                color.z -= 0.2f;
+                color.w = 1.0f;
+                ImGui::PushStyleColor(ImGuiCol_Button, color);
+            }
+            if (ImGui::Button(label)) gizmoOp = op;
+            
+            ImGui::PopStyleColor();
+            
+        };
+        modeBtn("Translate##t", ImGuizmo::TRANSLATE);
+        modeBtn("Rotate##r", ImGuizmo::ROTATE);
+        modeBtn("Scale##s", ImGuizmo::SCALE);
+
+
+        const char* projLabel = this->IsOrtho() ? "Ortho" : "Persp";
+        if (ImGui::Button(projLabel)) this->SetOrtho(!this->IsOrtho());
+
+
+        if (!this->IsOrtho()) {
+            ImGui::SameLine();
+            float fov = this->GetFov();
+            ImGui::SetNextItemWidth(140.0f);
+            if (ImGui::SliderFloat("FOV", &fov, 10.0f, 170.0f))
+                this->SetFov(fov);
+        }
+
+    }
+    ImGui::PopStyleVar(3);
+    ImGui::End();
 }

@@ -4,6 +4,9 @@
 #include <windows.h>
 #include <imm.h>
 
+#include <dwmapi.h>
+
+#pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "imm32.lib")
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -15,6 +18,8 @@ void Window::SetResizeCallback(std::function<void(int, int)> callback) {
 
 void Window::framebuffer_size_callback(GLFWwindow* glfw_window, int width, int height)
 {
+    if (width <= 0 || height <= 0) return;
+
     WindowContext* context = (static_cast<WindowContext*>(glfwGetWindowUserPointer(glfw_window)));
     if (!context || !context->window) {
         LOG_ERROR(Window, "GLFW UserPointer get failed!");
@@ -61,6 +66,7 @@ Window::Window(int width, int height, const std::string& title) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
     //glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     //glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
@@ -82,6 +88,22 @@ Window::Window(int width, int height, const std::string& title) {
     #ifdef _WIN32
         HWND hwnd = glfwGetWin32Window(glfw_window);
         ImmAssociateContextEx(hwnd, NULL, IACE_IGNORENOCONTEXT);
+
+        // 自定义标题栏背景色（Windows 11 / Win10 较新版本）
+        COLORREF color = RGB(28, 28, 28); // 深灰色
+        DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &color, sizeof(color));
+
+        // 自定义边框颜色
+        COLORREF border_color = RGB(28, 28, 28);
+        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &border_color, sizeof(border_color));
+
+        // 暗色模式（让标题栏文字变白）
+        BOOL dark = TRUE;
+        DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+
+        HICON icon = (HICON)LoadImage(NULL, L"assets/icon.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
+        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
     #endif
 
     // set user pointer

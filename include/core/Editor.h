@@ -6,6 +6,8 @@
 #include <glfw/glfw3.h>
 
 #include "core/Log.h"
+#include "imgui_internal.h"
+
 
 class Editor {
 public:
@@ -17,4 +19,9 @@ public:
 
     bool Hover() const;
     bool WantCaptureKeyboard() const;
+private:
+    float mainMenuBarHeight = 10.0f;
+    ImFont* font_small;
+    ImFont* font_normal;
+    ImFont* font_large;
 };

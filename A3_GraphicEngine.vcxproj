@@ -71,6 +71,7 @@
     <ClInclude Include="include\scene\Scene.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="assets\icon.jpg" />
     <Image Include="textures\diffuse.png" />
     <Image Include="textures\specular.png" />
     <Image Include="textures\wall.jpg" />

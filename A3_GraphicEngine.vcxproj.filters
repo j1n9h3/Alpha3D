@@ -90,6 +90,15 @@
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
       <Filter>Source\ImGuizmo</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\Primitive.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\Entity.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\Scene.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.vert">
@@ -154,6 +163,18 @@
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h">
       <Filter>Source\ImGuizmo</Filter>
     </ClInclude>
+    <ClInclude Include="include\renderer\Primitive.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\Transform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\Entity.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scene\Scene.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\diffuse.png">
@@ -164,6 +185,9 @@
     </Image>
     <Image Include="textures\wall.jpg">
       <Filter>Resource\Textures</Filter>
+    </Image>
+    <Image Include="assets\icon.jpg">
+      <Filter>Resource</Filter>
     </Image>
   </ItemGroup>
 </Project>
