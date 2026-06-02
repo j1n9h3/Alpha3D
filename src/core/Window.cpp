@@ -88,6 +88,9 @@ Window::Window(int width, int height, const std::string& title) {
     this->context.window = this;
     this->context.camera = nullptr;
     glfwSetWindowUserPointer(glfw_window, &this->context);
+
+    glfwMaximizeWindow(this->GetGLFWWindow());
+
     LOG_INFO(Window, "Window Context created.");
 }
 

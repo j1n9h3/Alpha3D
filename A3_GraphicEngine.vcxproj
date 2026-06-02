@@ -28,6 +28,7 @@
     <ClCompile Include="src\renderer\Camera.cpp" />
     <ClCompile Include="src\renderer\Mesh.cpp" />
     <ClCompile Include="src\renderer\Model.cpp" />
+    <ClCompile Include="src\renderer\Primitive.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
     <ClCompile Include="src\scene\Entity.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="include\renderer\Camera.h" />
     <ClInclude Include="include\renderer\Mesh.h" />
     <ClInclude Include="include\renderer\Model.h" />
+    <ClInclude Include="include\renderer\Primitive.h" />
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />

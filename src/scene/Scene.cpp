@@ -57,45 +57,81 @@ void Scene::Render() const {
 }
 
 void Scene::OnImGuiHierarchy() {
-    ImGui::Begin("Scene Hierarchy");
-    for (auto& entityPtr : m_Entities) {
-        Entity* e = entityPtr.get();
-        bool isSelected = (m_SelectedID == e->GetID());
 
-        ImGuiTreeNodeFlags flags =
-            ImGuiTreeNodeFlags_Leaf |
-            ImGuiTreeNodeFlags_NoTreePushOnOpen |
-            (isSelected ? ImGuiTreeNodeFlags_Selected : 0);
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    float sidebarWidth = viewport->Size.x / 6;
+    float menuBarHeight = ImGui::GetFrameHeight();
 
-        ImGui::TreeNodeEx((void*)(intptr_t)e->GetID(), flags, "%s", e->GetName().c_str());
-        if (ImGui::IsItemClicked())
-            SetSelected(e->GetID());
+
+    ImGui::SetNextWindowPos(ImVec2(
+        viewport->Pos.x,
+        viewport->Pos.y + menuBarHeight)
+    );
+    
+    ImGui::SetNextWindowSize(ImVec2(
+        sidebarWidth,
+        viewport->Size.y - menuBarHeight)
+    );
+
+    ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    if (ImGui::CollapsingHeader("Scene Hierarchy", ImGuiTreeNodeFlags_DefaultOpen)) {
+        for (auto& entityPtr : m_Entities) {
+            Entity* e = entityPtr.get();
+            bool isSelected = (m_SelectedID == e->GetID());
+
+            ImGuiTreeNodeFlags flags =
+                ImGuiTreeNodeFlags_Leaf |
+                ImGuiTreeNodeFlags_NoTreePushOnOpen |
+                (isSelected ? ImGuiTreeNodeFlags_Selected : 0);
+
+            ImGui::TreeNodeEx((void*)(intptr_t)e->GetID(), flags, "%s", e->GetName().c_str());
+            if (ImGui::IsItemClicked())
+                SetSelected(e->GetID());
+        }
     }
     ImGui::End();
 }
 
 void Scene::OnImGuiProperties() {
-    ImGui::Begin("Properties");
-    Entity* sel = GetSelected();
-    if (!sel) {
-        ImGui::TextDisabled("No entity selected.");
-        ImGui::End();
-        return;
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    
+    float sidebarWidth = viewport->Size.x / 6;
+    float menuBarHeight = ImGui::GetFrameHeight();
+
+    ImGui::SetNextWindowPos(ImVec2(
+        viewport->Pos.x + viewport->Size.x - sidebarWidth,
+        viewport->Pos.y + menuBarHeight)
+    );
+    ImGui::SetNextWindowSize(ImVec2(
+        sidebarWidth, 
+        viewport->Size.y - menuBarHeight)
+    );
+
+
+    ImGui::Begin("Details", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+    if (ImGui::CollapsingHeader("Properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+        Entity* sel = GetSelected();
+        if (!sel) {
+            ImGui::TextDisabled("No entity selected.");
+            ImGui::End();
+            return;
+        }
+
+        ImGui::Text("%s", sel->GetName().c_str());
+        ImGui::Separator();
+
+        Transform& t = sel->GetTransform();
+        t.SyncFromMatrix();
+
+        bool changed = false;
+        changed |= ImGui::DragFloat3("Position", &t.position.x, 0.01f);
+        changed |= ImGui::DragFloat3("Rotation", &t.rotation.x, 0.5f);
+        changed |= ImGui::DragFloat3("Scale", &t.scale.x, 0.01f, 0.001f);
+
+        if (changed)
+            t.SyncToMatrix();
     }
-
-    ImGui::Text("%s", sel->GetName().c_str());
-    ImGui::Separator();
-
-    Transform& t = sel->GetTransform();
-    t.SyncFromMatrix();
-
-    bool changed = false;
-    changed |= ImGui::DragFloat3("Position", &t.position.x, 0.01f);
-    changed |= ImGui::DragFloat3("Rotation", &t.rotation.x, 0.5f);
-    changed |= ImGui::DragFloat3("Scale",    &t.scale.x,    0.01f, 0.001f);
-
-    if (changed)
-        t.SyncToMatrix();
-
     ImGui::End();
 }

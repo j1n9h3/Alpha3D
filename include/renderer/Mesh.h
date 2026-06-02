@@ -20,7 +20,7 @@ struct Vertex {
 
 class Mesh {
 public:
-    Mesh(float* vertices, unsigned int count); // for simple cube
+    Mesh(const float* vertices, unsigned int count); // for simple cube
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures); // for assimp
     ~Mesh();
 

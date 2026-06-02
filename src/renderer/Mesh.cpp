@@ -3,7 +3,7 @@
 
 #include "renderer/Mesh.h"
 
-Mesh::Mesh(float* vertices, unsigned int size) {
+Mesh::Mesh(const float* vertices, unsigned int size) {
 	vertex_count = size / (8 * sizeof(float)); // 每个顶点5个float (xyz + uv)
 
 	// VAO

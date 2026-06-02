@@ -18,7 +18,7 @@ public:
     void    ClearSelection();
     Entity* GetSelected();
 
-    void Render()            const;
+    void Render() const;
     void OnImGuiHierarchy();
     void OnImGuiProperties();
 
