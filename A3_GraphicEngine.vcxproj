@@ -30,6 +30,8 @@
     <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
+    <ClCompile Include="src\scene\Entity.cpp" />
+    <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="third_party\imgui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="third_party\imgui\backends\imgui_impl_opengl3.cpp" />
@@ -62,6 +64,9 @@
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />
+    <ClInclude Include="include\scene\Transform.h" />
+    <ClInclude Include="include\scene\Entity.h" />
+    <ClInclude Include="include\scene\Scene.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\diffuse.png" />

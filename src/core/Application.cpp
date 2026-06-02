@@ -24,6 +24,8 @@
 
 #include <ImGuizmo/ImGuizmo.h>
 
+#include "scene/Scene.h"
+
 
 int main()
 {
@@ -124,19 +126,26 @@ float vertices[] = {
     Editor editor(mainWindow.GetGLFWWindow());
 
     ImGuizmo::Style& style = ImGuizmo::GetStyle();
-    style.TranslationLineThickness = 10.0f;   // 轴线粗细
-    style.TranslationLineArrowSize = 16.0f;   // 箭头大小
-    style.RotationLineThickness = 10.0f;      // 旋转圆环粗细
+    style.TranslationLineThickness = 10.0f;
+    style.TranslationLineArrowSize = 16.0f;
+    style.RotationLineThickness = 10.0f;
 
-    style.ScaleLineThickness = 10.0f;         // 缩放线粗细
+    style.ScaleLineThickness = 10.0f;
 
     //std::string fontPath = std::string(std::getenv("WINDIR")) + "/Fonts/" + "JetBrains Mono/JetBrainsMono-Regular.ttf";
     std::string fontPath = "assets/fonts/JetBrainsMono-Regular.ttf";
 
     glEnable(GL_DEPTH_TEST);
 
-    glm::mat4 trans2 = glm::mat4(1.0f);
-    glm::mat4 trans3 = glm::mat4(1.0f);
+    Scene scene;
+    Entity& backpackEntity = scene.AddEntity("Backpack", &Backpack, &shader);
+    Entity& lightEntity    = scene.AddEntity("Light",    &cubeMesh, &lightShader);
+
+    lightEntity.GetTransform().position = glm::vec3(0.0f, 1.0f, 2.0f);
+    lightEntity.GetTransform().scale    = glm::vec3(0.2f);
+    lightEntity.GetTransform().SyncToMatrix();
+
+    scene.SetSelected(backpackEntity.GetID());
 
     while (!mainWindow.ShouldClose())
     {
@@ -145,7 +154,7 @@ float vertices[] = {
         ImGuizmo::BeginFrame();
         // input process
 
-        if (!editor.Hover()) {
+        if (!editor.Hover() && !ImGuizmo::IsUsing()) {
             camera.ProcessInput(mainWindow.GetGLFWWindow());
             mainWindow.ProcessKeyboardInput();
         }
@@ -159,51 +168,38 @@ float vertices[] = {
 
         // rendering
 
-
-        glm::mat4 trans = glm::mat4(1.0f);
+        glm::vec3 lightPos = lightEntity.GetTransform().position;
 
         lightShader.use();
-        lightShader.setMat4("view", camera.GetView());
+        lightShader.setMat4("view",       camera.GetView());
         lightShader.setMat4("projection", camera.GetProjection());
-        // light trans
-        glm::vec3 lightPos(0.0f, 1.0f, 2.0f);
-        glm::mat4 light_trans = glm::translate(trans, lightPos);
-        light_trans = glm::scale(light_trans, glm::vec3(0.2f));
-
-
-        lightShader.setMat4("model", light_trans);
-        cubeMesh.Draw();
-
 
         shader.use();
-        shader.setMat4("view", camera.GetView());
-        shader.setMat4("projection", camera.GetProjection());
-        shader.setVec3("light.ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-        shader.setVec3("light.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-        shader.setVec3("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setMat4("view",            camera.GetView());
+        shader.setMat4("projection",      camera.GetProjection());
+        shader.setVec3("light.ambient",   glm::vec3(0.2f, 0.2f, 0.2f));
+        shader.setVec3("light.diffuse",   glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setVec3("light.specular",  glm::vec3(1.0f, 1.0f, 1.0f));
+        shader.setVec3("objectColor",     glm::vec3(1.0f, 1.0f, 1.0f));
         shader.setFloat("material.shininess", 32.0f);
-
-        shader.setVec3("viewPos", camera.GetPosition());
-
-        ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
-
-        //ImGuizmo::SetPlaneLimit(0.0f);
-
-        ImGuizmo::Manipulate(
-            glm::value_ptr(camera.GetView()),
-            glm::value_ptr(camera.GetProjection()),
-            ImGuizmo::TRANSLATE,
-            ImGuizmo::WORLD,
-            glm::value_ptr(trans2)
-        );
-
-        shader.setMat4("model", trans2);
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(trans2)));
-        shader.setMat3("normalMatrix", normalMatrix);
-        
+        shader.setVec3("viewPos",  camera.GetPosition());
         shader.setVec3("lightPos", lightPos);
-        Backpack.Draw(shader);
+
+        Entity* selected = scene.GetSelected();
+        ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
+        if (selected) {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(camera.GetView()),
+                glm::value_ptr(camera.GetProjection()),
+                ImGuizmo::TRANSLATE,
+                ImGuizmo::WORLD,
+                glm::value_ptr(selected->GetTransform().matrix)
+            );
+        }
+
+        scene.Render();
+        scene.OnImGuiHierarchy();
+        scene.OnImGuiProperties();
 
         editor.EndFrame();
 
