@@ -29,6 +29,7 @@
 #include "scene/Scene.h"
 
 
+
 int main()
 {
     Log::Init();
@@ -132,16 +133,21 @@ int main()
         shader.setVec3("lightPos", lightPos);
 
 
-
         Entity* selected = scene.GetSelected();
         ImGuizmo::SetOrthographic(camera.IsOrtho());
         ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
         if (selected) {
+
+
+            float distance = glm::length(camera.GetPosition() - selected->GetTransform().position);
+            if (distance > 10.0f)
+                ImGuizmo::SetGizmoSizeClipSpace(1.0f / distance); // ¾àÀëÔ½Ô¶Ô½Ð¡
+
             ImGuizmo::Manipulate(
                 glm::value_ptr(camera.GetView()),
                 glm::value_ptr(camera.GetProjection()),
                 gizmoOp,
-                ImGuizmo::WORLD,
+                ImGuizmo::LOCAL,
                 glm::value_ptr(selected->GetTransform().matrix)
             );
         }
@@ -149,7 +155,7 @@ int main()
         scene.Render();
         //scene.OnImGuiHierarchy();
         //scene.OnImGuiProperties();
-        camera.OnImGuiCamera(gizmoOp);
+        editor.OnImGuiCamera(camera, gizmoOp);
 
         editor.EndFrame();
 

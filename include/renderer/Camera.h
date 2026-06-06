@@ -32,7 +32,6 @@ public:
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
 
-    void OnImGuiCamera(ImGuizmo::OPERATION& gizmoOp);
 private:
     void RebuildProjection();
 

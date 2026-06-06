@@ -1,6 +1,12 @@
 // Editor.cpp
 #include "core/Editor.h"
 
+#define NANOSVG_IMPLEMENTATION
+#include "nanosvg/nanosvg.h"
+
+#define NANOSVGRAST_IMPLEMENTATION
+#include "nanosvg/nanosvgrast.h"
+
 void SetupImGuiStyle()
 {
 	// Unreal style by dev0-1 from ImThemes
@@ -278,3 +284,101 @@ bool Editor::WantCaptureKeyboard() const
 {
     return ImGui::GetIO().WantCaptureKeyboard;
 }
+
+
+static GLuint LoadSVGIcon(const char* path, int w, int h) {
+	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
+	if (!image) return 0;
+
+	NSVGrasterizer* rast = nsvgCreateRasterizer();
+	unsigned char* pixels = new unsigned char[w * h * 4];
+	nsvgRasterize(rast, image, 0, 0, w / image->width, pixels, w, h, w * 4);
+
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	delete[] pixels;
+	nsvgDeleteRasterizer(rast);
+	nsvgDelete(image);
+	return texID;
+}
+
+
+
+void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+
+	m_IconTransform = LoadSVGIcon("assets/icons/camera.transform.svg", 64, 64);
+	m_IconRotate = LoadSVGIcon("assets/icons/camera.rotate.svg", 64, 64);
+	m_IconScale = LoadSVGIcon("assets/icons/camera.scale.svg", 64, 64);
+
+	float headbarWidth = viewport->Size.x / 3 * 2;
+	float menuBarHeight = ImGui::GetFrameHeight();
+
+	ImGui::SetNextWindowPos(ImVec2(
+		viewport->Pos.x + 2.0f,
+		viewport->Pos.y + menuBarHeight * 2 + 2.0f)
+	);
+
+	float menuBarH = ImGui::GetFrameHeight();
+	ImGui::SetNextWindowBgAlpha(0.0f);
+	constexpr ImGuiWindowFlags kToolbarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+	if (ImGui::Begin("##toolbar", nullptr, kToolbarFlags)) {
+
+		
+		auto modeBtn = [&](GLuint icon, const char* id, ImGuizmo::OPERATION op, bool last = false) {
+			bool active = (gizmoOp == op);
+			if (active)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+			else
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+			ImVec4 tint = active ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f)    // 激活：白色/原色
+				: ImVec4(0.5f, 0.5f, 0.5f, 1.0f);    // 未激活：变暗
+
+			if (ImGui::ImageButton(id, (ImTextureID)(intptr_t)icon, ImVec2(32, 32),
+				ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), tint))
+				gizmoOp = op;
+			
+			if (!last) ImGui::Dummy(ImVec2(0, 4.0f));
+
+			ImGui::PopStyleColor();
+			//ImGui::SameLine();
+		};
+
+		modeBtn(m_IconTransform, "##t", ImGuizmo::TRANSLATE);
+		modeBtn(m_IconRotate, "##r", ImGuizmo::ROTATE);
+		modeBtn(m_IconScale, "##s", ImGuizmo::SCALE, true);
+
+		//modeBtn("Rotate##r", ImGuizmo::ROTATE);
+		//modeBtn("Scale##s", ImGuizmo::SCALE);
+
+
+		/*const char* projLabel = camera.IsOrtho() ? "Ortho" : "Persp";
+		if (ImGui::Button(projLabel)) camera.SetOrtho(!camera.IsOrtho());
+
+
+		if (!camera.IsOrtho()) {
+			ImGui::SameLine();
+			float fov = camera.GetFov();
+			ImGui::SetNextItemWidth(140.0f);
+			if (ImGui::SliderFloat("FOV", &fov, 10.0f, 170.0f))
+				camera.SetFov(fov);
+		}*/
+
+	}
+	ImGui::PopStyleVar(3);
+	ImGui::End();
+}
+

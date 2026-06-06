@@ -3,6 +3,8 @@
 #include "core/WindowContext.h"
 #include "core/Log.h"
 
+
+
 void mouse_callback(GLFWwindow* glfw_window, double xpos, double ypos)
 {
     WindowContext* context = static_cast<WindowContext*>(glfwGetWindowUserPointer(glfw_window));
@@ -19,6 +21,7 @@ void mouse_callback(GLFWwindow* glfw_window, double xpos, double ypos)
 
     camera->ProcessMouseMovement(xpos, ypos);
 }
+
 
 void Camera::ProcessMouseMovement(float xpos, float ypos) {
 
@@ -142,72 +145,4 @@ void Camera::SetOrtho(bool isOrtho) {
 
 void Camera::ResetMouseState() {
     firstMouse = true;
-}
-
-
-void Camera::OnImGuiCamera(ImGuizmo::OPERATION& gizmoOp) {
-
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-
-
-    float headbarWidth = viewport->Size.x / 3 * 2;
-    float menuBarHeight = ImGui::GetFrameHeight();
-
-    ImGui::SetNextWindowPos(ImVec2(
-        viewport->Pos.x + 2.0f,
-        viewport->Pos.y + menuBarHeight * 2 + 2.0f)
-    );
-    //ImGui::SetNextWindowSize(ImVec2(
-    //    headbarWidth,
-    //    menuBarHeight * 2)
-    //);
-
-    float menuBarH = ImGui::GetFrameHeight();
-    ImGui::SetNextWindowBgAlpha(0.0f);
-    constexpr ImGuiWindowFlags kToolbarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoScrollbar |  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-    if (ImGui::Begin("##toolbar", nullptr, kToolbarFlags)) {
-
-        auto modeBtn = [&](const char* label, ImGuizmo::OPERATION op) {
-            bool active = (gizmoOp == op);
-            if (active) {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-            }
-            else {
-                ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Button);
-                color.x -= 0.2f;
-                color.y -= 0.2f;
-                color.z -= 0.2f;
-                color.w = 1.0f;
-                ImGui::PushStyleColor(ImGuiCol_Button, color);
-            }
-            if (ImGui::Button(label)) gizmoOp = op;
-            
-            ImGui::PopStyleColor();
-            
-        };
-        modeBtn("Translate##t", ImGuizmo::TRANSLATE);
-        modeBtn("Rotate##r", ImGuizmo::ROTATE);
-        modeBtn("Scale##s", ImGuizmo::SCALE);
-
-
-        const char* projLabel = this->IsOrtho() ? "Ortho" : "Persp";
-        if (ImGui::Button(projLabel)) this->SetOrtho(!this->IsOrtho());
-
-
-        if (!this->IsOrtho()) {
-            ImGui::SameLine();
-            float fov = this->GetFov();
-            ImGui::SetNextItemWidth(140.0f);
-            if (ImGui::SliderFloat("FOV", &fov, 10.0f, 170.0f))
-                this->SetFov(fov);
-        }
-
-    }
-    ImGui::PopStyleVar(3);
-    ImGui::End();
 }
