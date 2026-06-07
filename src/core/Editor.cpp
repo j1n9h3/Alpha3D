@@ -7,6 +7,31 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvg/nanosvgrast.h"
 
+
+static GLuint LoadSVGIcon(const char* path, int w, int h) {
+	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
+	if (!image) return 0;
+
+	NSVGrasterizer* rast = nsvgCreateRasterizer();
+	unsigned char* pixels = new unsigned char[w * h * 4];
+	nsvgRasterize(rast, image, 0, 0, w / image->width, pixels, w, h, w * 4);
+
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	delete[] pixels;
+	nsvgDeleteRasterizer(rast);
+	nsvgDelete(image);
+	return texID;
+}
+
+
+
 void SetupImGuiStyle()
 {
 	// Unreal style by dev0-1 from ImThemes
@@ -111,6 +136,10 @@ Editor::Editor(GLFWwindow* window)
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+	m_IconTransform = LoadSVGIcon("assets/icons/camera.transform.svg", 64, 64);
+	m_IconRotate = LoadSVGIcon("assets/icons/camera.rotate.svg", 64, 64);
+	m_IconScale = LoadSVGIcon("assets/icons/camera.scale.svg", 64, 64);
 
     float xscale, yscale;
     glfwGetWindowContentScale(window, &xscale, &yscale);
@@ -286,28 +315,6 @@ bool Editor::WantCaptureKeyboard() const
 }
 
 
-static GLuint LoadSVGIcon(const char* path, int w, int h) {
-	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
-	if (!image) return 0;
-
-	NSVGrasterizer* rast = nsvgCreateRasterizer();
-	unsigned char* pixels = new unsigned char[w * h * 4];
-	nsvgRasterize(rast, image, 0, 0, w / image->width, pixels, w, h, w * 4);
-
-	GLuint texID;
-	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	delete[] pixels;
-	nsvgDeleteRasterizer(rast);
-	nsvgDelete(image);
-	return texID;
-}
-
 
 
 void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
@@ -317,10 +324,6 @@ void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-
-	m_IconTransform = LoadSVGIcon("assets/icons/camera.transform.svg", 64, 64);
-	m_IconRotate = LoadSVGIcon("assets/icons/camera.rotate.svg", 64, 64);
-	m_IconScale = LoadSVGIcon("assets/icons/camera.scale.svg", 64, 64);
 
 	float headbarWidth = viewport->Size.x / 3 * 2;
 	float menuBarHeight = ImGui::GetFrameHeight();

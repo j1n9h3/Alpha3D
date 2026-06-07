@@ -17,20 +17,19 @@ aiString Texture::GetTexName() {
     return this->mName;
 }
 
-unsigned int TextureFromFile(const char* tex_name, const std::string& directory)
+unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
 {
-    std::string filePath = std::string(tex_name);
-    filePath = directory + '/' + filePath;
+    std::string targetPath = dirPath + '/' + std::string(texName);
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
+    stbi_set_flip_vertically_on_load(false);
+    unsigned char* data = stbi_load(targetPath.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum format = GL_RGB;
         if (nrComponents == 1)
             format = GL_RED;
         else if (nrComponents == 3)
@@ -47,14 +46,12 @@ unsigned int TextureFromFile(const char* tex_name, const std::string& directory)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        LOG_INFO(Texture, "Texture loaded at path {}", filePath);
-
+        LOG_INFO(Texture, "Texture loaded at path {}", targetPath);
         stbi_image_free(data);
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << tex_name << std::endl;
-        LOG_ERROR(Texture, "Texture failed to load at path {}", filePath);
+        LOG_ERROR(Texture, "Texture {} failed to load at path {}", texName, targetPath);
         stbi_image_free(data);
     }
 

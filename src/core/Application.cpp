@@ -47,14 +47,10 @@ int main()
 
     Mesh cubeMesh = Primitive::Cube();
 
-    Texture wallTexture("textures/wall.jpg");
-    Texture diffuseTexture("textures/diffuse.png");
-    Texture specularTexture("textures/specular.png");
-
     //Model Backpack(model_path.c_str());
     std::string project_path = "C:/Users/17912/Projects/GraphicEngine/A3_GraphicEngine";
-    std::string model_path = project_path + "/" + "models/Backpack/backpack.obj";
-    Model Backpack(model_path.c_str());
+    std::string model_path = project_path + "/" + "models/lemon_4k/lemon_4k.gltf";
+    Model Lemon(model_path.c_str());
 
     Shader shader("shaders/light_obj.vert", "shaders/light_obj.frag");
     Shader lightShader("shaders/light.vert", "shaders/light.frag");
@@ -77,20 +73,19 @@ int main()
 
     style.ScaleLineThickness = 10.0f;
 
-    //std::string fontPath = std::string(std::getenv("WINDIR")) + "/Fonts/" + "JetBrains Mono/JetBrainsMono-Regular.ttf";
-    std::string fontPath = "assets/fonts/JetBrainsMono-Regular.ttf";
-
     glEnable(GL_DEPTH_TEST);
 
     Scene scene;
-    Entity& backpackEntity = scene.AddEntity("Backpack", &Backpack, &shader);
-    Entity& lightEntity    = scene.AddEntity("Light",    &cubeMesh, &lightShader);
+    Entity& lemonEntity = scene.AddEntity("Lemon", &Lemon, &shader);
+    float theScale = 20.0f;
+    lemonEntity.SetScale(glm::vec3(theScale, theScale, theScale));
+    Entity& light = scene.AddEntity("Light", &cubeMesh, &lightShader);
 
-    lightEntity.GetTransform().position = glm::vec3(0.0f, 1.0f, 2.0f);
-    lightEntity.GetTransform().scale = glm::vec3(0.2f);
-    lightEntity.GetTransform().SyncToMatrix();
+    light.GetTransform().position = glm::vec3(0.0f, 1.0f, 2.0f);
+    light.GetTransform().scale = glm::vec3(0.2f);
+    light.GetTransform().SyncToMatrix();
 
-    scene.SetSelected(backpackEntity.GetID());
+    scene.SetSelected(lemonEntity.GetID());
 
     ImGuizmo::OPERATION gizmoOp = ImGuizmo::TRANSLATE;
 
@@ -115,7 +110,7 @@ int main()
 
         // rendering
 
-        glm::vec3 lightPos = lightEntity.GetTransform().position;
+        glm::vec3 lightPos = light.GetTransform().position;
 
         lightShader.use();
         lightShader.setMat4("view",       camera.GetView());
@@ -137,8 +132,6 @@ int main()
         ImGuizmo::SetOrthographic(camera.IsOrtho());
         ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
         if (selected) {
-
-
             float distance = glm::length(camera.GetPosition() - selected->GetTransform().position);
             if (distance > 10.0f)
                 ImGuizmo::SetGizmoSizeClipSpace(1.0f / distance); // æ‡¿Î‘Ω‘∂‘Ω–°
@@ -153,8 +146,6 @@ int main()
         }
 
         scene.Render();
-        //scene.OnImGuiHierarchy();
-        //scene.OnImGuiProperties();
         editor.OnImGuiCamera(camera, gizmoOp);
 
         editor.EndFrame();
