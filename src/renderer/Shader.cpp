@@ -2,25 +2,21 @@
 
 std::string ReadFromShader(const char* shaderpath) {
     std::string shaderCode;
+    std::ifstream shaderFile;
+    shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
     {
-        // open file
-        std::ifstream shaderFile;
-        shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         shaderFile.open(shaderpath);
         std::stringstream shaderStream;
-        // read file
         shaderStream << shaderFile.rdbuf();
-        // close file
         shaderFile.close();
-        // convert data to string
         shaderCode = shaderStream.str();
+        LOG_INFO(Shader, "Suceess import shader: {}.", shaderpath);
     }
-    catch (std::ifstream::failure e)
+    catch (std::ifstream::failure& e)
     {
-        LOG_ERROR(Shader, "Failed when reading shader file: {}!", shaderpath);
+        LOG_ERROR(Shader, "Failed to read shader file: {}! {}", shaderpath, e.what());
     }
-    LOG_INFO(Shader, "Suceess import shader: {}.", shaderpath);
     return shaderCode;
 }
 
@@ -40,9 +36,11 @@ unsigned int CompileShader(const char* shaderCode, const char* shaderpath, GLenu
     if (!success)
     {
         glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Failed when compiling vertex shader: {}!", shaderpath);
-    };
-    LOG_INFO(Shader, "Suceess compile vertex shader: {}.", shaderpath);
+        LOG_ERROR(Shader, "Failed to compile shader: {}!", shaderpath);
+    }
+    else {
+        LOG_INFO(Shader, "Successfully compiled shader: {}.", shaderpath);
+    }
     return shaderId;
 }
 
@@ -60,9 +58,11 @@ unsigned int LinkShader(
     if (!success)
     {
         glGetProgramInfoLog(programId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Failed when linking shaders: {}, {}.", vShaderPath, fShaderPath);
+        LOG_ERROR(Shader, "Failed to link shaders: {}, {}.", vShaderPath, fShaderPath);
     }
-    LOG_INFO(Shader, "Success linking shaders: {} and {}.", vShaderPath, fShaderPath);
+    else {
+        LOG_INFO(Shader, "Successfully linked shaders: {} and {}.", vShaderPath, fShaderPath);
+    }
     glDeleteShader(vShaderId);
     glDeleteShader(fShaderId);
     return programId;

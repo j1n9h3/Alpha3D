@@ -25,6 +25,9 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
                 break;
             }
         }
+
+        LOG_INFO(Model, "Loading Model Texture '{}'", std::string(tex_name.C_Str()));
+
         if (!skip)
         {
             Texture texture(tex_name, this->directory, typeName);
@@ -42,7 +45,19 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
-    
+
+    if (mesh->mMaterialIndex >= 0) {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        for (int t = 0; t < AI_TEXTURE_TYPE_MAX; t++) {
+            int count = material->GetTextureCount((aiTextureType)t);
+            if (count > 0) {
+                aiString path;
+                material->GetTexture((aiTextureType)t, 0, &path);
+                LOG_INFO(Model, "Consists texture type: {}: {}", t, path.C_Str());
+            }
+        }
+    }
+
     // vao vertex processing
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -76,6 +91,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
 
+        if (mesh->mTangents) {
+            vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+        }
+
         // adding vertex
         vertices.push_back(vertex);
     }
@@ -95,11 +114,14 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+        std::vector<Texture> albedoMaps = loadMaterialTextures(material, aiTextureType_BASE_COLOR, "albedo");
+        textures.insert(textures.end(), albedoMaps.begin(), albedoMaps.end());
 
-        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "normal");
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+        std::vector<Texture> roughnessMap = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
+        textures.insert(textures.end(), roughnessMap.begin(), roughnessMap.end());
     }
 
     //return Mesh(vertices, indices, textures);
@@ -123,7 +145,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {

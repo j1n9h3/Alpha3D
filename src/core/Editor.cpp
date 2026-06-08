@@ -137,6 +137,7 @@ Editor::Editor(GLFWwindow* window)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
+	m_IconView = LoadSVGIcon("assets/icons/camera.view.svg", 64, 64);
 	m_IconTransform = LoadSVGIcon("assets/icons/camera.transform.svg", 64, 64);
 	m_IconRotate = LoadSVGIcon("assets/icons/camera.rotate.svg", 64, 64);
 	m_IconScale = LoadSVGIcon("assets/icons/camera.scale.svg", 64, 64);
@@ -354,12 +355,13 @@ void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
 				ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), tint))
 				gizmoOp = op;
 			
-			if (!last) ImGui::Dummy(ImVec2(0, 4.0f));
+			//if (!last) ImGui::Dummy(ImVec2(0, 4.0f));
 
 			ImGui::PopStyleColor();
 			//ImGui::SameLine();
 		};
 
+		modeBtn(m_IconView, "##view", GIZMO_NONE);
 		modeBtn(m_IconTransform, "##t", ImGuizmo::TRANSLATE);
 		modeBtn(m_IconRotate, "##r", ImGuizmo::ROTATE);
 		modeBtn(m_IconScale, "##s", ImGuizmo::SCALE, true);
@@ -385,3 +387,53 @@ void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
 	ImGui::End();
 }
 
+
+
+void Editor::OnImGuiScene(Scene& scene) {
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(
+		ImVec2(viewport->Pos.x, viewport->Pos.y + 40.0f),
+		ImGuiCond_FirstUseEver
+	);
+	ImGui::SetNextWindowSize(ImVec2(260.0f, viewport->Size.y - 40.0f), ImGuiCond_FirstUseEver);
+
+	ImGui::Begin("Panel", nullptr, ImGuiWindowFlags_NoCollapse);
+
+	// ©¤©¤ Hierarchy ©¤©¤
+	if (ImGui::CollapsingHeader("Objects", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (auto& entityPtr : scene.GetEntities()) {
+			Entity* e = entityPtr.get();
+			Entity* sel = scene.GetSelected();
+			bool isSelected = sel && (sel->GetID() == e->GetID());
+			ImGuiTreeNodeFlags flags =
+				ImGuiTreeNodeFlags_Leaf |
+				ImGuiTreeNodeFlags_NoTreePushOnOpen |
+				(isSelected ? ImGuiTreeNodeFlags_Selected : 0);
+			ImGui::TreeNodeEx((void*)(intptr_t)e->GetID(), flags, "%s", e->GetName().c_str());
+			if (ImGui::IsItemClicked())
+				scene.SetSelected(e->GetID());
+		}
+	}
+
+	// ©¤©¤ Properties ©¤©¤
+	if (ImGui::CollapsingHeader("Properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Entity* sel = scene.GetSelected();
+		if (!sel) {
+			ImGui::TextDisabled("No entity selected.");
+		}
+		else {
+			ImGui::Text("%s", sel->GetName().c_str());
+			ImGui::Separator();
+			Transform& t = sel->GetTransform();
+			t.SyncFromMatrix();
+			bool changed = false;
+			changed |= ImGui::DragFloat3("Position", &t.position.x, 0.01f);
+			changed |= ImGui::DragFloat3("Rotation", &t.rotation.x, 0.5f);
+			changed |= ImGui::DragFloat3("Scale", &t.scale.x, 0.01f, 0.001f);
+			if (changed)
+				t.SyncToMatrix();
+		}
+	}
+
+	ImGui::End();
+}

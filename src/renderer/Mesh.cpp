@@ -60,6 +60,9 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	// texcoords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+	// tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
 
 	glBindVertexArray(0);
 }
@@ -82,21 +85,22 @@ void Mesh::Draw() {
 
 void Mesh::Draw(Shader& shader)
 {
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
+	unsigned int albedoNr = 1;
+	unsigned int roughnessNr = 1;
+	unsigned int normalNr = 1;
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); 
 		std::string number;
-		std::string name = textures[i].GetTexName().C_Str(); 
-		name = name.substr(0, name.find_last_of('.'));  // "diffuse.jpg" to "diffuse"
-		if (name == "diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (name == "specular")
-			number = std::to_string(specularNr++);
+		std::string type = textures[i].GetType(); 
+		if (type == "albedo")
+			number = std::to_string(albedoNr++);
+		else if (type == "roughness")
+			number = std::to_string(roughnessNr++);
+		else if (type == "normal")
+			number = std::to_string(normalNr++);
 
-		shader.setInt(("material." + name + number).c_str(), i);
-		// LOG_INFO(Shader, "Setting texture to object: {}", "material." + name + number);
+		shader.setInt(("material." + type + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].GetId());
 	}
 	glActiveTexture(GL_TEXTURE0);

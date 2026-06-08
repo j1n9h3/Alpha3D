@@ -17,8 +17,12 @@ public:
     Texture(aiString, const std::string&, const std::string&);
 
     ~Texture();
-    aiString GetTexName();
-    unsigned int GetId();
+
+    unsigned int GetId() { return mId; }
+    unsigned int GetId() const { return mId; }
+    aiString           GetTexName()const { return mName; }
+    const std::string& GetType()   const { return mType; }
+
     void Bind(unsigned int slot = 0);
 private:
     unsigned int mId;

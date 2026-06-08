@@ -52,7 +52,7 @@ int main()
     std::string model_path = project_path + "/" + "models/lemon_4k/lemon_4k.gltf";
     Model Lemon(model_path.c_str());
 
-    Shader shader("shaders/light_obj.vert", "shaders/light_obj.frag");
+    Shader shader("shaders/pbr.vert", "shaders/pbr.frag");
     Shader lightShader("shaders/light.vert", "shaders/light.frag");
     Shader ourShader("shaders/phong.vert", "shaders/phong.frag");
 
@@ -127,7 +127,6 @@ int main()
         shader.setVec3("viewPos",  camera.GetPosition());
         shader.setVec3("lightPos", lightPos);
 
-
         Entity* selected = scene.GetSelected();
         ImGuizmo::SetOrthographic(camera.IsOrtho());
         ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
@@ -136,18 +135,20 @@ int main()
             if (distance > 10.0f)
                 ImGuizmo::SetGizmoSizeClipSpace(1.0f / distance); // ¾àÀëÔ½Ô¶Ô½Ð¡
 
-            ImGuizmo::Manipulate(
-                glm::value_ptr(camera.GetView()),
-                glm::value_ptr(camera.GetProjection()),
-                gizmoOp,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(selected->GetTransform().matrix)
-            );
+            if (gizmoOp != editor.GetGizmoNone()) {
+                ImGuizmo::Manipulate(
+                    glm::value_ptr(camera.GetView()),
+                    glm::value_ptr(camera.GetProjection()),
+                    gizmoOp,
+                    ImGuizmo::LOCAL,
+                    glm::value_ptr(selected->GetTransform().matrix)
+                );
+            }
         }
 
         scene.Render();
         editor.OnImGuiCamera(camera, gizmoOp);
-
+        editor.OnImGuiScene(scene);
         editor.EndFrame();
 
         // check events

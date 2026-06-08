@@ -22,6 +22,8 @@ public:
     void OnImGuiHierarchy();
     void OnImGuiProperties();
 
+    const std::vector<std::unique_ptr<Entity>>& GetEntities() const { return m_Entities; }
+
 private:
     std::vector<std::unique_ptr<Entity>> m_Entities;
     uint32_t m_SelectedID = 0;

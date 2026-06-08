@@ -9,14 +9,6 @@
 #include "stb/stb_image.h"
 
 
-unsigned int Texture::GetId() {
-    return this->mId;
-}
-
-aiString Texture::GetTexName() {
-    return this->mName;
-}
-
 unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
 {
     std::string targetPath = dirPath + '/' + std::string(texName);
