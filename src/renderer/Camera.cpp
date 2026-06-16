@@ -79,9 +79,17 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         this->firstMouse = true;
     }
+
+    this->direction = glm::normalize(direction);
+
+    // 加这两行
+    glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->right = glm::normalize(glm::cross(this->direction, world_up));
+    this->up = glm::normalize(glm::cross(this->right, this->direction));
+    this->view = glm::lookAt(position, position + direction, up);
 }
 
-Camera::Camera(float fov, Window& window) {
+Camera::Camera(float fov, Window& window, glm::vec3 position, glm::vec3 target) {
 
     float aspectRatio = window.GetAspectRatio();
     float window_width = window.GetWidth(), window_height = window.GetHeight();
@@ -91,12 +99,15 @@ Camera::Camera(float fov, Window& window) {
     m_Fov         = fov;
     m_AspectRatio = aspectRatio;
 
-    position  = glm::vec3(0.0f, 0.0f, 3.0f);
-    direction = glm::vec3(0.0f, 0.0f, -1.0f);
+    this->position = position;
+    glm::vec3 front = glm::normalize(target - this->position);
+    this->direction = front;
+    this->yaw = glm::degrees(atan2(front.z, front.x));
+    this->pitch = glm::degrees(asin(front.y));
 
     glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
-    right = glm::normalize(glm::cross(world_up, direction));
-    up    = glm::cross(direction, right);
+    right = glm::normalize(glm::cross(direction, world_up));
+    up    = glm::normalize(glm::cross(right, direction));
 
     this->lastX = window_width / 2;
     this->lastY = window_height / 2;
@@ -105,17 +116,6 @@ Camera::Camera(float fov, Window& window) {
     RebuildProjection();
 }
 
-glm::vec3 Camera::GetPosition() {
-    return position;
-}
-
-glm::mat4 Camera::GetView() {
-    return view;
-}
-
-glm::mat4 Camera::GetProjection() {
-    return projection;
-}
 
 void Camera::RebuildProjection() {
     if (m_IsOrtho)

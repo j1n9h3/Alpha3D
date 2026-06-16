@@ -122,6 +122,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
         std::vector<Texture> roughnessMap = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
         textures.insert(textures.end(), roughnessMap.begin(), roughnessMap.end());
+
+        std::vector<Texture> emissiveMap = loadMaterialTextures(material, aiTextureType_EMISSIVE, "emissive");
+        textures.insert(textures.end(), emissiveMap.begin(), emissiveMap.end());
     }
 
     //return Mesh(vertices, indices, textures);

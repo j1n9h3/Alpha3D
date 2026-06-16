@@ -9,7 +9,7 @@
 #include "stb/stb_image.h"
 
 
-unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
+unsigned int TextureFromFile(const char* texName, const std::string& dirPath, bool isHDR)
 {
     std::string targetPath = dirPath + '/' + std::string(texName);
 
@@ -21,20 +21,26 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
     unsigned char* data = stbi_load(targetPath.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format = GL_RGB;
+        GLenum format1 = GL_RGB, format2 = GL_RGB;
+        GLenum repeat = GL_REPEAT;
         if (nrComponents == 1)
-            format = GL_RED;
+            format1 = GL_RED, format2 = GL_RED;
         else if (nrComponents == 3)
-            format = GL_RGB;
+            format1 = GL_RGB, format2 = GL_RGB;
         else if (nrComponents == 4)
-            format = GL_RGBA;
+            format1 = GL_RGBA, format2 = GL_RGB;
+
+        if (isHDR) {
+            format1 = GL_RGB16F, format2 = GL_RGB;
+            repeat = GL_CLAMP_TO_EDGE;
+        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, format1, width, height, 0, format2, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -50,9 +56,9 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
     return textureID;
 }
 
-Texture::Texture(aiString tex_name, const std::string& directory, const std::string& typeName) {
+Texture::Texture(aiString tex_name, const std::string& directory, const std::string& typeName, bool isHDR) {
     this->mId = 0;
-    this->mId = TextureFromFile(tex_name.C_Str(), directory);
+    this->mId = TextureFromFile(tex_name.C_Str(), directory, isHDR);
     this->mType = typeName;
     this->mName = tex_name.C_Str();
 }

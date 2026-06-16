@@ -10,7 +10,6 @@
 #include "renderer/Camera.h"
 #include "scene/Scene.h"
 
-
 class Editor {
 public:
     Editor(GLFWwindow* window);
@@ -25,7 +24,10 @@ public:
     ImGuizmo::OPERATION GetGizmoNone() { return GIZMO_NONE; };
 
     void OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp);
-    void OnImGuiScene(Scene& scene);
+    void OnImGuiScene(Scene& scene, bool& wireframe);
+    void OnImGuiPBR(float& roughness, float& metallic);
+
+    void OnImGuiLight(glm::vec3& ambient, float& intensity, glm::vec3& lightColor, bool& lightOn);
 private:
     const ImGuizmo::OPERATION GIZMO_NONE = (ImGuizmo::OPERATION)0;
     float mainMenuBarHeight = 10.0f;

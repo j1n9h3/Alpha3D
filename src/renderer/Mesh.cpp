@@ -79,7 +79,14 @@ void Mesh::Bind() {
 
 void Mesh::Draw() {
 	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertex_count);
+
+	if (indices.empty()) {
+		glDrawArrays(GL_TRIANGLES, 0, vertex_count);        // Cube 走这里
+	}
+	else {
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Sphere 走这里
+	}
+
 	glBindVertexArray(0);
 }
 
@@ -88,6 +95,7 @@ void Mesh::Draw(Shader& shader)
 	unsigned int albedoNr = 1;
 	unsigned int roughnessNr = 1;
 	unsigned int normalNr = 1;
+	unsigned int emissiveNr = 1;
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); 
@@ -99,6 +107,8 @@ void Mesh::Draw(Shader& shader)
 			number = std::to_string(roughnessNr++);
 		else if (type == "normal")
 			number = std::to_string(normalNr++);
+		else if (type == "emissive")
+			number = std::to_string(emissiveNr++);
 
 		shader.setInt(("material." + type + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].GetId());

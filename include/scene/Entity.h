@@ -54,5 +54,5 @@ private:
     Model* m_Model = nullptr;
     Mesh* m_Mesh = nullptr;
     Shader* m_Shader = nullptr;
-    bool        m_Visible = true;
+    bool m_Visible = true;
 };

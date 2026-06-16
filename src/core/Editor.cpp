@@ -173,130 +173,34 @@ void Editor::BeginFrame()
 	ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
+	ImGui::Begin("Panel");
 
-	ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.11f, 0.11f, 0.11f, 1.00f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-
-    if (ImGui::BeginMainMenuBar())
-    {
-		ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, 3.0f);
-		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.30f, 0.30f, 0.30f, 1.00f));
-		ImGui::PushStyleColor(ImGuiStyleVar_TabBorderSize, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("Open")) {}
-            if (ImGui::MenuItem("Save")) {}
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo")) {}
-            ImGui::EndMenu();
-        }
-		if (ImGui::BeginMenu("Render"))
-		{
-			if (ImGui::MenuItem("Undo")) {}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Window"))
-		{
-			if (ImGui::MenuItem("Undo")) {}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Help"))
-		{
-			if (ImGui::MenuItem("Undo")) {}
-			ImGui::EndMenu();
-		}
-
-		ImGui::PopStyleColor(2);
-		ImGui::PopStyleVar();
-
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.0f);
-
-		static int active_tab = 0;
-
-		auto tab_item = [&](const char* label, int index) {
-			ImGui::PushStyleColor(ImGuiCol_Text, active_tab == index
-				? ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
-				: ImVec4(0.65f, 0.65f, 0.65f, 1.0f));
-			if (ImGui::BeginTabItem(label)) {
-				active_tab = index;
-				ImGui::EndTabItem();
-			}
-			ImGui::PopStyleColor();
-			};
-
-
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(24.0f, 4.0f));
-		if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_None))
-		{
-			tab_item("testA", 0);
-			tab_item("testB", 1);
-			tab_item("testC", 2);
-			tab_item("testD", 3);
-			tab_item("testE", 4);
-			tab_item("testF", 5);
-			ImGui::EndTabBar();
-		}
-		ImGui::PopStyleVar();
-
-
-		ImGui::EndMainMenuBar();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleVar();
-
-		////////////////////////////////////////////
-
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-
-		float headbarWidth = viewport->Size.x;
-		float menuBarHeight = ImGui::GetFrameHeight();
-
-		ImGui::SetNextWindowPos(ImVec2(
-			viewport->Pos.x,
-			viewport->Pos.y + menuBarHeight)
-		);
-
-		ImGui::SetNextWindowSize(ImVec2(
-			headbarWidth,
-			0
-		));
-
-		constexpr ImGuiWindowFlags kToolbarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+	if (ImGui::CollapsingHeader("Program Info", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("%s", glGetString(GL_RENDERER));
 		
-		const char* labels[] = { "testG", "testH", "testI", "testK", "testL", "testO" };
+		static float fpsHistory[100] = {};
+		static int fpsIndex = 0;
+		fpsHistory[fpsIndex++ % 100] = ImGui::GetIO().Framerate;
+		ImGui::PlotLines("FPS", fpsHistory, 100, fpsIndex, nullptr, 0, 200);
 
-		if (ImGui::Begin("##menu2", nullptr, kToolbarFlags)) {
-			
-			for (int i = 0; i < 6; i++) {
-				if (i > 0) ImGui::SameLine();
-				ImGui::PushID(i);
+		float avgFps = 0;
+		for (float f : fpsHistory) avgFps += f;
+		avgFps /= 100;
+		ImGui::Text("FPS: %.1f", avgFps);
 
-				bool is_active = active_tab == i;
+		ImGui::Text("Program Running Time: %.1f s", (float)glfwGetTime());
 
-				ImGui::PushStyleColor(ImGuiCol_Button, is_active
-					? ImVec4(0.30f, 0.30f, 0.30f, 1.0f)
-					: ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.30f, 0.30f, 0.30f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
-
-				if (ImGui::Button(labels[i]))
-					active_tab = i;
-
-				ImGui::PopStyleColor(3);
-				ImGui::PopID();
-			}
-
+		GLint totalMem = 0, availMem = 0;
+		glGetIntegerv(0x9048, &totalMem);
+		glGetIntegerv(0x9049, &availMem);
+		if (totalMem > 0) {
+			ImGui::Text("VRAM: %.1f / %.1f GB", ((float)totalMem - availMem) / (1024 * 1024), (float)totalMem / (1024 * 1024));
 		}
-
-		ImGui::End();
-    }
+		else {
+			ImGui::Text("VRAM: N/A");
+		}
+	}
+	ImGui::End();
 }
 
 void Editor::EndFrame()
@@ -331,7 +235,7 @@ void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
 
 	ImGui::SetNextWindowPos(ImVec2(
 		viewport->Pos.x + 2.0f,
-		viewport->Pos.y + menuBarHeight * 2 + 2.0f)
+		viewport->Pos.y)
 	);
 
 	float menuBarH = ImGui::GetFrameHeight();
@@ -388,19 +292,36 @@ void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
 }
 
 
+void Editor::OnImGuiLight(glm::vec3& ambient, float& intensity, glm::vec3& lightColor, bool& lightOn)
+{
+	ImGui::Begin("Panel");
 
-void Editor::OnImGuiScene(Scene& scene) {
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(
-		ImVec2(viewport->Pos.x, viewport->Pos.y + 40.0f),
-		ImGuiCond_FirstUseEver
-	);
-	ImGui::SetNextWindowSize(ImVec2(260.0f, viewport->Size.y - 40.0f), ImGuiCond_FirstUseEver);
+	if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Checkbox("Light On", &lightOn);
 
+		if (lightOn) {
+			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
+			ImGui::ColorEdit3("Light Color", glm::value_ptr(lightColor));
+			ImGui::SliderFloat("Light Intensity", &intensity, 0.0f, 300.0f);
+		}
+	}
+	ImGui::End();
+}
+
+
+void Editor::OnImGuiScene(Scene& scene, bool& wireframe) {
 	ImGui::Begin("Panel", nullptr, ImGuiWindowFlags_NoCollapse);
 
-	// ©¤©¤ Hierarchy ©¤©¤
-	if (ImGui::CollapsingHeader("Objects", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+		ImGui::SeparatorText("Draw Mode");
+		if (ImGui::Checkbox("Wireframe", &wireframe)) {
+			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+		}
+		
+		ImGui::Separator();
+
+		ImGui::SeparatorText("Hierarchy");
 		for (auto& entityPtr : scene.GetEntities()) {
 			Entity* e = entityPtr.get();
 			Entity* sel = scene.GetSelected();
@@ -415,8 +336,7 @@ void Editor::OnImGuiScene(Scene& scene) {
 		}
 	}
 
-	// ©¤©¤ Properties ©¤©¤
-	if (ImGui::CollapsingHeader("Properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
 		Entity* sel = scene.GetSelected();
 		if (!sel) {
 			ImGui::TextDisabled("No entity selected.");
@@ -435,5 +355,15 @@ void Editor::OnImGuiScene(Scene& scene) {
 		}
 	}
 
+	ImGui::End();
+}
+
+void Editor::OnImGuiPBR(float& roughness, float& metallic) {
+	ImGui::Begin("Panel");
+
+	if (ImGui::CollapsingHeader("PBR", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::SliderFloat("PBR roughness", &roughness, 0.1f, 1.0f);
+		ImGui::SliderFloat("PBR metallic", &metallic, 0.0f, 1.0f);
+	}
 	ImGui::End();
 }

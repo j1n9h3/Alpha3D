@@ -1,13 +1,6 @@
 ﻿#version 330 core
 #define PI 3.14159265358979323846
 // material
-struct Material {
-    sampler2D albedo1;
-    sampler2D roughness1;
-    sampler2D normal1;
-}; 
-
-uniform Material material;
 
 // light
 struct Light {
@@ -20,19 +13,24 @@ uniform Light light;
 
 out vec4 FragColor;
 
+uniform vec3 baseColor;
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
+
+uniform float roughness;
+uniform float metallic;
 
 in mat3 TBN;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
-uniform vec3 F0; //frenel
-
 float calculateAttenuation(float distance){
-    return 1.0 / (distance * distance);
+    float constant  = 1.0;
+    float linear    = 0.09;
+    float quadratic = 0.032;
+    return 1.0 / (constant + linear * distance + quadratic * distance * distance);
 }
 
 float NDF_GGX(float roughness, vec3 normal, vec3 half_dir){
@@ -63,13 +61,9 @@ vec3 BRDF_CookTorrance(float ndf, vec3 fresnel, float geo, vec3 view_dir, vec3 l
 
 void main()
 {
-    vec3 albedo = pow(texture(material.albedo1, TexCoords).rgb, vec3(2.2));
-    vec3 normal = texture(material.normal1, TexCoords).rgb;
-    normal = normal * 2.0 - 1.0;
-    normal = normalize(TBN * normal);
+    vec3 albedo = baseColor;
+    vec3 normal = normalize(Normal);
 
-
-    float roughness = texture(material.roughness1, TexCoords).g;
     float shininess = mix(256.0, 2.0, roughness);
 
     vec3 light_dir = normalize(lightPos - FragPos);
@@ -84,6 +78,7 @@ void main()
     float NdotL = max(dot(normal, light_dir), 0.0);
     float HdotV = max(dot(half_dir, view_dir), 0.0);
 
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
     vec3 fresnel = F0 + (1.0 - F0) * pow(1.0 - HdotV, 5.0);
 
     float ndf_ggx = NDF_GGX(roughness, normal, half_dir);
@@ -93,7 +88,6 @@ void main()
 
     // pbr diffuse
     vec3 BRDF_diffuse = albedo / PI * (1 - fresnel);
-
 
     float distance = length(lightPos - FragPos);
     float attenuation = calculateAttenuation(distance);

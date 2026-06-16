@@ -14,7 +14,7 @@
 class Texture {
 public:
     Texture(const std::string&);
-    Texture(aiString, const std::string&, const std::string&);
+    Texture(aiString, const std::string&, const std::string&, bool isHDR = false);
 
     ~Texture();
 
@@ -22,7 +22,7 @@ public:
     unsigned int GetId() const { return mId; }
     aiString           GetTexName()const { return mName; }
     const std::string& GetType()   const { return mType; }
-
+    unsigned int LoadHDR(const std::string& path);
     void Bind(unsigned int slot = 0);
 private:
     unsigned int mId;

@@ -19,6 +19,7 @@ void Entity::Draw() const {
         m_Shader->setMat3("normalMatrix", m_Transform.GetNormalMatrix());
         m_Model->Draw(*m_Shader);
     } else if (m_Mesh) {
+        m_Shader->setMat3("normalMatrix", m_Transform.GetNormalMatrix());
         m_Mesh->Draw();
     }
 }

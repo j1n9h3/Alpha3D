@@ -14,12 +14,13 @@
 
 class Camera {
 public:
-    Camera(float fov, Window& window);
+    Camera(float fov, Window& window,
+        glm::vec3 position = glm::vec3(-2.0f, 0.0f, 0.0f),
+        glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f)
+    );
 
-    glm::mat4 GetView();
     bool SetView();
 
-    glm::mat4 GetProjection();
     void SetProjection(float fov, float aspectRatio);
 
     float GetFov()    const { return m_Fov; }
@@ -27,8 +28,13 @@ public:
     void  SetFov(float fov);
     void  SetOrtho(bool isOrtho);
 
-    glm::vec3 GetPosition();
+    void SetPosition(const glm::vec3& position) { this->position = position; }
     void ResetMouseState();
+
+    glm::vec3 GetPosition() { return position; }
+    glm::mat4 GetView() { return view; }
+    glm::mat4 GetProjection() { return projection; }
+    
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
 
