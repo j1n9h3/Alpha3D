@@ -11,11 +11,11 @@ std::string ReadFromShader(const char* shaderpath) {
         shaderStream << shaderFile.rdbuf();
         shaderFile.close();
         shaderCode = shaderStream.str();
-        LOG_INFO(Shader, "Suceess import shader: {}.", shaderpath);
+        LOG_INFO(Shader, "Shader readed: {}.", shaderpath);
     }
     catch (std::ifstream::failure& e)
     {
-        LOG_ERROR(Shader, "Failed to read shader file: {}! {}", shaderpath, e.what());
+        LOG_ERROR(Shader, "Shader reading failed: {} {}", shaderpath, e.what());
     }
     return shaderCode;
 }
@@ -36,10 +36,10 @@ unsigned int CompileShader(const char* shaderCode, const char* shaderpath, GLenu
     if (!success)
     {
         glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Failed to compile shader: {}!", shaderpath);
+        LOG_ERROR(Shader, "Shader compiled failed: {}.", shaderpath);
     }
     else {
-        LOG_INFO(Shader, "Successfully compiled shader: {}.", shaderpath);
+        LOG_INFO(Shader, "Shader compiled: {}.", shaderpath);
     }
     return shaderId;
 }
@@ -58,10 +58,10 @@ unsigned int LinkShader(
     if (!success)
     {
         glGetProgramInfoLog(programId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Failed to link shaders: {}, {}.", vShaderPath, fShaderPath);
+        LOG_ERROR(Shader, "Shaders linking failed: {}, {}.", vShaderPath, fShaderPath);
     }
     else {
-        LOG_INFO(Shader, "Successfully linked shaders: {} and {}.", vShaderPath, fShaderPath);
+        LOG_INFO(Shader, "Shader linked: {} and {}.", vShaderPath, fShaderPath);
     }
     glDeleteShader(vShaderId);
     glDeleteShader(fShaderId);

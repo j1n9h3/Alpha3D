@@ -6,10 +6,6 @@
 #include <glfw/glfw3.h>
 #include "core/Window.h"
 
-#include "imgui/imgui.h"
-#include <ImGuizmo/ImGuizmo.h>
-#include "imgui_internal.h"
-
 
 
 class Camera {
@@ -22,6 +18,9 @@ public:
     bool SetView();
 
     void SetProjection(float fov, float aspectRatio);
+
+    bool GetMoving() { return this->moving; }
+    void SetMoving(bool moving) { this->moving = moving; }
 
     float GetFov()    const { return m_Fov; }
     bool  IsOrtho()   const { return m_IsOrtho; }
@@ -63,5 +62,8 @@ private:
     float pitch = 0.0f;
     float lastX;
     float lastY;
+
+    bool moving = false;
+
     bool firstMouse = true;
 };

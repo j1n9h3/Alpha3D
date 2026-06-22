@@ -10,6 +10,8 @@ struct Light {
 };
 
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D   brdfLUT;  
 
 uniform Light light;
 
@@ -105,14 +107,22 @@ void main()
     vec3 kD = 1.0 - kS_ibl;
     kD *= 1.0 - metallic;
     vec3 irradiance = texture(irradianceMap, normal).rgb;
+    vec3 diffuse    = irradiance * albedo;
 
-    vec3 ambient = kD * irradiance * albedo;;
+    vec3 reflect_dir = reflect(-view_dir, normal);   
 
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, reflect_dir, roughness * MAX_REFLECTION_LOD).rgb;  
+
+    vec2 envBRDF = textureLod(brdfLUT, vec2(NdotV, roughness), 0.0).rg;
+    vec3 specular = prefilteredColor * (kS_ibl * envBRDF.x + envBRDF.y);
+
+    vec3 ambient = (kD * diffuse + specular);
 
     // result
     
     vec3 color = (L0 + ambient) / ((L0 + ambient) + 1.0f);
     color = pow(color, vec3(1.0/2.2)); 
 
-    FragColor = vec4(irradiance, 1.0);
+    FragColor = vec4(color, 1.0);
 }

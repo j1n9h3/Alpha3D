@@ -3,29 +3,30 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-#include "scene/Entity.h"
+//#include "scene/GameObject.h"
 
+class GameObject;
 class Model;
 class Mesh;
 class Shader;
 
 class Scene {
 public:
-    Entity& AddEntity(std::string name, Model* model, Shader* shader);
-    Entity& AddEntity(std::string name, Mesh*  mesh,  Shader* shader);
+    ~Scene();
+    GameObject& AddGameObject(std::string name, Model* model, Shader* shader);
+    GameObject& AddGameObject(std::string name, Mesh* mesh, Shader* shader);
 
-    void    SetSelected(uint32_t id);
-    void    ClearSelection();
-    Entity* GetSelected();
+    void SetSelected(uint32_t id) { this->selected_id = id; };
+    GameObject* GetSelected();
+
+    void ClearSelection() { this->selected_id = -1; };
 
     void Render() const;
-    void OnImGuiHierarchy();
-    void OnImGuiProperties();
 
-    const std::vector<std::unique_ptr<Entity>>& GetEntities() const { return m_Entities; }
+    const std::vector<std::unique_ptr<GameObject>>& GetGameObjects() const { return game_objects; }
 
 private:
-    std::vector<std::unique_ptr<Entity>> m_Entities;
-    uint32_t m_SelectedID = 0;
-    uint32_t m_NextID     = 1;
+    std::vector<std::unique_ptr<GameObject>> game_objects;
+    uint32_t selected_id = 0;
+    uint32_t next_id = 1;
 };

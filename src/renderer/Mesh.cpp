@@ -96,11 +96,11 @@ void Mesh::Draw(Shader& shader)
 	unsigned int roughnessNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int emissiveNr = 1;
-	for (unsigned int i = 0; i < textures.size(); i++)
+	for (unsigned int i = 0; i < this->textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); 
 		std::string number;
-		std::string type = textures[i].GetType(); 
+		std::string type = this->textures[i].GetType();
 		if (type == "albedo")
 			number = std::to_string(albedoNr++);
 		else if (type == "roughness")
@@ -111,7 +111,7 @@ void Mesh::Draw(Shader& shader)
 			number = std::to_string(emissiveNr++);
 
 		shader.setInt(("material." + type + number).c_str(), i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].GetId());
+		glBindTexture(GL_TEXTURE_2D, this->textures[i].GetId());
 	}
 	glActiveTexture(GL_TEXTURE0);
 

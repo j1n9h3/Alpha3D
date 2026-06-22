@@ -31,6 +31,9 @@
     <Filter Include="Source\ImGuizmo">
       <UniqueIdentifier>{572cb9b9-2d8d-459e-b50a-0b0d243dd6d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\PBR_IBL">
+      <UniqueIdentifier>{2c9aeda1-53d9-4aab-a0be-b69e54d8a10c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad.c">
@@ -63,27 +66,6 @@
     <ClCompile Include="src\renderer\Model.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_widgets.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_demo.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_draw.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\backends\imgui_impl_opengl3.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui_tables.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\imgui\imgui.cpp">
-      <Filter>Source\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\Editor.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -93,10 +75,40 @@
     <ClCompile Include="src\renderer\Primitive.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\scene\Entity.cpp">
+    <ClCompile Include="src\scene\GameObject.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="src\scene\Scene.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\imgui.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\imgui_demo.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\imgui_draw.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\imgui_tables.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\imgui_widgets.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_glfw.cpp">
+      <Filter>Source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Viewport.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\IBL.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Environment.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,24 +143,6 @@
     <None Include="shaders\pbr_test.frag">
       <Filter>Shader</Filter>
     </None>
-    <None Include="shaders\cubemap.vert">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\cubemap.frag">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\skybox.frag">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\skybox.vert">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\irradiance.vert">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\irradiance.frag">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="shaders\pbr_ibl_test.frag">
       <Filter>Shader</Filter>
     </None>
@@ -157,6 +151,42 @@
     </None>
     <None Include="shaders\light.frag">
       <Filter>Resource</Filter>
+    </None>
+    <None Include="shaders\pbr\brdf_integrate.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\brdf_integrate.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\equirect_to_cubemap.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\equirect_to_cubemap.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\irradiance_convolution.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\irradiance_convolution.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_ibl.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_ibl.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\prefilter_convolution.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\prefilter_convolution.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\skybox.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\skybox.vert">
+      <Filter>Shader\PBR_IBL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -196,13 +226,25 @@
     <ClInclude Include="include\renderer\Primitive.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="include\scene\Transform.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scene\Entity.h">
+    <ClInclude Include="include\scene\GameObject.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\Scene.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\Transform.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Viewport.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\IBL.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Environment.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\LogSink.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

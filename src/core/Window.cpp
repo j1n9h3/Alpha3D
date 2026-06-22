@@ -35,7 +35,6 @@ void Window::framebuffer_size_callback(GLFWwindow* glfw_window, int width, int h
             window->ResizeCallback(width, height);
         }
         glViewport(0, 0, window->width, window->height);
-
     }
 }
 
@@ -49,7 +48,7 @@ WindowContext& Window::GetWindowContext() {
     return this->context;
 }
 
-Window::Window(int width, int height, const std::string& title) {
+void Window::Init(int width, int height, const std::string& title) {
 
     // set window properties
     

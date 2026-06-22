@@ -23,43 +23,52 @@
     <ClCompile Include="src\core\Config.cpp" />
     <ClCompile Include="src\core\Editor.cpp" />
     <ClCompile Include="src\core\Log.cpp" />
+    <ClCompile Include="src\core\Viewport.cpp" />
     <ClCompile Include="src\core\Window.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\renderer\Camera.cpp" />
+    <ClCompile Include="src\renderer\Environment.cpp" />
+    <ClCompile Include="src\renderer\IBL.cpp" />
     <ClCompile Include="src\renderer\Mesh.cpp" />
     <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\renderer\Primitive.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
-    <ClCompile Include="src\scene\Entity.cpp" />
+    <ClCompile Include="src\scene\GameObject.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp" />
-    <ClCompile Include="third_party\imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="third_party\imgui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="third_party\imgui\imgui.cpp" />
-    <ClCompile Include="third_party\imgui\imgui_demo.cpp" />
-    <ClCompile Include="third_party\imgui\imgui_draw.cpp" />
-    <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
-    <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="third_party\imgui_docking\imgui.cpp" />
+    <ClCompile Include="third_party\imgui_docking\imgui_demo.cpp" />
+    <ClCompile Include="third_party\imgui_docking\imgui_draw.cpp" />
+    <ClCompile Include="third_party\imgui_docking\imgui_tables.cpp" />
+    <ClCompile Include="third_party\imgui_docking\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\engine.toml" />
-    <None Include="shaders\cubemap.frag" />
-    <None Include="shaders\cubemap.vert" />
-    <None Include="shaders\irradiance.frag" />
-    <None Include="shaders\irradiance.vert" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
     <None Include="shaders\pbr.frag" />
     <None Include="shaders\pbr.vert" />
+    <None Include="shaders\pbr\brdf_integrate.frag" />
+    <None Include="shaders\pbr\brdf_integrate.vert" />
+    <None Include="shaders\pbr\equirect_to_cubemap.frag" />
+    <None Include="shaders\pbr\equirect_to_cubemap.vert" />
+    <None Include="shaders\pbr\irradiance_convolution.frag" />
+    <None Include="shaders\pbr\irradiance_convolution.vert" />
+    <None Include="shaders\pbr\pbr_ibl.frag" />
+    <None Include="shaders\pbr\pbr_ibl.vert" />
+    <None Include="shaders\pbr\prefilter_convolution.frag" />
+    <None Include="shaders\pbr\prefilter_convolution.vert" />
+    <None Include="shaders\pbr\skybox.frag" />
+    <None Include="shaders\pbr\skybox.vert" />
     <None Include="shaders\pbr_ibl_test.frag" />
     <None Include="shaders\pbr_ibl_test.vert" />
     <None Include="shaders\pbr_test.frag" />
     <None Include="shaders\pbr_test.vert" />
     <None Include="shaders\phong.frag" />
     <None Include="shaders\phong.vert" />
-    <None Include="shaders\skybox.frag" />
-    <None Include="shaders\skybox.vert" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>
@@ -67,17 +76,21 @@
     <ClInclude Include="include\core\Config.h" />
     <ClInclude Include="include\core\Editor.h" />
     <ClInclude Include="include\core\Log.h" />
+    <ClInclude Include="include\core\LogSink.h" />
+    <ClInclude Include="include\core\Viewport.h" />
     <ClInclude Include="include\core\Window.h" />
     <ClInclude Include="include\core\WindowContext.h" />
     <ClInclude Include="include\renderer\Camera.h" />
+    <ClInclude Include="include\renderer\Environment.h" />
+    <ClInclude Include="include\renderer\IBL.h" />
     <ClInclude Include="include\renderer\Mesh.h" />
     <ClInclude Include="include\renderer\Model.h" />
     <ClInclude Include="include\renderer\Primitive.h" />
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
+    <ClInclude Include="include\utils\Transform.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />
-    <ClInclude Include="include\scene\Transform.h" />
-    <ClInclude Include="include\scene\Entity.h" />
+    <ClInclude Include="include\scene\GameObject.h" />
     <ClInclude Include="include\scene\Scene.h" />
   </ItemGroup>
   <ItemGroup>
@@ -141,7 +154,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\lib;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\lib;$(LibraryPath)</LibraryPath>
-    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\imgui;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party\imgui_docking;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\vcpkg_installed\x64-windows\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\include;C:\Users\17912\Projects\GraphicEngine\A3_GraphicEngine\third_party;$(ExternalIncludePath)</ExternalIncludePath>
     <OutDir>build</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

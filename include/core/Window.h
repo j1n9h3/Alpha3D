@@ -7,7 +7,7 @@
 
 class Window {
 public:
-    Window(int width, int height, const std::string& title);
+    void Init(int width, int height, const std::string& title);
     ~Window();
 
     void Update();

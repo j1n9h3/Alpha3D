@@ -14,6 +14,7 @@
     X(Camera) \
     X(Editor)
 
+#define LOG_TRACE(name, ...)  Log::Get##name##Logger()->trace(__VA_ARGS__)
 #define LOG_INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
 #define LOG_WARN(name, ...) Log::Get##name##Logger()->warn(__VA_ARGS__)
 #define LOG_ERROR(name, ...) Log::Get##name##Logger()->error(__VA_ARGS__)

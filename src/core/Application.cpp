@@ -9,6 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "core/Window.h"
+#include "core/Viewport.h"
 #include "core/Config.h"
 #include "core/Log.h"
 
@@ -23,14 +24,17 @@
 
 #include "core/Editor.h"
 
-#include <ImGuizmo/ImGuizmo.h>
-#include "imgui_internal.h"
+#include <imgui_docking/imgui_internal.h>
 
 #include "scene/Scene.h"
 
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
-
+#include "scene/GameObject.h"
+#include "renderer/IBL.h"
+#include "renderer/Environment.h"
 
 int main()
 {
@@ -39,7 +43,8 @@ int main()
     Config::Load("config/engine.toml");
     const auto& config = Config::Get();
 
-    Window mainWindow(config.window.width, config.window.height, config.window.title);
+    Window window;
+    window.Init(config.window.width, config.window.height, config.window.title);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -47,73 +52,82 @@ int main()
         return -1;
     }
 
+    Viewport viewport;
+    viewport.Init(config.window.width, config.window.height);
+
+    Editor editor;
+    editor.Init(window.GetGLFWWindow());
+
     bool wireframe = false;
 
     Mesh cubeMesh = Primitive::Cube();
-    Mesh sphereMesh = Primitive::Sphere(128, 64);;
+    Mesh mesh_sphere = Primitive::Sphere(128, 64);;
 
-    //path
+    ////path
     std::string project_path = "C:/Users/17912/Projects/GraphicEngine/A3_GraphicEngine";
     std::string light_path = project_path + "/" + "assets/models/lightbulb_led_1k/lightbulb_led_1k.gltf";
     std::string ginger_path = project_path + "/" + "assets/models/food_ginger_01_4k/food_ginger_01_4k.gltf";
-    std::string hdr_path = project_path + "/" + "assets/hdri/blinds_4k.hdr";
+    //std::string hdr_path = project_path + "/" + "assets/hdri/blinds_4k.hdr";
     //std::string hdr_path = project_path + "/" + "assets/hdri/subway_entrance_4k.hdr";
 
 
-    Model ginger_model(ginger_path.c_str());
-    Model light_model(light_path.c_str());
+    Model model_ginger(ginger_path.c_str());
+    Model model_bulb(light_path.c_str());
 
-    Shader pbr_shader("shaders/pbr.vert", "shaders/pbr.frag");
-    Shader light_shader("shaders/light.vert", "shaders/light.frag");
-    Shader pbr_test_shader("shaders/pbr_ibl_test.vert", "shaders/pbr_ibl_test.frag");
-    Shader to_cubemap_shader("shaders/cubemap.vert", "shaders/cubemap.frag");
-    Shader skybox_shader("shaders/skybox.vert", "shaders/skybox.frag");
-    Shader irradiance_shader("shaders/irradiance.vert", "shaders/irradiance.frag");
-    
-    ImGuizmo::Style& style = ImGuizmo::GetStyle();
-    style.TranslationLineThickness = 10.0f;
-    style.TranslationLineArrowSize = 16.0f;
-    style.RotationLineThickness = 10.0f;
+    // light Shaders
+    Shader shader_light("shaders/light.vert", "shaders/light.frag");
 
-    style.ScaleLineThickness = 10.0f;
+    Shader shader_pbr("shaders/pbr.vert", "shaders/pbr.frag");
+
+    // IBL Shaders
+    Shader to_cubemap_shader("shaders/pbr/equirect_to_cubemap.vert", "shaders/pbr/equirect_to_cubemap.frag");
+    Shader skybox_shader("shaders/pbr/skybox.vert", "shaders/pbr/skybox.frag");
+    Shader irradiance_shader("shaders/pbr/irradiance_convolution.vert", "shaders/pbr/irradiance_convolution.frag");
+    Shader prefilter_shader("shaders/pbr/prefilter_convolution.vert", "shaders/pbr/prefilter_convolution.frag");
+    Shader brdf_integrate_shader("shaders/pbr/brdf_integrate.vert", "shaders/pbr/brdf_integrate.frag");
+
+    // PBR IBL Object Shader
+    Shader shader_pbr_ibl_test("shaders/pbr_ibl_test.vert", "shaders/pbr_ibl_test.frag");
+
+
+    Environment env_map;
+    env_map.Scan(project_path + "/assets/hdri");
+
+    IBL ibl;
+    ibl.Load(env_map.GetSelectedPath(), cubeMesh, to_cubemap_shader, irradiance_shader, prefilter_shader, brdf_integrate_shader);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 
     Scene scene;
     float theScale = 20.0f;
 
-    Entity& ginger = scene.AddEntity("ginger", &ginger_model, &pbr_shader);
-    ginger.SetScale(glm::vec3(5.0f));
+    GameObject& sphere = scene.AddGameObject("pbr_test", &mesh_sphere, &shader_pbr_ibl_test);
+    sphere.SetPosition(glm::vec3(2.0f, 1.5f, 0.0f));
+    sphere.SetScale(0.8f);
+    sphere.pbr_test = PBRTestComponent{};
+
+    GameObject& ginger = scene.AddGameObject("ginger", &model_ginger, &shader_pbr);
+    ginger.SetScale(5.0f);
     ginger.SetPosition(glm::vec3(0.560, -0.440, 1.490));
     ginger.SetRotation(glm::vec3(0.0f, 22.5f, 0.0f));
-    ginger.GetTransform().SyncToMatrix();
 
+    GameObject& bulb = scene.AddGameObject("bulb", &model_bulb, &shader_light);
 
-    Entity& sphere = scene.AddEntity("pbr_test", &sphereMesh, &pbr_test_shader);
-    sphere.SetPosition(glm::vec3(2.0f, 1.5f, 0.0f));
-    sphere.SetScale(glm::vec3(0.8f));
-    sphere.GetTransform().SyncToMatrix();
+    bulb.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    bulb.SetScale(10.0f);
+    bulb.light = LightComponent{};
 
-    Entity& light = scene.AddEntity("Light", &light_model, &light_shader);
-
-    light.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-    light.SetScale(glm::vec3(10.0f));
-    light.GetTransform().SyncToMatrix();
-
-    scene.SetSelected(light.GetID());
+    scene.SetSelected(bulb.GetID());
 
     // camera init
-    Camera camera(config.renderer.fov, mainWindow, glm::vec3(-1.0f, 1.0f, -1.0f), ginger.GetPosition() + glm::vec3(1.0f, 1.0f, 0.0f));
-    mainWindow.GetWindowContext().camera = &camera;
+    Camera camera(config.renderer.fov, window, glm::vec3(-1.0f, 1.0f, -1.0f), ginger.GetPosition() + glm::vec3(1.0f, 1.0f, 0.0f));
+    window.GetWindowContext().camera = &camera;
 
-    mainWindow.SetResizeCallback([&](int width, int height) {
+    window.SetResizeCallback([&](int width, int height) {
         camera.SetProjection(config.renderer.fov, (float)width / height);
     });
-
-    Editor editor(mainWindow.GetGLFWWindow());
-
-    ImGuizmo::OPERATION gizmoOp = editor.GetGizmoNone();
-
 
     // light control
     bool lightOn = true;
@@ -125,166 +139,35 @@ int main()
     float intensity_last = intensity;
     glm::vec3 lightColor = glm::vec3(1.0f);
     float lightIntensity = 10.0f;
-    float pbr_roughness = 0.4f;
-    float pbr_metallic = 0.4f;
-    glm::vec3 sphere_color = glm::vec3(0.05, 0.05, 0.05);
+    glm::vec3 sphere_color = glm::vec3(1.0, 0.71, 0.29);
 
+    glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
-
-
-    /////////////////////////////////////////////////////
-
-
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, nrComponents;
-    float* data = stbi_loadf(hdr_path.c_str(), &width, &height, &nrComponents, 0);
-    stbi_set_flip_vertically_on_load(false);
-    unsigned int hdrTexture;
-    if (data)
+    while (!window.ShouldClose())
     {
-        glGenTextures(1, &hdrTexture);
-        glBindTexture(GL_TEXTURE_2D, hdrTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+        editor.BeginFrame(&viewport);
+        camera.SetProjection(camera.GetFov(), viewport.GetWidth() / viewport.GetHeight());
+        viewport.BeginRender();
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Failed to load HDR image." << std::endl;
-    }
-
-    unsigned int captureFBO, captureRBO;
-    glGenFramebuffers(1, &captureFBO);
-    glGenRenderbuffers(1, &captureRBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-    unsigned int envCubemap;
-    glGenTextures(1, &envCubemap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        // note that we store each face with 16 bit floating point values
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-            512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    glm::mat4 captureViews[] =
-    {
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-       glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-    };
-
-    // convert HDR equirectangular environment map to cubemap equivalent
-    to_cubemap_shader.use();
-    to_cubemap_shader.setInt("equirectangularMap", 0);
-    to_cubemap_shader.setMat4("projection", captureProjection);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, hdrTexture);
-
-    glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        to_cubemap_shader.setMat4("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        cubeMesh.Draw();
-
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-    /////////////////////////////////////////////////////
-
-
-    unsigned int irradianceMap;
-    glGenTextures(1, &irradianceMap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0,
-            GL_RGB, GL_FLOAT, nullptr);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-
-    irradiance_shader.use();
-    irradiance_shader.setInt("environmentMap", 0);
-    irradiance_shader.setMat4("projection", captureProjection);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-
-    glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        irradiance_shader.setMat4("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        cubeMesh.Draw();
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    /////////////////////////////////////////////////////
-
-
-    glViewport(0, 0, mainWindow.GetWidth(), mainWindow.GetHeight());
-
-
-    while (!mainWindow.ShouldClose())
-    {
-        editor.BeginFrame();
-        ImGuizmo::BeginFrame();
         // input process
 
-        if (!editor.Hover() && !ImGuizmo::IsUsing()) {
-            camera.ProcessInput(mainWindow.GetGLFWWindow());
-            mainWindow.ProcessKeyboardInput();
+        ImGuiWindow* hoveredWindow = ImGui::GetCurrentContext()->HoveredWindow;
+
+        ImGuiIO& io = ImGui::GetIO();
+
+        if (editor.IsViewportHovered() || camera.GetMoving()) {
+            double xpos, ypos;
+            glfwGetCursorPos(window.GetGLFWWindow(), &xpos, &ypos);
+            camera.ProcessMouseMovement((float)xpos, (float)ypos);
+            camera.ProcessInput(window.GetGLFWWindow());
+            io.ConfigDockingWithShift = true;
         }
         else {
             camera.ResetMouseState();
+            io.ConfigDockingWithShift = false;
         }
 
-
-        // clear
-        glClearColor(0.235f, 0.235f, 0.235f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // rendering
-
-        //glm::vec3 lightPos = light.GetPosition() + glm::vec3(0.0f, 1.0f, 0.0f);
-
+        // light object rendering
         if (lightOn == false && lightOn_last == true) { // turn off the light
             lightOn_last = lightOn;
             intensity_last = intensity;
@@ -298,92 +181,78 @@ int main()
             lightOn_last = lightOn;
         }
 
-        worldLightPos = light.GetTransform().matrix * glm::vec4(localLightPos, 1.0f); // w=1 表示点
+        worldLightPos = bulb.GetTransform().matrix * glm::vec4(localLightPos, 1.0f); // w=1 表示点
         glm::vec3 lightPos = glm::vec3(worldLightPos);
 
-        light_shader.use();
-        light_shader.setBool("lightOn", lightOn);
-        light_shader.setMat4("view", camera.GetView());
-        light_shader.setMat4("projection", camera.GetProjection());
-        light_shader.setVec3("light.ambient", ambient);
-        light_shader.setVec3("light.intensity", glm::vec3(intensity*lightColor));
-        light_shader.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
-        light_shader.setVec3("viewPos", camera.GetPosition());
-        light_shader.setVec3("lightPos", lightPos);
+        shader_light.use();
+        shader_light.setBool("lightOn", lightOn);
+        shader_light.setMat4("view", camera.GetView());
+        shader_light.setMat4("projection", camera.GetProjection());
+        shader_light.setVec3("light.ambient", ambient);
+        shader_light.setVec3("light.intensity", glm::vec3((*bulb.light).intensity * (*bulb.light).color));
+        shader_light.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
+        shader_light.setVec3("viewPos", camera.GetPosition());
+        shader_light.setVec3("lightPos", lightPos);
 
-        pbr_test_shader.use();
-        pbr_test_shader.setMat4("view", camera.GetView());
-        pbr_test_shader.setMat4("projection", camera.GetProjection());
-        pbr_test_shader.setVec3("light.ambient", ambient);
-        pbr_test_shader.setVec3("light.intensity", glm::vec3(intensity * lightColor));
-        //pbr_test_shader.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
-        pbr_test_shader.setVec3("viewPos", camera.GetPosition());
-        pbr_test_shader.setVec3("lightPos", lightPos);
-        pbr_test_shader.setVec3("baseColor", sphere_color);
-        pbr_test_shader.setFloat("roughness", pbr_roughness);
-        pbr_test_shader.setFloat("metallic", pbr_metallic);
-        pbr_test_shader.setInt("irradianceMap", 0);
-        glActiveTexture(GL_TEXTURE0);                 // 激活 0 号单元
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);  // 绑定(注意是 CUBE_MAP 目标)
+        shader_pbr.use();
+        shader_pbr.setMat4("view", camera.GetView());
+        shader_pbr.setMat4("projection", camera.GetProjection());
+        shader_pbr.setVec3("light.ambient", ambient);
+        shader_pbr.setVec3("light.intensity", glm::vec3((*bulb.light).intensity * (*bulb.light).color));
+        shader_pbr.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
+        shader_pbr.setVec3("viewPos",  camera.GetPosition());
+        shader_pbr.setVec3("lightPos", lightPos);
 
 
-        pbr_shader.use();
-        pbr_shader.setMat4("view", camera.GetView());
-        pbr_shader.setMat4("projection", camera.GetProjection());
-        pbr_shader.setVec3("light.ambient", ambient);
-        pbr_shader.setVec3("light.intensity", glm::vec3(intensity * lightColor));
-        pbr_shader.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
-        pbr_shader.setVec3("viewPos",  camera.GetPosition());
-        pbr_shader.setVec3("lightPos", lightPos);
+        ibl.Bind(shader_pbr_ibl_test);
+        shader_pbr_ibl_test.setMat4("view", camera.GetView());
+        shader_pbr_ibl_test.setMat4("projection", camera.GetProjection());
+        shader_pbr_ibl_test.setVec3("light.ambient", ambient);
+        shader_pbr_ibl_test.setVec3("light.intensity", glm::vec3((*bulb.light).intensity * (*bulb.light).color));
+        shader_pbr_ibl_test.setVec3("viewPos", camera.GetPosition());
+        shader_pbr_ibl_test.setVec3("lightPos", lightPos);
+        shader_pbr_ibl_test.setVec3("baseColor", (*sphere.pbr_test).albedo);
+        shader_pbr_ibl_test.setFloat("roughness", (*sphere.pbr_test).roughness);
+        shader_pbr_ibl_test.setFloat("metallic", (*sphere.pbr_test).metallic);
 
-        Entity* selected = scene.GetSelected();
-        ImGuizmo::SetOrthographic(camera.IsOrtho());
-        ImGuizmo::SetRect(0, 0, (float)mainWindow.GetWidth(), (float)mainWindow.GetHeight());
-        if (selected) {
-            float distance = glm::length(camera.GetPosition() - selected->GetTransform().position);
-            if (distance > 10.0f)
-                ImGuizmo::SetGizmoSizeClipSpace(1.0f / distance); // 距离越远越小
-
-            if (gizmoOp != editor.GetGizmoNone()) {
-                ImGuizmo::Manipulate(
-                    glm::value_ptr(camera.GetView()),
-                    glm::value_ptr(camera.GetProjection()),
-                    gizmoOp,
-                    ImGuizmo::WORLD,
-                    glm::value_ptr(selected->GetTransform().matrix)
-                );
-            }
-        }
-
+        GameObject* selected = scene.GetSelected();
 
         scene.Render();
 
 
-        // skybox
+        // skybox rendering
         glDepthFunc(GL_LEQUAL);
         skybox_shader.use();
         skybox_shader.setMat4("projection", camera.GetProjection());
         skybox_shader.setMat4("view", camera.GetView());
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, ibl.envCubemap);
         skybox_shader.setInt("environmentMap", 0);
 
         cubeMesh.Draw();
 
         glDepthFunc(GL_LESS); // 恢复默认
 
-
-
         // editor
-        editor.OnImGuiCamera(camera, gizmoOp);
-        editor.OnImGuiScene(scene, wireframe);
-        editor.OnImGuiLight(ambient, intensity, lightColor, lightOn);
-        editor.OnImGuiPBR(pbr_roughness, pbr_metallic);
+        editor.BeginEnvironment(env_map); // Editor UI
+
+        if (env_map.HasChanged()) {
+            ibl.Load(env_map.GetSelectedPath(), cubeMesh, to_cubemap_shader, irradiance_shader, prefilter_shader, brdf_integrate_shader);
+            env_map.ClearChanged();
+        }
+
+        editor.BeginLog();
+        editor.BeginCamera(camera);
+        editor.BeginHierarchy(scene);
+        editor.BeginTransform(*selected);
+        editor.BeginProperties(*selected);
+
+        viewport.EndRender();
         editor.EndFrame();
 
         // check events
-        mainWindow.Update();
+        window.Update();
     }
 
     glfwTerminate();

@@ -387,7 +387,7 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       float Inverse(const matrix_t& srcMatrix, bool affine = false);
-      void SetToIdentity()
+      void SetToIdGameObject()
       {
          v.right.Set(1.f, 0.f, 0.f, 0.f);
          v.up.Set(0.f, 1.f, 0.f, 0.f);
@@ -569,7 +569,7 @@ namespace IMGUIZMO_NAMESPACE
       float length2 = axis.LengthSq();
       if (length2 < FLT_EPSILON)
       {
-         SetToIdentity();
+         SetToIdGameObject();
          return;
       }
 
@@ -1920,7 +1920,7 @@ namespace IMGUIZMO_NAMESPACE
          if (gContext.mbUsingBounds && (gContext.GetCurrentID() == gContext.mEditingID))
          {
             matrix_t scale;
-            scale.SetToIdentity();
+            scale.SetToIdGameObject();
 
             // compute projected mouse position on plan
             const float len = IntersectRayPlane(gContext.mRayOrigin, gContext.mRayVector, gContext.mBoundsPlan);
@@ -2737,10 +2737,10 @@ namespace IMGUIZMO_NAMESPACE
       ComputeContext(view, projection, matrix, (operation & SCALE) ? LOCAL : mode);
       gContext.mHoveredHandleType = MT_NONE;
 
-      // set delta to identity
+      // set delta to idGameObject
       if (deltaMatrix)
       {
-         ((matrix_t*)deltaMatrix)->SetToIdentity();
+         ((matrix_t*)deltaMatrix)->SetToIdGameObject();
       }
 
       // behind camera

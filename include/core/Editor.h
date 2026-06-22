@@ -1,35 +1,39 @@
 #pragma once
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include "core/Viewport.h"
+
+#include <imgui_docking/imgui.h>
+#include <imgui_docking/backends/imgui_impl_glfw.h>
+#include <imgui_docking/backends/imgui_impl_opengl3.h>
 
 #include <glfw/glfw3.h>
 
 #include "core/Log.h"
-#include "imgui_internal.h"
+#include <imgui_docking/imgui_internal.h>
 #include "renderer/Camera.h"
 #include "scene/Scene.h"
 
+#include "utils/Transform.h"
+
+class Scene;
+class Environment;
 class Editor {
 public:
-    Editor(GLFWwindow* window);
+    void Init(GLFWwindow* window);
     ~Editor();
 
-    void BeginFrame();
+    void BeginFrame(Viewport* viewport);
+    //void BeginFrame();
     void EndFrame();
-
+    void BeginLog();
+    void BeginEnvironment(Environment& env);
+    void BeginProperties(GameObject& game_object);
+    void BeginTransform(GameObject& game_object);
+    void BeginHierarchy(Scene& scene);
     bool Hover() const;
     bool WantCaptureKeyboard() const;
-
-    ImGuizmo::OPERATION GetGizmoNone() { return GIZMO_NONE; };
-
-    void OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp);
-    void OnImGuiScene(Scene& scene, bool& wireframe);
-    void OnImGuiPBR(float& roughness, float& metallic);
-
-    void OnImGuiLight(glm::vec3& ambient, float& intensity, glm::vec3& lightColor, bool& lightOn);
+    bool IsViewportHovered() { return isViewportHovered; }
+    void BeginCamera(Camera& camera);
 private:
-    const ImGuizmo::OPERATION GIZMO_NONE = (ImGuizmo::OPERATION)0;
     float mainMenuBarHeight = 10.0f;
     ImFont* font_small;
     ImFont* font_normal;
@@ -38,4 +42,8 @@ private:
     GLuint m_IconTransform;
     GLuint m_IconRotate;
     GLuint m_IconScale;
+
+    ImVec2 viewportSize;
+    bool isViewportHovered = false;
+    static ImGuiTextBuffer log;
 };

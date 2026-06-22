@@ -1,4 +1,6 @@
 [window]
+width = 1000
+height = 1000
 title  = "Alpha3D"
 
 [renderer]

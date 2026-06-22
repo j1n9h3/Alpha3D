@@ -1,12 +1,18 @@
 // Editor.cpp
+#pragma once
 #include "core/Editor.h"
+
+#include "scene/GameObject.h"
 
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg/nanosvg.h"
 
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvg/nanosvgrast.h"
+#include "core/Log.h"
 
+#include "renderer/Environment.h"
+#include "core/LogSink.h"
 
 static GLuint LoadSVGIcon(const char* path, int w, int h) {
 	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
@@ -55,7 +61,7 @@ void SetupImGuiStyle()
 	style.ItemSpacing = ImVec2(8.0f, 4.0f);
 	style.ItemInnerSpacing = ImVec2(4.0f, 4.0f);
 	style.CellPadding = ImVec2(4.0f, 2.0f);
-	style.IndentSpacing = 12.0f;       // Blender 缩进更小
+	//style.IndentSpacing = 12.0f;       // Blender 缩进更小
 	style.ColumnsMinSpacing = 6.0f;
 	style.ScrollbarSize = 10.0f;       // Blender 滚动条细
 	style.ScrollbarRounding = 0.0f;        // 直角滚动条
@@ -67,8 +73,8 @@ void SetupImGuiStyle()
 	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
 	style.SelectableTextAlign = ImVec2(0.0f, 0.5f);  // 垂直居中，Blender 列表项对齐
 	style.TabBarBorderSize = 0.0f;
-	style.WindowBorderSize = 0.0f;
 	style.ChildBorderSize = 0.0f;
+	style.TreeLinesSize = 1.5f;
 
 	style.Colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -123,17 +129,19 @@ void SetupImGuiStyle()
 	style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.50f);
-
-
+	style.Colors[ImGuiCol_TreeLines] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);  // 加深线的颜色
+	style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // 选中 tab 上的横条
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 
-Editor::Editor(GLFWwindow* window)
+void Editor::Init(GLFWwindow* window)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
@@ -150,7 +158,7 @@ Editor::Editor(GLFWwindow* window)
 
     ImGui::GetStyle().ScaleAllSizes(xscale);
 
-    LOG_INFO(Editor, "Success creating editor with x{} scale", xscale);
+    LOG_INFO(Editor, "editor created x{} scale", xscale);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
@@ -165,41 +173,124 @@ Editor::~Editor()
     ImGui::DestroyContext();
 }
 
-void Editor::BeginFrame()
-{
 
+//void Editor::BeginFrame()
+void Editor::BeginFrame(Viewport* viewport)
+{
     ImGui_ImplOpenGL3_NewFrame();
     
 	ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+	ImGui::DockSpaceOverViewport();
 
-	ImGui::Begin("Panel");
 
-	if (ImGui::CollapsingHeader("Program Info", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Text("%s", glGetString(GL_RENDERER));
-		
-		static float fpsHistory[100] = {};
-		static int fpsIndex = 0;
-		fpsHistory[fpsIndex++ % 100] = ImGui::GetIO().Framerate;
-		ImGui::PlotLines("FPS", fpsHistory, 100, fpsIndex, nullptr, 0, 200);
+	// 1.1 视窗
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // style
 
-		float avgFps = 0;
-		for (float f : fpsHistory) avgFps += f;
-		avgFps /= 100;
-		ImGui::Text("FPS: %.1f", avgFps);
+	ImGui::Begin("Viewport");
 
-		ImGui::Text("Program Running Time: %.1f s", (float)glfwGetTime());
+	ImVec2 viewportPos = ImGui::GetCursorScreenPos();
+	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+	viewport->Resize(viewportSize.x, viewportSize.y);
 
-		GLint totalMem = 0, availMem = 0;
-		glGetIntegerv(0x9048, &totalMem);
-		glGetIntegerv(0x9049, &availMem);
-		if (totalMem > 0) {
-			ImGui::Text("VRAM: %.1f / %.1f GB", ((float)totalMem - availMem) / (1024 * 1024), (float)totalMem / (1024 * 1024));
-		}
-		else {
-			ImGui::Text("VRAM: N/A");
-		}
+	ImGui::Image((void*)(intptr_t)viewport -> GetColorTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
+	this->isViewportHovered = ImGui::IsItemHovered();
+
+	ImGui::End();
+
+	ImGui::PopStyleVar(); // style
+
+	// 2 属性
+
+	ImGui::Begin("Animation");
+	// 场景物体列表
+	ImGui::End();
+
+	ImGui::Begin("Environment");
+	// 场景物体列表
+	ImGui::End();
+
+
+	ImGui::ShowDemoWindow();
+}
+
+void Editor::BeginCamera(Camera & camera) {
+	ImGui::Begin("Camera");
+
+	ImGui::Text("View:");
+
+	auto fovToMm = [](float fov_deg, float sensor_diag = 43.27f) -> float {
+		float fov_rad = glm::radians(fov_deg);
+		return (sensor_diag / 2.0f) / std::tan(fov_rad / 2.0f);
+	};
+
+	auto mmToFov = [](float mm, float sensor_diag = 43.27f) -> float {
+		return glm::degrees(2.0f * std::atan((sensor_diag / 2.0f) / mm));
+	};
+
+	float fov = camera.GetFov();
+	float mm = fovToMm(fov);
+
+	if (ImGui::SliderFloat("Focal Length", &mm, fovToMm(170.0f), fovToMm(10.0f), "%.1f mm")) {
+		mm = glm::clamp(mm, 1.0f, 500.0f); // 防止极端值
+		camera.SetFov(mmToFov(mm));
 	}
+
+
+	ImGui::End();
+}
+
+void Editor::BeginTransform(GameObject& game_object) {
+	Transform& transform = game_object.GetTransform();
+
+	ImGui::Begin("Transform");
+
+	ImGui::Text("Location:");
+	ImGui::DragFloat("X##trans_x", &transform.position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+	ImGui::DragFloat("Y##trans_y", &transform.position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+	ImGui::DragFloat("Z##trans_z", &transform.position[2], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+	ImGui::Spacing();
+
+	ImGui::Text("Rotation:");
+	ImGui::DragFloat("X##rotate_x", &transform.rotation[0], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+	ImGui::DragFloat("Y##rotate_y", &transform.rotation[1], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+	ImGui::DragFloat("Z##rotate_z", &transform.rotation[2], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+
+	float scale = transform.scale[0];
+	ImGui::Text("Scale:");
+	ImGui::DragFloat("Scale##scale", &scale, 0.05f, -FLT_MAX, +FLT_MAX, "XYZ %.3f");
+
+	transform.SetScale(glm::vec3(scale));
+
+	ImGui::End();
+
+	transform.SyncToMatrix();
+}
+
+void Editor::BeginProperties(GameObject& game_object) {
+
+	ImGui::Begin("Properties");
+
+	if (game_object.light) {
+		ImGui::Text("Light:");
+		static float light_intensity_low = 0.0f, light_intensity_high = 100.0f;
+		ImGui::ColorEdit3("Color##1", (float*)&(*game_object.light).color, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
+		ImGui::SliderScalar("Intensity", ImGuiDataType_Float, &(*game_object.light).intensity, &light_intensity_low, &light_intensity_high, "%.1f lm");
+	}
+
+	if (game_object.pbr_test) {
+		ImGui::Text("PBR Parameters:");
+		static float pbr_roughness_low = 0.01f, pbr_roughness_high = 1.0f;
+		static float pbr_metallic_low = 0.0f, pbr_metallic_high = 1.0f;
+		ImGui::ColorEdit3("Albedo##pbr_albedo", (float*)&(*game_object.pbr_test).albedo, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
+		ImGui::SliderScalar("Roughness", ImGuiDataType_Float, &(*game_object.pbr_test).roughness, &pbr_roughness_low, &pbr_roughness_high, "%.2f");
+		ImGui::SliderScalar("Metallic", ImGuiDataType_Float, &(*game_object.pbr_test).metallic, &pbr_metallic_low, &pbr_metallic_high, "%.2f");
+	}
+
+	if (!game_object.light && !game_object.pbr_test) {
+		ImGui::Text("This object has no specific properties.");
+	}
+
 	ImGui::End();
 }
 
@@ -220,150 +311,160 @@ bool Editor::WantCaptureKeyboard() const
 }
 
 
+void Editor::BeginEnvironment(Environment& env) {
 
+	ImGui::Begin("Environment");
 
-void Editor::OnImGuiCamera(Camera& camera, ImGuizmo::OPERATION& gizmoOp) {
+	ImGui::Text("Cube Maps:");
 
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	const auto& names = env.GetNames();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+	// 把 vector<string> 转成 ImGui 需要的格式
+	std::vector<const char*> items;
+	for (const auto& n : names) items.push_back(n.c_str());
 
-	float headbarWidth = viewport->Size.x / 3 * 2;
-	float menuBarHeight = ImGui::GetFrameHeight();
+	int selected = env.GetSelected();
+	if (ImGui::Combo("HDRI", &selected, items.data(), (int)items.size()))
+		env.Select(selected);
 
-	ImGui::SetNextWindowPos(ImVec2(
-		viewport->Pos.x + 2.0f,
-		viewport->Pos.y)
-	);
+	ImGui::End();
+}
 
-	float menuBarH = ImGui::GetFrameHeight();
-	ImGui::SetNextWindowBgAlpha(0.0f);
-	constexpr ImGuiWindowFlags kToolbarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-	if (ImGui::Begin("##toolbar", nullptr, kToolbarFlags)) {
+void Editor::BeginLog() {
+	ImGui::Begin("Log");
 
-		
-		auto modeBtn = [&](GLuint icon, const char* id, ImGuizmo::OPERATION op, bool last = false) {
-			bool active = (gizmoOp == op);
-			if (active)
-				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-			else
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-
-			ImVec4 tint = active ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f)    // 激活：白色/原色
-				: ImVec4(0.5f, 0.5f, 0.5f, 1.0f);    // 未激活：变暗
-
-			if (ImGui::ImageButton(id, (ImTextureID)(intptr_t)icon, ImVec2(32, 32),
-				ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), tint))
-				gizmoOp = op;
-			
-			//if (!last) ImGui::Dummy(ImVec2(0, 4.0f));
-
-			ImGui::PopStyleColor();
-			//ImGui::SameLine();
-		};
-
-		modeBtn(m_IconView, "##view", GIZMO_NONE);
-		modeBtn(m_IconTransform, "##t", ImGuizmo::TRANSLATE);
-		modeBtn(m_IconRotate, "##r", ImGuizmo::ROTATE);
-		modeBtn(m_IconScale, "##s", ImGuizmo::SCALE, true);
-
-		//modeBtn("Rotate##r", ImGuizmo::ROTATE);
-		//modeBtn("Scale##s", ImGuizmo::SCALE);
-
-
-		/*const char* projLabel = camera.IsOrtho() ? "Ortho" : "Persp";
-		if (ImGui::Button(projLabel)) camera.SetOrtho(!camera.IsOrtho());
-
-
-		if (!camera.IsOrtho()) {
-			ImGui::SameLine();
-			float fov = camera.GetFov();
-			ImGui::SetNextItemWidth(140.0f);
-			if (ImGui::SliderFloat("FOV", &fov, 10.0f, 170.0f))
-				camera.SetFov(fov);
-		}*/
-
+	ImGui::BeginChild("log_scroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+	for (const auto& entry : LogBuffer::Get().GetEntries()) {
+		ImVec4 color;
+		switch (entry.level) {
+		case LogLevel::Trace: color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f); break;
+		case LogLevel::Info:  color = ImVec4(0.8f, 0.8f, 0.8f, 1.0f); break;
+		case LogLevel::Warn:  color = ImVec4(1.0f, 0.8f, 0.2f, 1.0f); break;
+		case LogLevel::Error: color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f); break;
+		}
+		ImGui::PushStyleColor(ImGuiCol_Text, color);
+		ImGui::TextUnformatted(entry.message.c_str());
+		ImGui::PopStyleColor();
 	}
-	ImGui::PopStyleVar(3);
+	if (LogBuffer::Get().ShouldScrollToBottom()) {
+		ImGui::SetScrollHereY(1.0f);
+		LogBuffer::Get().ClearScroll();
+	}
+	ImGui::EndChild();
 	ImGui::End();
 }
 
 
-void Editor::OnImGuiLight(glm::vec3& ambient, float& intensity, glm::vec3& lightColor, bool& lightOn)
-{
-	ImGui::Begin("Panel");
+void Editor::BeginHierarchy(Scene& scene) {
+	ImGui::Begin("Hierarchy");
+	static ImGuiTreeNodeFlags base_flags =
+		ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnArrow
+		| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanFullWidth;
+	GameObject* selected = scene.GetSelected();
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.28f, 0.55f, 0.90f, 0.1f));
+	ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.0f));
+	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.0f));
 
-	if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Checkbox("Light On", &lightOn);
+	static int item_index = 0; // 在 DrawGroup 调用前重置
 
-		if (lightOn) {
-			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
-			ImGui::ColorEdit3("Light Color", glm::value_ptr(lightColor));
-			ImGui::SliderFloat("Light Intensity", &intensity, 0.0f, 300.0f);
+	auto DrawObject = [&](GameObject* obj, int index) {
+		ImGui::PushID(obj->GetID());
+		ImGuiTreeNodeFlags flags = base_flags | ImGuiTreeNodeFlags_Leaf;
+
+		// 交替背景
+		float frame_padding_y = ImGui::GetStyle().FramePadding.y;
+		float row_height = ImGui::GetTextLineHeightWithSpacing() + frame_padding_y * 2;
+
+		if (index % 2 == 0) {
+			ImVec2 row_min = ImGui::GetCursorScreenPos();
+			row_min.x = ImGui::GetWindowPos().x;
+			ImVec2 row_max = ImVec2(
+				ImGui::GetWindowPos().x + ImGui::GetWindowWidth(),
+				row_min.y + row_height
+			);
+			ImGui::GetWindowDrawList()->AddRectFilled(row_min, row_max, IM_COL32(255, 255, 255, 6));
 		}
-	}
-	ImGui::End();
-}
 
-
-void Editor::OnImGuiScene(Scene& scene, bool& wireframe) {
-	ImGui::Begin("Panel", nullptr, ImGuiWindowFlags_NoCollapse);
-
-	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen)) {
-
-		ImGui::SeparatorText("Draw Mode");
-		if (ImGui::Checkbox("Wireframe", &wireframe)) {
-			glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
-		}
-		
-		ImGui::Separator();
-
-		ImGui::SeparatorText("Hierarchy");
-		for (auto& entityPtr : scene.GetEntities()) {
-			Entity* e = entityPtr.get();
-			Entity* sel = scene.GetSelected();
-			bool isSelected = sel && (sel->GetID() == e->GetID());
-			ImGuiTreeNodeFlags flags =
-				ImGuiTreeNodeFlags_Leaf |
-				ImGuiTreeNodeFlags_NoTreePushOnOpen |
-				(isSelected ? ImGuiTreeNodeFlags_Selected : 0);
-			ImGui::TreeNodeEx((void*)(intptr_t)e->GetID(), flags, "%s", e->GetName().c_str());
-			if (ImGui::IsItemClicked())
-				scene.SetSelected(e->GetID());
-		}
-	}
-
-	if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Entity* sel = scene.GetSelected();
-		if (!sel) {
-			ImGui::TextDisabled("No entity selected.");
+		if (obj == selected) {
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.4f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.28f, 0.55f, 0.90f, 0.4f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.4f));
+			flags |= ImGuiTreeNodeFlags_Selected;
 		}
 		else {
-			ImGui::Text("%s", sel->GetName().c_str());
-			ImGui::Separator();
-			Transform& t = sel->GetTransform();
-			t.SyncFromMatrix();
-			bool changed = false;
-			changed |= ImGui::DragFloat3("Position", &t.position.x, 0.01f);
-			changed |= ImGui::DragFloat3("Rotation", &t.rotation.x, 0.5f);
-			changed |= ImGui::DragFloat3("Scale", &t.scale.x, 0.01f, 0.001f);
-			if (changed)
-				t.SyncToMatrix();
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.90f, 0.90f, 0.90f, 0.6f));
 		}
+		bool open = ImGui::TreeNodeEx(obj->GetName().c_str(), flags);
+		if (obj == selected) ImGui::PopStyleColor(3);  else ImGui::PopStyleColor(1);
+		if (ImGui::IsItemClicked()) scene.SetSelected(obj->GetID());
+		if (open) ImGui::TreePop();
+		ImGui::PopID();
+		};
+
+	auto DrawGroup = [&](const char* group_name, auto predicate) {
+		ImGui::PushID(group_name);
+
+		bool group_has_selected = false;
+		if (selected) {
+			for (const auto& obj : scene.GetGameObjects()) {
+				if (predicate(obj.get()) && obj.get() == selected) {
+					group_has_selected = true;
+					break;
+				}
+			}
+		}
+
+		ImGuiTreeNodeFlags group_flags = base_flags | ImGuiTreeNodeFlags_DefaultOpen;
+		if (group_has_selected) {
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.2f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.28f, 0.55f, 0.90f, 0.2f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.2f));
+			group_flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		bool open = ImGui::TreeNodeEx(group_name, group_flags);
+
+		if (group_has_selected)
+			ImGui::PopStyleColor(3);
+
+		if (open) {
+			int index = 0;
+			for (const auto& obj : scene.GetGameObjects()) {
+				if (predicate(obj.get()))
+					DrawObject(obj.get(), index++);
+			}
+			ImGui::TreePop();
+		}
+		
+		ImGui::PopID();
+	};
+
+	// 根节点:只要有任何物体被选中就高亮
+	bool root_has_selected = (selected != nullptr);
+	ImGuiTreeNodeFlags root_flags = base_flags | ImGuiTreeNodeFlags_DefaultOpen;
+	if (root_has_selected) {
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.12f));        // 最淡
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.28f, 0.55f, 0.90f, 0.12f));
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.12f));
+		root_flags |= ImGuiTreeNodeFlags_Selected;
 	}
 
-	ImGui::End();
-}
+	bool root_open = ImGui::TreeNodeEx("Scene Collection", root_flags);
 
-void Editor::OnImGuiPBR(float& roughness, float& metallic) {
-	ImGui::Begin("Panel");
+	if (root_has_selected)
+		ImGui::PopStyleColor(3);
 
-	if (ImGui::CollapsingHeader("PBR", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::SliderFloat("PBR roughness", &roughness, 0.1f, 1.0f);
-		ImGui::SliderFloat("PBR metallic", &metallic, 0.0f, 1.0f);
+	if (root_open) {
+		DrawGroup("Lights", [](GameObject* o) { return o->light.has_value(); });
+		DrawGroup("PBR Test Objects", [](GameObject* o) { return o->pbr_test.has_value(); });
+		DrawGroup("Objects", [](GameObject* o) { return !o->light.has_value() && !o->pbr_test.has_value(); });
+		ImGui::TreePop();
 	}
+
+	ImGui::PopStyleVar(3);
+	ImGui::PopStyleColor(3);
 	ImGui::End();
 }

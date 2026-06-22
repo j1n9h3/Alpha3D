@@ -58,6 +58,8 @@ void Camera::ProcessMouseMovement(float xpos, float ypos) {
 void Camera::ProcessInput(GLFWwindow* glfw_window)
 {
     if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+        moving = true;
+
         float cameraSpeed = 0.05f; // adjust accordingly
         if (glfwGetKey(glfw_window, GLFW_KEY_W) == GLFW_PRESS)
             position += cameraSpeed * direction;
@@ -67,15 +69,14 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
             position -= glm::normalize(glm::cross(direction, up)) * cameraSpeed;
         if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
             position += glm::normalize(glm::cross(direction, up)) * cameraSpeed;
-
-        if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
-            glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         view = glm::lookAt(position, position + direction, up);
     }
     else {
+        moving = false;
+
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         this->firstMouse = true;
     }
@@ -94,7 +95,7 @@ Camera::Camera(float fov, Window& window, glm::vec3 position, glm::vec3 target) 
     float aspectRatio = window.GetAspectRatio();
     float window_width = window.GetWidth(), window_height = window.GetHeight();
 
-    glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
+    //glfwSetCursorPosCallback(window.GetGLFWWindow(), mouse_callback);
 
     m_Fov         = fov;
     m_AspectRatio = aspectRatio;
