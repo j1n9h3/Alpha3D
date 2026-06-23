@@ -34,52 +34,40 @@
     <Filter Include="Shader\PBR_IBL">
       <UniqueIdentifier>{2c9aeda1-53d9-4aab-a0be-b69e54d8a10c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\Scene">
+      <UniqueIdentifier>{eb66a375-b81f-4f88-b5bf-1c42b08694a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Renderer">
+      <UniqueIdentifier>{fe1c0631-9d94-47c4-96a3-e0e1fe3dc146}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Core">
+      <UniqueIdentifier>{dda23ae3-15bb-4efe-b951-d6bd6b79f03c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Utils">
+      <UniqueIdentifier>{39925d7a-578d-49c7-84d7-67a2cb1a6e0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{606214f8-cf63-48aa-948c-696f1d855621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Renderer">
+      <UniqueIdentifier>{0b6f165a-a447-4b0a-8a5f-3d68907dac8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{a5d64e39-3faa-4fe7-bb5b-1c26b22fc30c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene">
+      <UniqueIdentifier>{e97e584a-a105-4c09-82f0-4d6c2ee76ccd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\glad">
+      <UniqueIdentifier>{acddce34-9f88-4954-b294-b0fe79f0e0dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\glad.c">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Shader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\Application.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\Window.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\Log.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Mesh.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\Config.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Camera.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Texture.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Model.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\Editor.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
       <Filter>Source\ImGuizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="src\renderer\Primitive.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scene\GameObject.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scene\Scene.cpp">
-      <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui_docking\imgui.cpp">
       <Filter>Source\imgui</Filter>
@@ -102,14 +90,53 @@
     <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_glfw.cpp">
       <Filter>Source\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\Viewport.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\renderer\Camera.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\renderer\IBL.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\core\Config.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Editor.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\renderer\Environment.cpp">
-      <Filter>Source</Filter>
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\glad.c">
+      <Filter>Source\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\IBL.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\GameObject.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Mesh.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Log.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Model.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Primitive.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\Scene.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Shader.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\Texture.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Viewport.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Window.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,62 +217,62 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\renderer\Shader.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\core\Window.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\core\Log.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\renderer\Mesh.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\renderer\Texture.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\renderer\Camera.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\core\Config.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\core\WindowContext.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\renderer\Model.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="include\core\Editor.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h">
       <Filter>Source\ImGuizmo</Filter>
     </ClInclude>
-    <ClInclude Include="include\renderer\Primitive.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="include\scene\Scene.h">
+      <Filter>Headers\Scene</Filter>
     </ClInclude>
     <ClInclude Include="include\scene\GameObject.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="include\scene\Scene.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="include\renderer\Camera.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils\Transform.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="include\core\Editor.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
-    <ClInclude Include="include\core\Viewport.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="include\core\Config.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Log.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\IBL.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\Environment.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="include\core\LogSink.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Mesh.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Model.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Primitive.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Shader.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\Texture.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\Transform.h">
+      <Filter>Headers\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Viewport.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Window.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\WindowContext.h">
+      <Filter>Headers\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

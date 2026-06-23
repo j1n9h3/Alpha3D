@@ -2,6 +2,7 @@
 #include "core/Log.h"
 
 #include "renderer/Mesh.h"
+#include "renderer/Texture.h"
 
 Mesh::Mesh(const float* vertices, unsigned int size) {
 	vertex_count = size / (8 * sizeof(float)); // 每个顶点5个float (xyz + uv)
@@ -77,6 +78,20 @@ void Mesh::Bind() {
 	glBindVertexArray(vao);
 }
 
+void Mesh::FillMissingTextures() {
+	auto has = [&](const std::string& type) {
+		for (auto& t : textures)
+			if (t.GetType() == type) return true;
+		return false;
+	};
+
+	if (!has("albedo"))   textures.push_back(Texture(DefaultTextures::White(), "albedo"));
+	if (!has("normal"))   textures.push_back(Texture(DefaultTextures::Normal(), "normal"));
+	if (!has("arm"))      textures.push_back(Texture(DefaultTextures::White(), "arm"));
+	if (!has("emissive")) textures.push_back(Texture(DefaultTextures::Black(), "emissive"));
+}
+
+
 void Mesh::Draw() {
 	glBindVertexArray(vao);
 
@@ -93,24 +108,26 @@ void Mesh::Draw() {
 void Mesh::Draw(Shader& shader)
 {
 	unsigned int albedoNr = 1;
-	unsigned int roughnessNr = 1;
 	unsigned int normalNr = 1;
+	unsigned int armNr = 1;
 	unsigned int emissiveNr = 1;
 	for (unsigned int i = 0; i < this->textures.size(); i++)
 	{
-		glActiveTexture(GL_TEXTURE0 + i); 
+		glActiveTexture(GL_TEXTURE0 + i + 3); 
+		//LOG_TRACE(Model, "loading texture {}", GL_TEXTURE0 + i + 3);
 		std::string number;
 		std::string type = this->textures[i].GetType();
 		if (type == "albedo")
 			number = std::to_string(albedoNr++);
-		else if (type == "roughness")
-			number = std::to_string(roughnessNr++);
 		else if (type == "normal")
 			number = std::to_string(normalNr++);
+		else if (type == "arm")
+			number = std::to_string(armNr++);
 		else if (type == "emissive")
 			number = std::to_string(emissiveNr++);
 
-		shader.setInt(("material." + type + number).c_str(), i);
+		shader.setInt(("material." + type + "_" + number).c_str(), i + 3);
+		//LOG_TRACE(Model, "material." + type + "_" + number);
 		glBindTexture(GL_TEXTURE_2D, this->textures[i].GetId());
 	}
 	glActiveTexture(GL_TEXTURE0);

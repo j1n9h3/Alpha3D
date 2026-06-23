@@ -37,7 +37,13 @@ public:
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
 
+    float moveSpeed = 2.5f;
+
 private:
+
+    float deltaTime = 0.0f;	// Time between current frame and last frame
+    float lastFrame = 0.0f; // Time of last frame
+
     void RebuildProjection();
 
     // camera direction
@@ -64,6 +70,5 @@ private:
     float lastY;
 
     bool moving = false;
-
     bool firstMouse = true;
 };

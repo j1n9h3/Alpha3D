@@ -44,7 +44,7 @@ int main()
     const auto& config = Config::Get();
 
     Window window;
-    window.Init(config.window.width, config.window.height, config.window.title);
+    window.Init(config.window.width, config.window.height, config.window.x, config.window.y, config.window.title);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -65,7 +65,7 @@ int main()
 
     ////path
     std::string project_path = "C:/Users/17912/Projects/GraphicEngine/A3_GraphicEngine";
-    std::string light_path = project_path + "/" + "assets/models/lightbulb_led_1k/lightbulb_led_1k.gltf";
+    std::string light_path = project_path + "/" + "assets/models/lightbulb_led_4k/lightbulb_led_4k.gltf";
     std::string ginger_path = project_path + "/" + "assets/models/food_ginger_01_4k/food_ginger_01_4k.gltf";
     //std::string hdr_path = project_path + "/" + "assets/hdri/blinds_4k.hdr";
     //std::string hdr_path = project_path + "/" + "assets/hdri/subway_entrance_4k.hdr";
@@ -75,9 +75,9 @@ int main()
     Model model_bulb(light_path.c_str());
 
     // light Shaders
-    Shader shader_light("shaders/light.vert", "shaders/light.frag");
+    Shader shader_light("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
 
-    Shader shader_pbr("shaders/pbr.vert", "shaders/pbr.frag");
+    Shader shader_pbr("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
 
     // IBL Shaders
     Shader to_cubemap_shader("shaders/pbr/equirect_to_cubemap.vert", "shaders/pbr/equirect_to_cubemap.frag");
@@ -103,10 +103,32 @@ int main()
     Scene scene;
     float theScale = 20.0f;
 
-    GameObject& sphere = scene.AddGameObject("pbr_test", &mesh_sphere, &shader_pbr_ibl_test);
+
+    GameObject& sphere = scene.AddGameObject("PBR_sphere", &mesh_sphere, &shader_pbr_ibl_test);
     sphere.SetPosition(glm::vec3(2.0f, 1.5f, 0.0f));
-    sphere.SetScale(0.8f);
+    sphere.SetScale(2.0f);
     sphere.pbr_test = PBRTestComponent{};
+
+    const int pbr_test_grid = 6;
+    const float spacing = 1.4f;
+    const glm::vec3 pbr_test_grid_origin = glm::vec3(-5.0f, 4.0f, -5.0f); // 调整到合适位置
+
+    for (int row = 0; row < pbr_test_grid; row++)       // row → roughness
+    {
+        for (int col = 0; col < pbr_test_grid; col++)   // col → metallic
+        {
+            std::string name = "sphere_" + std::to_string(row) + "_" + std::to_string(col);
+            GameObject& s = scene.AddGameObject(name, &mesh_sphere, &shader_pbr_ibl_test);
+
+            s.SetPosition(pbr_test_grid_origin + glm::vec3(0.0f, -row * spacing, col * spacing));
+            s.SetScale(1.2f);
+
+            s.pbr_test = PBRTestComponent{};
+            (*s.pbr_test).albedo = glm::vec3(1.0f, 1.0f, 1.0f);
+            (*s.pbr_test).roughness = glm::clamp((float)row / (pbr_test_grid - 1), 0.05f, 1.0f);
+            (*s.pbr_test).metallic = (float)col / (pbr_test_grid - 1);
+        }
+    }
 
     GameObject& ginger = scene.AddGameObject("ginger", &model_ginger, &shader_pbr);
     ginger.SetScale(5.0f);
@@ -143,6 +165,7 @@ int main()
 
     glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
+
     while (!window.ShouldClose())
     {
         editor.BeginFrame(&viewport);
@@ -152,6 +175,7 @@ int main()
         // input process
 
         ImGuiWindow* hoveredWindow = ImGui::GetCurrentContext()->HoveredWindow;
+
 
         ImGuiIO& io = ImGui::GetIO();
 
@@ -184,8 +208,21 @@ int main()
         worldLightPos = bulb.GetTransform().matrix * glm::vec4(localLightPos, 1.0f); // w=1 表示点
         glm::vec3 lightPos = glm::vec3(worldLightPos);
 
-        shader_light.use();
-        shader_light.setBool("lightOn", lightOn);
+        ibl.Bind(shader_pbr);
+        shader_pbr.setBool("isLight", false);
+        shader_pbr.setMat4("view", camera.GetView());
+        shader_pbr.setMat4("projection", camera.GetProjection());
+        shader_pbr.setVec3("emissiveIntensity", pow((*bulb.light).intensity * (*bulb.light).color, glm::vec3(2.0f)));
+        shader_pbr.setVec3("light.ambient", ambient);
+        shader_pbr.setVec3("light.intensity", glm::vec3((*bulb.light).intensity * (*bulb.light).color));
+        shader_pbr.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
+        shader_pbr.setVec3("viewPos", camera.GetPosition());
+        shader_pbr.setVec3("lightPos", lightPos);
+
+        ibl.Bind(shader_light);
+        shader_light.setBool("isLight", true);
+        shader_light.setBool("lightOn", true);
+        shader_light.setVec3("emissiveIntensity", (*bulb.light).intensity * (*bulb.light).color / 2.0f);
         shader_light.setMat4("view", camera.GetView());
         shader_light.setMat4("projection", camera.GetProjection());
         shader_light.setVec3("light.ambient", ambient);
@@ -193,15 +230,6 @@ int main()
         shader_light.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
         shader_light.setVec3("viewPos", camera.GetPosition());
         shader_light.setVec3("lightPos", lightPos);
-
-        shader_pbr.use();
-        shader_pbr.setMat4("view", camera.GetView());
-        shader_pbr.setMat4("projection", camera.GetProjection());
-        shader_pbr.setVec3("light.ambient", ambient);
-        shader_pbr.setVec3("light.intensity", glm::vec3((*bulb.light).intensity * (*bulb.light).color));
-        shader_pbr.setVec3("F0", glm::vec3(0.3f, 0.3f, 0.3f));
-        shader_pbr.setVec3("viewPos",  camera.GetPosition());
-        shader_pbr.setVec3("lightPos", lightPos);
 
 
         ibl.Bind(shader_pbr_ibl_test);
@@ -214,6 +242,7 @@ int main()
         shader_pbr_ibl_test.setVec3("baseColor", (*sphere.pbr_test).albedo);
         shader_pbr_ibl_test.setFloat("roughness", (*sphere.pbr_test).roughness);
         shader_pbr_ibl_test.setFloat("metallic", (*sphere.pbr_test).metallic);
+
 
         GameObject* selected = scene.GetSelected();
 
@@ -245,16 +274,18 @@ int main()
         editor.BeginLog();
         editor.BeginCamera(camera);
         editor.BeginHierarchy(scene);
-        editor.BeginTransform(*selected);
-        editor.BeginProperties(*selected);
+        editor.BeginDetails(*selected);
 
         viewport.EndRender();
+
         editor.EndFrame();
+        window.Update();
 
         // check events
-        window.Update();
-    }
 
+
+    }
+    window.Destroy();
     glfwTerminate();
 
     return 0;

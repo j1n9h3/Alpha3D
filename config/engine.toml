@@ -1,9 +1,11 @@
-[window]
-width = 1000
-height = 1000
-title  = "Alpha3D"
-
 [renderer]
-fov  = 90.0
-near = 0.1
-far  = 100.0
+farClip = 100.0
+fov = 90.0
+nearClip = 0.10000000149011612
+
+[window]
+height = 1009
+title = 'Alpha3D'
+width = 1920
+x = 0
+y = 23

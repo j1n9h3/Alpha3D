@@ -41,6 +41,7 @@ public:
         other.vbo = 0;
         other.ebo = 0;
     }
+    void FillMissingTextures();
 
     void Bind();
     

@@ -27,6 +27,12 @@ GameObject* Scene::GetSelected() {
 
 void Scene::Render() const {
     for (const auto& game_object : game_objects) {
+        if (game_object->pbr_test.has_value()) {
+            Shader* shader = game_object->GetShader(); // ÐèÒª GameObject ±©Â¶ GetShader()
+            shader->setVec3("baseColor", (*game_object->pbr_test).albedo);
+            shader->setFloat("roughness", (*game_object->pbr_test).roughness);
+            shader->setFloat("metallic", (*game_object->pbr_test).metallic);
+        }
         game_object->Draw();
     }
 }

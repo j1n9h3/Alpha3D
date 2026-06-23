@@ -60,7 +60,12 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
     if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
         moving = true;
 
-        float cameraSpeed = 0.05f; // adjust accordingly
+
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        float cameraSpeed = moveSpeed * deltaTime; // adjust accordingly
         if (glfwGetKey(glfw_window, GLFW_KEY_W) == GLFW_PRESS)
             position += cameraSpeed * direction;
         if (glfwGetKey(glfw_window, GLFW_KEY_S) == GLFW_PRESS)

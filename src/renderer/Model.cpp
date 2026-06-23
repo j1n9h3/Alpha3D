@@ -120,13 +120,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
-        std::vector<Texture> roughnessMap = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness");
+        std::vector<Texture> roughnessMap = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "arm");
         textures.insert(textures.end(), roughnessMap.begin(), roughnessMap.end());
 
         std::vector<Texture> emissiveMap = loadMaterialTextures(material, aiTextureType_EMISSIVE, "emissive");
         textures.insert(textures.end(), emissiveMap.begin(), emissiveMap.end());
     }
-
     //return Mesh(vertices, indices, textures);
     return Mesh(vertices, indices, std::move(textures));
 }
@@ -136,7 +135,9 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        this->mMeshes.push_back(std::move(processMesh(mesh, scene)));
+        Mesh processed_mesh = processMesh(mesh, scene);
+        processed_mesh.FillMissingTextures();
+        this->mMeshes.push_back(std::move(processed_mesh));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; i++)

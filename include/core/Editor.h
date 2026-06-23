@@ -26,15 +26,16 @@ public:
     void EndFrame();
     void BeginLog();
     void BeginEnvironment(Environment& env);
-    void BeginProperties(GameObject& game_object);
-    void BeginTransform(GameObject& game_object);
+    void BeginDetails(GameObject& game_object);
     void BeginHierarchy(Scene& scene);
+    std::string GetFont() { return font_name; }
     bool Hover() const;
     bool WantCaptureKeyboard() const;
     bool IsViewportHovered() { return isViewportHovered; }
     void BeginCamera(Camera& camera);
 private:
     float mainMenuBarHeight = 10.0f;
+    std::string font_name;
     ImFont* font_small;
     ImFont* font_normal;
     ImFont* font_large;

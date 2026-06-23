@@ -9,7 +9,7 @@
 #include "stb/stb_image.h"
 
 
-unsigned int TextureFromFile(const char* texName, const std::string& dirPath, bool isHDR)
+unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
 {
     std::string targetPath = dirPath + '/' + std::string(texName);
 
@@ -29,11 +29,6 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath, bo
             format1 = GL_RGB, format2 = GL_RGB;
         else if (nrComponents == 4)
             format1 = GL_RGBA, format2 = GL_RGB;
-
-        if (isHDR) {
-            format1 = GL_RGB16F, format2 = GL_RGB;
-            repeat = GL_CLAMP_TO_EDGE;
-        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, format1, width, height, 0, format2, GL_UNSIGNED_BYTE, data);
@@ -56,9 +51,8 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath, bo
     return textureID;
 }
 
-Texture::Texture(aiString tex_name, const std::string& directory, const std::string& typeName, bool isHDR) {
-    this->mId = 0;
-    this->mId = TextureFromFile(tex_name.C_Str(), directory, isHDR);
+Texture::Texture(aiString tex_name, const std::string& directory, const std::string& typeName) {
+    this->mId = TextureFromFile(tex_name.C_Str(), directory);
     this->mType = typeName;
     this->mName = tex_name.C_Str();
 }

@@ -153,7 +153,9 @@ void Editor::Init(GLFWwindow* window)
     float xscale, yscale;
     glfwGetWindowContentScale(window, &xscale, &yscale);
 
-	this->font_small = io.Fonts->AddFontFromFileTTF("assets/fonts/Inter-Medium.ttf", 13.f * xscale);
+	this->font_name = "assets/fonts/Inter-Medium.ttf";
+
+	this->font_small = io.Fonts->AddFontFromFileTTF(this->font_name.c_str(), 13.f * xscale);
     // io.Fonts->AddFontFromFileTTF("assets/fonts/Inter-Medium.ttf", 14.0f * xscale);
 
     ImGui::GetStyle().ScaleAllSizes(xscale);
@@ -236,63 +238,71 @@ void Editor::BeginCamera(Camera & camera) {
 		camera.SetFov(mmToFov(mm));
 	}
 
+	ImGui::Text("Movement:");
+
+
+	ImGui::InputFloat("Speed", &camera.moveSpeed, 0.5f, 1.0f, "%.1f");
+
 
 	ImGui::End();
 }
 
-void Editor::BeginTransform(GameObject& game_object) {
+void Editor::BeginDetails(GameObject& game_object) {
 	Transform& transform = game_object.GetTransform();
 
-	ImGui::Begin("Transform");
+	ImGui::Begin("Details");
 
-	ImGui::Text("Location:");
-	ImGui::DragFloat("X##trans_x", &transform.position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
-	ImGui::DragFloat("Y##trans_y", &transform.position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
-	ImGui::DragFloat("Z##trans_z", &transform.position[2], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
-	ImGui::Spacing();
+	ImGui::Text(game_object.GetName().c_str());
 
-	ImGui::Text("Rotation:");
-	ImGui::DragFloat("X##rotate_x", &transform.rotation[0], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
-	ImGui::DragFloat("Y##rotate_y", &transform.rotation[1], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
-	ImGui::DragFloat("Z##rotate_z", &transform.rotation[2], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+	if (ImGui::CollapsingHeader("Transform")) {
+		ImGui::Text("Location:");
+		ImGui::DragFloat("X##trans_x", &transform.position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		ImGui::DragFloat("Y##trans_y", &transform.position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		ImGui::DragFloat("Z##trans_z", &transform.position[2], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		ImGui::Spacing();
 
-	float scale = transform.scale[0];
-	ImGui::Text("Scale:");
-	ImGui::DragFloat("Scale##scale", &scale, 0.05f, -FLT_MAX, +FLT_MAX, "XYZ %.3f");
+		ImGui::Text("Rotation:");
+		ImGui::DragFloat("X##rotate_x", &transform.rotation[0], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		ImGui::DragFloat("Y##rotate_y", &transform.rotation[1], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		ImGui::DragFloat("Z##rotate_z", &transform.rotation[2], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
 
-	transform.SetScale(glm::vec3(scale));
+		float scale = transform.scale[0];
+		ImGui::Text("Scale:");
+		ImGui::DragFloat("Scale##scale", &scale, 0.05f, -FLT_MAX, +FLT_MAX, "XYZ %.3f");
+
+		transform.SetScale(glm::vec3(scale));
+
+		transform.SyncToMatrix();
+	}
+
+	if (ImGui::CollapsingHeader("Inspector")) {
+
+		if (game_object.light) {
+			ImGui::Text("Light:");
+			static float light_intensity_low = 0.0f, light_intensity_high = 20.0f;
+			ImGui::ColorEdit3("Color##1", (float*)&(*game_object.light).color, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
+			ImGui::SliderScalar("Intensity", ImGuiDataType_Float, &(*game_object.light).intensity, &light_intensity_low, &light_intensity_high, "%.1f lm");
+		}
+
+		if (game_object.pbr_test) {
+			ImGui::Text("PBR Parameters:");
+			static float pbr_roughness_low = 0.01f, pbr_roughness_high = 1.0f;
+			static float pbr_metallic_low = 0.0f, pbr_metallic_high = 1.0f;
+			ImGui::ColorEdit3("Albedo##pbr_albedo", (float*)&(*game_object.pbr_test).albedo, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
+			ImGui::SliderScalar("Roughness", ImGuiDataType_Float, &(*game_object.pbr_test).roughness, &pbr_roughness_low, &pbr_roughness_high, "%.2f");
+			ImGui::SliderScalar("Metallic", ImGuiDataType_Float, &(*game_object.pbr_test).metallic, &pbr_metallic_low, &pbr_metallic_high, "%.2f");
+		}
+
+		if (!game_object.light && !game_object.pbr_test) {
+			ImGui::Text("This object has no specific properties.");
+		}
+
+	}
 
 	ImGui::End();
 
-	transform.SyncToMatrix();
 }
 
-void Editor::BeginProperties(GameObject& game_object) {
-
-	ImGui::Begin("Properties");
-
-	if (game_object.light) {
-		ImGui::Text("Light:");
-		static float light_intensity_low = 0.0f, light_intensity_high = 100.0f;
-		ImGui::ColorEdit3("Color##1", (float*)&(*game_object.light).color, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
-		ImGui::SliderScalar("Intensity", ImGuiDataType_Float, &(*game_object.light).intensity, &light_intensity_low, &light_intensity_high, "%.1f lm");
-	}
-
-	if (game_object.pbr_test) {
-		ImGui::Text("PBR Parameters:");
-		static float pbr_roughness_low = 0.01f, pbr_roughness_high = 1.0f;
-		static float pbr_metallic_low = 0.0f, pbr_metallic_high = 1.0f;
-		ImGui::ColorEdit3("Albedo##pbr_albedo", (float*)&(*game_object.pbr_test).albedo, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
-		ImGui::SliderScalar("Roughness", ImGuiDataType_Float, &(*game_object.pbr_test).roughness, &pbr_roughness_low, &pbr_roughness_high, "%.2f");
-		ImGui::SliderScalar("Metallic", ImGuiDataType_Float, &(*game_object.pbr_test).metallic, &pbr_metallic_low, &pbr_metallic_high, "%.2f");
-	}
-
-	if (!game_object.light && !game_object.pbr_test) {
-		ImGui::Text("This object has no specific properties.");
-	}
-
-	ImGui::End();
-}
 
 void Editor::EndFrame()
 {

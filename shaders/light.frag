@@ -2,10 +2,10 @@
 #define PI 3.14159265358979323846
 // material
 struct Material {
-    sampler2D albedo1;
-    sampler2D roughness1;
-    sampler2D normal1;
-    sampler2D emissive1;
+    sampler2D albedo_1;
+    sampler2D normal_1;
+    sampler2D arm_1;
+    sampler2D emissive_1;
 }; 
 
 uniform Material material;
@@ -71,14 +71,14 @@ vec3 BRDF_CookTorrance(float ndf, vec3 fresnel, float geo, vec3 view_dir, vec3 l
 void main()
 {
     
-    vec3 albedo = pow(texture(material.albedo1, TexCoords).rgb, vec3(2.2));
-    vec3 normal = texture(material.normal1, TexCoords).rgb;
+    vec3 albedo = pow(texture(material.albedo_1, TexCoords).rgb, vec3(2.2));
+    vec3 normal = texture(material.normal_1, TexCoords).rgb;
     normal = normal * 2.0 - 1.0;
     normal = normalize(TBN * normal);
 
 
-    float roughness = texture(material.roughness1, TexCoords).g;
-    float metallic = texture(material.roughness1, TexCoords).b;
+    float roughness = texture(material.arm_1, TexCoords).g;
+    float metallic = texture(material.arm_1, TexCoords).b;
     float shininess = mix(256.0, 2.0, roughness);
 
     vec3 light_dir = normalize(lightPos - FragPos);
@@ -115,7 +115,7 @@ void main()
     vec3 ambient = light.ambient * albedo;
 
     float mask = dot(albedo, vec3(0.299, 0.587, 0.114));
-    vec3 emissive = texture(material.emissive1, TexCoords).rgb;
+    vec3 emissive = texture(material.emissive_1, TexCoords).rgb;
     emissive = pow(emissive, vec3(2.2));
 
     float emissiveMask = dot(emissive, vec3(0.299, 0.587, 0.114));

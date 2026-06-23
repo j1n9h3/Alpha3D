@@ -7,10 +7,11 @@
 
 class Window {
 public:
-    void Init(int width, int height, const std::string& title);
+    void Init(int width, int height, int x, int y, const std::string& title);
     ~Window();
 
     void Update();
+    void Destroy();
 
     float GetWidth();
     float GetHeight();
@@ -25,6 +26,8 @@ public:
     // void SetWindowContext();
 
     void SetResizeCallback(std::function<void(int, int)> callback);
+    void SetScaleCallback(std::function<void(float)> callback);
+
 
 private:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -32,6 +35,9 @@ private:
     int width, height;
     std::string title;
     WindowContext context;
+    float currentScale = 1.0f;
 
     std::function<void(int, int)> ResizeCallback;
+    std::function<void(float)> ScaleCallback;
+
 };

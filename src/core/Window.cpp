@@ -11,9 +11,15 @@
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#include "core/Config.h"
+#include "imgui_docking/imgui.h"
 
 void Window::SetResizeCallback(std::function<void(int, int)> callback) {
     ResizeCallback = callback;
+}
+
+void Window::SetScaleCallback(std::function<void(float)> callback) {
+    ScaleCallback = callback;
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* glfw_window, int width, int height)
@@ -48,31 +54,33 @@ WindowContext& Window::GetWindowContext() {
     return this->context;
 }
 
-void Window::Init(int width, int height, const std::string& title) {
+void Window::Init(int width, int height, int x, int y, const std::string& title) {
 
     // set window properties
     
     glfwInit();
 
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-    this->width = mode->width;
-    this->height = mode->height;
+    this->width = width;
+    this->height = height;
     this->title = title;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
     //glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     //glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
+    
     // GLFW init
     glfw_window = glfwCreateWindow(this->width, this->height, this->title.c_str(), NULL, NULL);
+    glfwSetWindowPos(glfw_window, x, y);
+
     if (glfw_window == NULL)
     {
         LOG_ERROR(Window, "Window creation failed: {}, {}x{}!", title, this->width, this->height);
@@ -110,14 +118,28 @@ void Window::Init(int width, int height, const std::string& title) {
     this->context.camera = nullptr;
     glfwSetWindowUserPointer(glfw_window, &this->context);
 
-    glfwMaximizeWindow(this->GetGLFWWindow());
-
     LOG_INFO(Window, "Window Context created.");
+}
+
+void Window::Destroy() {
+    int wx, wy, ww, wh;
+    glfwGetWindowPos(glfw_window, &wx, &wy);
+    glfwGetWindowSize(glfw_window, &ww, &wh);
+
+    if (ww > 0 && wh > 0) { // 只在非最小化时保存
+        Config::Get().window.x = wx;
+        Config::Get().window.y = wy;
+        Config::Get().window.width = ww;
+        Config::Get().window.height = wh;
+        Config::Save("config/engine.toml");
+    }
+
+    LOG_INFO(Window, "Saving to config: size {}x{} pos ({}, {}) ", ww, wh, wx, wy);
 }
 
 Window::~Window() {
     glfwDestroyWindow(glfw_window);
-    //glfwTerminate();
+
     LOG_INFO(Window, "Window destroyed.");
 }
 
@@ -137,7 +159,6 @@ void Window::Update() {
     glfwPollEvents();
     glfwSwapBuffers(this->glfw_window);
 }
-
 
 bool Window::ShouldClose() {
     return glfwWindowShouldClose(this->glfw_window);
