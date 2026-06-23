@@ -61,11 +61,14 @@
     <Filter Include="Source\glad">
       <UniqueIdentifier>{acddce34-9f88-4954-b294-b0fe79f0e0dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Scenes">
+      <UniqueIdentifier>{ed3a5411-afbc-4005-be4c-4d67d86a73b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Scenes">
+      <UniqueIdentifier>{3b61b604-9d93-48a6-a166-2226c5436385}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\core\Application.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
       <Filter>Source\ImGuizmo</Filter>
     </ClCompile>
@@ -108,9 +111,6 @@
     <ClCompile Include="src\renderer\IBL.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\scene\GameObject.cpp">
-      <Filter>Source\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\renderer\Mesh.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
@@ -137,6 +137,27 @@
     </ClCompile>
     <ClCompile Include="src\core\Window.cpp">
       <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\MAIN.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scene\GameObject.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBLScene0_Base.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\BaseScene.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBLScene1_Custom.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBLScene2_Spheres.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp">
+      <Filter>Source\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -273,6 +294,21 @@
     </ClInclude>
     <ClInclude Include="include\core\WindowContext.h">
       <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBLScene0_Base.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\BaseScene.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBLScene1_Custom.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBLScene2_Spheres.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBLScene3_Single.h">
+      <Filter>Headers\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

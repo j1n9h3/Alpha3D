@@ -10,7 +10,6 @@ void Environment::Scan(const std::string& directory) {
             names.push_back(entry.path().stem().string());
         }
     }
-    selected = 0;
     changed = false;
 }
 

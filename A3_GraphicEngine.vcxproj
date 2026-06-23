@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\core\Application.cpp" />
+    <ClCompile Include="src\core\MAIN.cpp" />
     <ClCompile Include="src\core\Config.cpp" />
     <ClCompile Include="src\core\Editor.cpp" />
     <ClCompile Include="src\core\Log.cpp" />
@@ -34,6 +34,11 @@
     <ClCompile Include="src\renderer\Primitive.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
+    <ClCompile Include="src\scenes\BaseScene.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene1_Custom.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene2_Spheres.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene0_Base.cpp" />
     <ClCompile Include="src\scene\GameObject.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp" />
@@ -88,6 +93,11 @@
     <ClInclude Include="include\renderer\Primitive.h" />
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
+    <ClInclude Include="include\scenes\BaseScene.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene1_Custom.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene2_Spheres.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene3_Single.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene0_Base.h" />
     <ClInclude Include="include\utils\Transform.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />
     <ClInclude Include="include\scene\GameObject.h" />

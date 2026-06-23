@@ -21,6 +21,7 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
     unsigned char* data = stbi_load(targetPath.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
+
         GLenum format1 = GL_RGB, format2 = GL_RGB;
         GLenum repeat = GL_REPEAT;
         if (nrComponents == 1)
@@ -28,7 +29,7 @@ unsigned int TextureFromFile(const char* texName, const std::string& dirPath)
         else if (nrComponents == 3)
             format1 = GL_RGB, format2 = GL_RGB;
         else if (nrComponents == 4)
-            format1 = GL_RGBA, format2 = GL_RGB;
+            format1 = GL_RGBA, format2 = GL_RGBA;
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, format1, width, height, 0, format2, GL_UNSIGNED_BYTE, data);

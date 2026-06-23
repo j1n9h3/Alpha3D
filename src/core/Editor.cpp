@@ -14,6 +14,8 @@
 #include "renderer/Environment.h"
 #include "core/LogSink.h"
 
+#include "scenes/BaseScene.h"
+
 static GLuint LoadSVGIcon(const char* path, int w, int h) {
 	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
 	if (!image) return 0;
@@ -202,17 +204,6 @@ void Editor::BeginFrame(Viewport* viewport)
 
 	ImGui::PopStyleVar(); // style
 
-	// 2 属性
-
-	ImGui::Begin("Animation");
-	// 场景物体列表
-	ImGui::End();
-
-	ImGui::Begin("Environment");
-	// 场景物体列表
-	ImGui::End();
-
-
 	ImGui::ShowDemoWindow();
 }
 
@@ -284,16 +275,16 @@ void Editor::BeginDetails(GameObject& game_object) {
 			ImGui::SliderScalar("Intensity", ImGuiDataType_Float, &(*game_object.light).intensity, &light_intensity_low, &light_intensity_high, "%.1f lm");
 		}
 
-		if (game_object.pbr_test) {
+		if (game_object.pbr_sphere) {
 			ImGui::Text("PBR Parameters:");
 			static float pbr_roughness_low = 0.01f, pbr_roughness_high = 1.0f;
 			static float pbr_metallic_low = 0.0f, pbr_metallic_high = 1.0f;
-			ImGui::ColorEdit3("Albedo##pbr_albedo", (float*)&(*game_object.pbr_test).albedo, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
-			ImGui::SliderScalar("Roughness", ImGuiDataType_Float, &(*game_object.pbr_test).roughness, &pbr_roughness_low, &pbr_roughness_high, "%.2f");
-			ImGui::SliderScalar("Metallic", ImGuiDataType_Float, &(*game_object.pbr_test).metallic, &pbr_metallic_low, &pbr_metallic_high, "%.2f");
+			ImGui::ColorEdit3("Albedo##pbr_albedo", (float*)&(*game_object.pbr_sphere).albedo, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_Float);
+			ImGui::SliderScalar("Roughness", ImGuiDataType_Float, &(*game_object.pbr_sphere).roughness, &pbr_roughness_low, &pbr_roughness_high, "%.2f");
+			ImGui::SliderScalar("Metallic", ImGuiDataType_Float, &(*game_object.pbr_sphere).metallic, &pbr_metallic_low, &pbr_metallic_high, "%.2f");
 		}
 
-		if (!game_object.light && !game_object.pbr_test) {
+		if (!game_object.light && !game_object.pbr_sphere) {
 			ImGui::Text("This object has no specific properties.");
 		}
 
@@ -343,11 +334,20 @@ void Editor::BeginEnvironment(Environment& env) {
 void Editor::BeginLog() {
 	ImGui::Begin("Log");
 
+	if (ImGui::Button("Clear")) LogBuffer::Get().Clear();
+	ImGui::SameLine();
+	if (ImGui::Button("Copy")) {
+		std::string fullLog;
+		for (const auto& entry : LogBuffer::Get().GetEntries())
+			fullLog += entry.message;
+		ImGui::SetClipboardText(fullLog.c_str());
+	}
+
 	ImGui::BeginChild("log_scroll", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 	for (const auto& entry : LogBuffer::Get().GetEntries()) {
 		ImVec4 color;
 		switch (entry.level) {
-		case LogLevel::Trace: color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f); break;
+		case LogLevel::Trace: color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f); break;
 		case LogLevel::Info:  color = ImVec4(0.8f, 0.8f, 0.8f, 1.0f); break;
 		case LogLevel::Warn:  color = ImVec4(1.0f, 0.8f, 0.2f, 1.0f); break;
 		case LogLevel::Error: color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f); break;
@@ -364,9 +364,29 @@ void Editor::BeginLog() {
 	ImGui::End();
 }
 
+void Editor::BeginMainMenu(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window) {
+	ImGui::Begin("Scene");
+
+	if (ImGui::BeginCombo("Load Scene", currentScene->GetName().c_str())) {
+		for (auto& scene : scenes) {
+			bool selected = (scene == currentScene);
+			if (ImGui::Selectable(scene->GetName().c_str(), selected)) {
+				currentScene->Unload();
+				currentScene = scene;
+				currentScene->Load(window);
+			}
+			if (selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::End();
+}
+
 
 void Editor::BeginHierarchy(Scene& scene) {
-	ImGui::Begin("Hierarchy");
+	ImGui::Begin("Scene");
 	static ImGuiTreeNodeFlags base_flags =
 		ImGuiTreeNodeFlags_DrawLinesToNodes | ImGuiTreeNodeFlags_OpenOnArrow
 		| ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanFullWidth;
@@ -469,8 +489,8 @@ void Editor::BeginHierarchy(Scene& scene) {
 
 	if (root_open) {
 		DrawGroup("Lights", [](GameObject* o) { return o->light.has_value(); });
-		DrawGroup("PBR Test Objects", [](GameObject* o) { return o->pbr_test.has_value(); });
-		DrawGroup("Objects", [](GameObject* o) { return !o->light.has_value() && !o->pbr_test.has_value(); });
+		DrawGroup("PBR Test Objects", [](GameObject* o) { return o->pbr_sphere.has_value(); });
+		DrawGroup("Objects", [](GameObject* o) { return !o->light.has_value() && !o->pbr_sphere.has_value(); });
 		ImGui::TreePop();
 	}
 

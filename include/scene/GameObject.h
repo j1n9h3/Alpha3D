@@ -22,7 +22,7 @@ struct PBRTestComponent {
 class GameObject {
 public:
     std::optional<LightComponent> light;
-    std::optional<PBRTestComponent> pbr_test;
+    std::optional<PBRTestComponent> pbr_sphere;
 
     GameObject(uint32_t id, std::string name, Model* model, Shader* shader);
     GameObject(uint32_t id, std::string name, Mesh* mesh, Shader* shader);

@@ -55,6 +55,20 @@ void Camera::ProcessMouseMovement(float xpos, float ypos) {
     this->direction = glm::normalize(front);
 }
 
+void Camera::ProcessEditorInput(GLFWwindow* glfwWindow, bool isViewportHovered) {
+    if (isViewportHovered || GetMoving())
+    {
+        double xpos, ypos;
+        glfwGetCursorPos(glfwWindow, &xpos, &ypos);
+        ProcessMouseMovement((float)xpos, (float)ypos);
+        ProcessInput(glfwWindow);
+    }
+    else
+    {
+        ResetMouseState();
+    }
+}
+
 void Camera::ProcessInput(GLFWwindow* glfw_window)
 {
     if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {

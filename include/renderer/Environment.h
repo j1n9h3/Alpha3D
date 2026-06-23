@@ -18,6 +18,6 @@ public:
 private:
     std::vector<std::string> paths;
     std::vector<std::string> names;
-    int selected = 0;
+    int selected = 1;
     bool changed = false;
 };

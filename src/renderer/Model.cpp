@@ -26,14 +26,18 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             }
         }
 
-        LOG_INFO(Model, "Loading Model Texture '{}'", std::string(tex_name.C_Str()));
-
         if (!skip)
         {
+            LOG_INFO(Model, "Loading model texture '{}'", std::string(tex_name.C_Str()));
+
             Texture texture(tex_name, this->directory, typeName);
 
             textures.push_back(texture);
             textures_loaded.push_back(texture);
+        }
+        else {
+            LOG_INFO(Model, "Texture exists '{}'", std::string(tex_name.C_Str()));
+
         }
     }
     return textures;

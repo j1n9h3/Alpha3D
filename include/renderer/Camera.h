@@ -36,6 +36,7 @@ public:
     
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
+    void ProcessEditorInput(GLFWwindow* glfwWindow, bool isViewportHovered);
 
     float moveSpeed = 2.5f;
 

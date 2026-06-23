@@ -24,7 +24,8 @@ public:
     void Render() const;
 
     const std::vector<std::unique_ptr<GameObject>>& GetGameObjects() const { return game_objects; }
-
+    
+    void Clear();
 private:
     std::vector<std::unique_ptr<GameObject>> game_objects;
     uint32_t selected_id = 0;

@@ -14,6 +14,7 @@
 
 #include "utils/Transform.h"
 
+class BaseScene;
 class Scene;
 class Environment;
 class Editor {
@@ -28,11 +29,13 @@ public:
     void BeginEnvironment(Environment& env);
     void BeginDetails(GameObject& game_object);
     void BeginHierarchy(Scene& scene);
+    void BeginSceneSwitcher(BaseScene*& currentScene, std::vector<std::pair<std::string, BaseScene*>>& scenes, Window& window);
     std::string GetFont() { return font_name; }
     bool Hover() const;
     bool WantCaptureKeyboard() const;
     bool IsViewportHovered() { return isViewportHovered; }
     void BeginCamera(Camera& camera);
+    void BeginMainMenu(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
 private:
     float mainMenuBarHeight = 10.0f;
     std::string font_name;
