@@ -69,12 +69,12 @@
     <None Include="shaders\pbr\irradiance_convolution.vert" />
     <None Include="shaders\pbr\pbr_ibl.frag" />
     <None Include="shaders\pbr\pbr_ibl.vert" />
+    <None Include="shaders\pbr\pbr_ibl_test.frag" />
+    <None Include="shaders\pbr\pbr_ibl_test.vert" />
     <None Include="shaders\pbr\prefilter_convolution.frag" />
     <None Include="shaders\pbr\prefilter_convolution.vert" />
     <None Include="shaders\pbr\skybox.frag" />
     <None Include="shaders\pbr\skybox.vert" />
-    <None Include="shaders\pbr_test.frag" />
-    <None Include="shaders\pbr_test.vert" />
     <None Include="shaders\phong.frag" />
     <None Include="shaders\phong.vert" />
     <None Include="shaders\sky_atmosphere.frag" />

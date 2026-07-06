@@ -79,13 +79,16 @@ int main()
     PBRIBL_SingleTex pbribl_tex_horse_statue_4k("/assets/models/horse_statue_01_4k/horse_statue_01_4k.gltf", "pbr_horse_statue_4k");
     PBRIBL_SingleTex pbribl_tex_lion_head_4k("/assets/models/lion_head_4k/lion_head_4k.gltf", "lion_head_4k");
     PBRIBL_Single pbribl_test_bunney("/assets/models/stanford_bunny/scene.gltf", "stanford_bunny");
-    //SkyAtmosphere sky;
+    SkyAtmosphere sky_atmosphere;
 
     std::vector<BaseScene*> scenes = {
-        &pbribl_scene1_custom, &pbribl_test_scene2_spheres, &pbribl_tex_horse_statue_4k, &pbribl_tex_lion_head_4k, &pbribl_test_bunney
+        // pbr ibl scenes
+        &pbribl_scene1_custom, &pbribl_test_scene2_spheres, &pbribl_tex_horse_statue_4k, &pbribl_tex_lion_head_4k, &pbribl_test_bunney,
+        // sky atmosphere scene
+        &sky_atmosphere
     };
 
-    BaseScene* currentScene = &pbribl_test_scene2_spheres;
+    BaseScene* currentScene = &sky_atmosphere;
 
     currentScene->Load(window);
 

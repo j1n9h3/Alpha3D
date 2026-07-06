@@ -197,12 +197,6 @@
     <None Include="shaders\pbr.frag">
       <Filter>Shader</Filter>
     </None>
-    <None Include="shaders\pbr_test.vert">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\pbr_test.frag">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="shaders\light.frag">
       <Filter>Resource</Filter>
     </None>
@@ -245,8 +239,18 @@
     <None Include="..\..\..\Downloads\icon.svg">
       <Filter>Resource</Filter>
     </None>
-    <None Include="shaders\sky_atmosphere.frag" />
-    <None Include="shaders\sky_atmosphere.vert" />
+    <None Include="shaders\sky_atmosphere.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\sky_atmosphere.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_ibl_test.frag">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\pbr\pbr_ibl_test.vert">
+      <Filter>Shader\PBR_IBL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h">

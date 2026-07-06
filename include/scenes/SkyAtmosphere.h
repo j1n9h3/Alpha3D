@@ -18,13 +18,16 @@ public:
     void Render(Camera& camera);
     void Unload();
     void RenderEditor(Editor& editor);
+    std::string GetName() { return this->name; }
 
     GameObject* GetMainGameObject() { return nullptr; }
 
     // Shaders
-    Shader shader_sky_atmosphere = Shader("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
+    Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere.vert", "shaders/sky_atmosphere.frag");
 
     IBL ibl;
     Environment env_map;
+private:
+    std::string name = "sky_atmosphere";
 
 };

@@ -32,7 +32,7 @@ void Viewport::Init(int w, int h) {
 }
 
 void Viewport::BeginRender() {
-    glClearColor(1.0, 1.0, 1.0, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glBindFramebuffer(GL_FRAMEBUFFER, fboID);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
