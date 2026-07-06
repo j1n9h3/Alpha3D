@@ -8,27 +8,23 @@
 #include "renderer/Environment.h"
 #include "scene/Scene.h"
 #include "scenes/BaseScene.h"
-#include "scenes/PBRIBLScene0_Base.h"
 
 class Window;
 
-class PBRIBLScene2_Spheres : public PBRIBLScene0_Base
+class SkyAtmosphere : public BaseScene
 {
 public:
-    std::string name = "PBRIBLScene2_Spheres";
-
     void Load(Window& window);
     void Render(Camera& camera);
     void Unload();
     void RenderEditor(Editor& editor);
 
-    //GameObject* GetMainGameObject() { return sphere; }
+    GameObject* GetMainGameObject() { return nullptr; }
 
-    std::string GetName() { return name; }
+    // Shaders
+    Shader shader_sky_atmosphere = Shader("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
 
-private:
-
-    glm::vec3 sphere_albedo = glm::vec3(0.5f, 0.5f, 0.5f);
-    GameObject* sphere = nullptr;
+    IBL ibl;
+    Environment env_map;
 
 };

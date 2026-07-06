@@ -8,15 +8,15 @@
 #include "renderer/Environment.h"
 #include "scene/Scene.h"
 #include "scenes/BaseScene.h"
-#include "scenes/PBRIBLScene0_Base.h"
+#include "scenes/PBRIBL_Base.h"
 
 class Window;
 
-class PBRIBLScene3_Single : public PBRIBLScene0_Base
+class PBRIBL_SingleTex : public PBRIBL_Base
 {
 public:
 
-    PBRIBLScene3_Single(std::string path, std::string inst_name);
+    PBRIBL_SingleTex(std::string path, std::string inst_name);
     void Load(Window& window);
     void Render(Camera& camera);
     void Unload();

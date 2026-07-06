@@ -1,17 +1,17 @@
-#include "scenes/PBRIBLScene4_SingleTex.h"
+#include "scenes/PBRIBL_SingleTex.h"
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
 #include "renderer/Model.h"
 
-PBRIBLScene4_SingleTex::PBRIBLScene4_SingleTex(std::string path, std::string inst_name)
+PBRIBL_SingleTex::PBRIBL_SingleTex(std::string path, std::string inst_name)
     : model_path(path), model((project_path + path).c_str()){
     name = inst_name;
 }
 
-void PBRIBLScene4_SingleTex::Load(Window& window)
+void PBRIBL_SingleTex::Load(Window& window)
 {
-    PBRIBLScene0_Base::Load(window); 
+    PBRIBL_Base::Load(window); 
     // Scene
     game_object = &scene.AddGameObject("industrial_microscope", &model, &shader_pbr_ibl_object);
     game_object->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -19,7 +19,7 @@ void PBRIBLScene4_SingleTex::Load(Window& window)
     scene.SetSelected(game_object->GetID());
 }
 
-void PBRIBLScene4_SingleTex::Render(Camera& camera)
+void PBRIBL_SingleTex::Render(Camera& camera)
 {
     // shader_pbr
     ibl.Bind(shader_pbr_ibl_object);
@@ -34,17 +34,17 @@ void PBRIBLScene4_SingleTex::Render(Camera& camera)
 
     scene.Render();
 
-    PBRIBLScene0_Base::Render(camera);
+    PBRIBL_Base::Render(camera);
 
 }
 
-void PBRIBLScene4_SingleTex::Unload()
+void PBRIBL_SingleTex::Unload()
 {
     scene.Clear();
 }
 
 
-void PBRIBLScene4_SingleTex::RenderEditor(Editor& editor)
+void PBRIBL_SingleTex::RenderEditor(Editor& editor)
 {
-    PBRIBLScene0_Base::RenderEditor(editor);
+    PBRIBL_Base::RenderEditor(editor);
 }

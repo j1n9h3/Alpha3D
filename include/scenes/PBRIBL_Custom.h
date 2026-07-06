@@ -8,11 +8,11 @@
 #include "renderer/Environment.h"
 #include "scene/Scene.h"
 #include "scenes/BaseScene.h"
-#include "scenes/PBRIBLScene0_Base.h"
+#include "scenes/PBRIBL_Base.h"
 
 class Window;
 
-class PBRIBLScene1_Custom : public PBRIBLScene0_Base
+class PBRIBL_Custom : public PBRIBL_Base
 {
 public:
 
@@ -26,7 +26,7 @@ public:
     std::string GetName() { return name; }
 
 private:
-    std::string name = "PBRIBLScene1_Custom";
+    std::string name = "PBRIBL_Custom";
 
     Model model_ginger = Model((project_path + "/assets/models/food_ginger_01_4k/food_ginger_01_4k.gltf").c_str());
     Model model_bulb = Model((project_path + "/assets/models/lightbulb_led_4k/lightbulb_led_4k.gltf").c_str());

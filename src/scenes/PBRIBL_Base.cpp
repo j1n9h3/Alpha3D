@@ -1,13 +1,13 @@
-#include "scenes/PBRIBLScene0_Base.h"
+#include "scenes/PBRIBL_Base.h"
 
-void PBRIBLScene0_Base::Load(Window& window)
+void PBRIBL_Base::Load(Window& window)
 {
     BaseScene::Load(window); // glEnable
     env_map.Scan(project_path + "/assets/hdri");
     ibl.Load(env_map.GetSelectedPath(), cubeMesh, to_cubemap_shader, irradiance_shader, prefilter_shader, brdf_integrate_shader);
 }
 
-void PBRIBLScene0_Base::Render(Camera& camera)
+void PBRIBL_Base::Render(Camera& camera)
 {
     // skybox
     glDepthFunc(GL_LEQUAL);
@@ -21,13 +21,13 @@ void PBRIBLScene0_Base::Render(Camera& camera)
     glDepthFunc(GL_LESS);
 }
 
-void PBRIBLScene0_Base::Unload()
+void PBRIBL_Base::Unload()
 {
     scene.Clear();
 }
 
 
-void PBRIBLScene0_Base::RenderEditor(Editor& editor)
+void PBRIBL_Base::RenderEditor(Editor& editor)
 {
 
     editor.BeginEnvironment(env_map);

@@ -1,11 +1,11 @@
-#include "scenes/PBRIBLScene2_Spheres.h"
+#include "scenes/PBRIBL_Spheres.h"
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
 
-void PBRIBLScene2_Spheres::Load(Window& window)
+void PBRIBL_Spheres::Load(Window& window)
 {
-    PBRIBLScene0_Base::Load(window);  // 执行 glEnable 等
+    PBRIBL_Base::Load(window);  // 执行 glEnable 等
 
     const int pbr_test_grid = 6;
     const float spacing = 1.4f;
@@ -29,7 +29,7 @@ void PBRIBLScene2_Spheres::Load(Window& window)
     scene.SetSelected(scene.GetGameObjects()[0]->GetID());
 }
 
-void PBRIBLScene2_Spheres::Render(Camera& camera)
+void PBRIBL_Spheres::Render(Camera& camera)
 {
 
     // shader_pbr_ibl_test
@@ -44,17 +44,17 @@ void PBRIBLScene2_Spheres::Render(Camera& camera)
 
     scene.Render();
 
-    PBRIBLScene0_Base::Render(camera);
+    PBRIBL_Base::Render(camera);
 
 }
 
-void PBRIBLScene2_Spheres::Unload()
+void PBRIBL_Spheres::Unload()
 {
     scene.Clear();
 }
 
 
-void PBRIBLScene2_Spheres::RenderEditor(Editor& editor)
+void PBRIBL_Spheres::RenderEditor(Editor& editor)
 {
-    PBRIBLScene0_Base::RenderEditor(editor);
+    PBRIBL_Base::RenderEditor(editor);
 }

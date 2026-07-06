@@ -1,12 +1,12 @@
-#include "scenes/PBRIBLScene1_Custom.h"
+#include "scenes/PBRIBL_Custom.h"
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
 
-void PBRIBLScene1_Custom::Load(Window& window)
+void PBRIBL_Custom::Load(Window& window)
 {
 
-    PBRIBLScene0_Base::Load(window);  // 执行 glEnable 等
+    PBRIBL_Base::Load(window);  // 执行 glEnable 等
 
     // Scene
     sphere = &scene.AddGameObject("PBR_sphere", &mesh_sphere, &shader_pbr_ibl_test);
@@ -27,7 +27,7 @@ void PBRIBLScene1_Custom::Load(Window& window)
     scene.SetSelected(bulb->GetID());
 }
 
-void PBRIBLScene1_Custom::Render(Camera& camera)
+void PBRIBL_Custom::Render(Camera& camera)
 {
 
     glm::vec4 worldLightPos = bulb->GetTransform().matrix * glm::vec4(localLightPos, 1.0f);
@@ -67,17 +67,17 @@ void PBRIBLScene1_Custom::Render(Camera& camera)
 
     scene.Render();
 
-    PBRIBLScene0_Base::Render(camera);
+    PBRIBL_Base::Render(camera);
 
 }
 
-void PBRIBLScene1_Custom::Unload()
+void PBRIBL_Custom::Unload()
 {
     scene.Clear();
 }
 
 
-void PBRIBLScene1_Custom::RenderEditor(Editor& editor)
+void PBRIBL_Custom::RenderEditor(Editor& editor)
 {
-    PBRIBLScene0_Base::RenderEditor(editor);
+    PBRIBL_Base::RenderEditor(editor);
 }
