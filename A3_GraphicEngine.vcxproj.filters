@@ -141,19 +141,7 @@
     <ClCompile Include="src\scene\GameObject.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\scenes\PBRIBLScene0_Base.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
     <ClCompile Include="src\scenes\BaseScene.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scenes\PBRIBLScene1_Custom.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scenes\PBRIBLScene2_Spheres.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
-    <ClCompile Include="src\scenes\PBRIBLScene4_SingleTex.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="src\core\Time.cpp">
@@ -165,7 +153,22 @@
     <ClCompile Include="src\core\Log.cpp">
       <Filter>Source\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp">
+    <ClCompile Include="src\scenes\PBRIBL_Base.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBL_Custom.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBL_Single.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBL_SingleTex.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBL_Spheres.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\SkyAtmosphere.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
@@ -198,12 +201,6 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="shaders\pbr_test.frag">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\pbr_ibl_test.frag">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\pbr_ibl_test.vert">
       <Filter>Shader</Filter>
     </None>
     <None Include="shaders\light.frag">
@@ -248,6 +245,8 @@
     <None Include="..\..\..\Downloads\icon.svg">
       <Filter>Resource</Filter>
     </None>
+    <None Include="shaders\sky_atmosphere.frag" />
+    <None Include="shaders\sky_atmosphere.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h">
@@ -307,19 +306,7 @@
     <ClInclude Include="include\core\WindowContext.h">
       <Filter>Headers\Core</Filter>
     </ClInclude>
-    <ClInclude Include="include\scenes\PBRIBLScene0_Base.h">
-      <Filter>Headers\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="include\scenes\BaseScene.h">
-      <Filter>Headers\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scenes\PBRIBLScene1_Custom.h">
-      <Filter>Headers\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scenes\PBRIBLScene2_Spheres.h">
-      <Filter>Headers\Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="include\scenes\PBRIBLScene4_SingleTex.h">
       <Filter>Headers\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="include\core\Time.h">
@@ -328,7 +315,22 @@
     <ClInclude Include="include\utils\Recorder.h">
       <Filter>Headers\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="include\scenes\PBRIBLScene3_Single.h">
+    <ClInclude Include="include\scenes\PBRIBL_Base.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBL_Custom.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBL_Single.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBL_SingleTex.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBL_Spheres.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\SkyAtmosphere.h">
       <Filter>Headers\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
