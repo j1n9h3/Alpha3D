@@ -9,7 +9,7 @@ void PBRIBLScene1_Custom::Load(Window& window)
     PBRIBLScene0_Base::Load(window);  // Ö´ÐÐ glEnable µÈ
 
     // Scene
-    sphere = &scene.AddGameObject("PBR_sphere", &mesh_sphere, &shader_pbr_ibl_test_sphere);
+    sphere = &scene.AddGameObject("PBR_sphere", &mesh_sphere, &shader_pbr_ibl_test);
     sphere->SetPosition(glm::vec3(2.0f, 1.5f, 0.0f));
     sphere->SetScale(2.0f);
     sphere->pbr_sphere = PBRTestComponent{};
@@ -29,7 +29,6 @@ void PBRIBLScene1_Custom::Load(Window& window)
 
 void PBRIBLScene1_Custom::Render(Camera& camera)
 {
-    PBRIBLScene0_Base::Render(camera);
 
     glm::vec4 worldLightPos = bulb->GetTransform().matrix * glm::vec4(localLightPos, 1.0f);
     glm::vec3 lightPos = glm::vec3(worldLightPos);
@@ -59,14 +58,17 @@ void PBRIBLScene1_Custom::Render(Camera& camera)
     shader_pbr_ibl_light.setVec3("lightPos", lightPos);
 
     // shader_pbr_ibl_test
-    ibl.Bind(shader_pbr_ibl_test_sphere);
-    shader_pbr_ibl_test_sphere.setMat4("view", camera.GetView());
-    shader_pbr_ibl_test_sphere.setMat4("projection", camera.GetProjection());
-    shader_pbr_ibl_test_sphere.setVec3("light.intensity", glm::vec3(bulb->light->intensity * bulb->light->color));
-    shader_pbr_ibl_test_sphere.setVec3("viewPos", camera.GetPosition());
-    shader_pbr_ibl_test_sphere.setVec3("lightPos", lightPos);
+    ibl.Bind(shader_pbr_ibl_test);
+    shader_pbr_ibl_test.setMat4("view", camera.GetView());
+    shader_pbr_ibl_test.setMat4("projection", camera.GetProjection());
+    shader_pbr_ibl_test.setVec3("light.intensity", glm::vec3(bulb->light->intensity * bulb->light->color));
+    shader_pbr_ibl_test.setVec3("viewPos", camera.GetPosition());
+    shader_pbr_ibl_test.setVec3("lightPos", lightPos);
 
     scene.Render();
+
+    PBRIBLScene0_Base::Render(camera);
+
 }
 
 void PBRIBLScene1_Custom::Unload()

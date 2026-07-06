@@ -21,8 +21,9 @@ public:
     virtual GameObject* GetMainGameObject() { return nullptr; };
 
     virtual std::string GetName() = 0;
-
+    void SetDeltaTime(float dt) { delta_time = dt; }
 protected:
+    float delta_time = 0.0f;
     Scene scene;
 
     std::string project_path = "C:/Users/17912/Projects/GraphicEngine/A3_GraphicEngine";

@@ -29,7 +29,6 @@ void PBRIBLScene0_Base::Unload()
 
 void PBRIBLScene0_Base::RenderEditor(Editor& editor)
 {
-    BaseScene::RenderEditor(editor);
 
     editor.BeginEnvironment(env_map);
     if (env_map.HasChanged()) {
@@ -40,4 +39,7 @@ void PBRIBLScene0_Base::RenderEditor(Editor& editor)
         );
         env_map.ClearChanged();
     }
+
+    BaseScene::RenderEditor(editor);
+
 }

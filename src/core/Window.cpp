@@ -13,6 +13,8 @@
 #include <GLFW/glfw3native.h>
 #include "core/Config.h"
 #include "imgui_docking/imgui.h"
+#include <shobjidl.h>
+#include "stb_image.h"
 
 void Window::SetResizeCallback(std::function<void(int, int)> callback) {
     ResizeCallback = callback;
@@ -107,11 +109,20 @@ void Window::Init(int width, int height, int x, int y, const std::string& title)
         // 暗色模式（让标题栏文字变白）
         BOOL dark = TRUE;
         DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
-
-        HICON icon = (HICON)LoadImage(NULL, L"assets/icon.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
-        SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
-        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
     #endif
+
+    GLFWimage images[1];
+
+    int icon_width, icon_height, channels;
+    unsigned char* data = stbi_load("assets/icon.png", &icon_width, &icon_height, &channels, 4);
+
+    images[0].width = icon_width;
+    images[0].height = icon_height;
+    images[0].pixels = data;
+
+    glfwSetWindowIcon(glfw_window, 1, images);
+
+    stbi_image_free(data);
 
     // set user pointer
     this->context.window = this;
@@ -122,19 +133,19 @@ void Window::Init(int width, int height, int x, int y, const std::string& title)
 }
 
 void Window::Destroy() {
-    int wx, wy, ww, wh;
-    glfwGetWindowPos(glfw_window, &wx, &wy);
-    glfwGetWindowSize(glfw_window, &ww, &wh);
+    //int wx, wy, ww, wh;
+    //glfwGetWindowPos(glfw_window, &wx, &wy);
+    //glfwGetWindowSize(glfw_window, &ww, &wh);
 
-    if (ww > 0 && wh > 0) { // 只在非最小化时保存
-        Config::Get().window.x = wx;
-        Config::Get().window.y = wy;
-        Config::Get().window.width = ww;
-        Config::Get().window.height = wh;
-        Config::Save("config/engine.toml");
-    }
+    //if (ww > 0 && wh > 0) { // 只在非最小化时保存
+    //    Config::Get().window.x = wx;
+    //    Config::Get().window.y = wy;
+    //    Config::Get().window.width = ww;
+    //    Config::Get().window.height = wh;
+    //    Config::Save("config/engine.toml");
+    //}
 
-    LOG_INFO(Window, "Saving to config: size {}x{} pos ({}, {}) ", ww, wh, wx, wy);
+    //LOG_INFO(Window, "Saving to config: size {}x{} pos ({}, {}) ", ww, wh, wx, wy);
 }
 
 Window::~Window() {
@@ -156,6 +167,10 @@ float Window::GetHeight() {
 }
 
 void Window::Update() {
+    double current_time = glfwGetTime();
+    delta_time = (float)(current_time - last_time);
+    last_time = current_time;
+
     glfwPollEvents();
     glfwSwapBuffers(this->glfw_window);
 }

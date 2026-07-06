@@ -9,3 +9,5 @@ vcpkg_installed
 .jpg
 models
 hdri
+record
+log

@@ -17,13 +17,13 @@
 class BaseScene;
 class Scene;
 class Environment;
+class Recorder;
 class Editor {
 public:
     void Init(GLFWwindow* window);
     ~Editor();
 
-    void BeginFrame(Viewport* viewport);
-    //void BeginFrame();
+    void BeginFrame(Viewport* viewport, Recorder* recorder);
     void EndFrame();
     void BeginLog();
     void BeginEnvironment(Environment& env);
@@ -35,7 +35,8 @@ public:
     bool WantCaptureKeyboard() const;
     bool IsViewportHovered() { return isViewportHovered; }
     void BeginCamera(Camera& camera);
-    void BeginMainMenu(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
+    void BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
+    void BeginRecorder(Recorder& recorder);
 private:
     float mainMenuBarHeight = 10.0f;
     std::string font_name;

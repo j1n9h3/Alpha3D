@@ -24,7 +24,7 @@ public:
     // Shaders
     Shader shader_pbr_ibl_object = Shader("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
     Shader shader_pbr_ibl_light = Shader("shaders/pbr/pbr_ibl.vert", "shaders/pbr/pbr_ibl.frag");
-    Shader shader_pbr_ibl_test_sphere = Shader("shaders/pbr_ibl_test.vert", "shaders/pbr_ibl_test.frag");
+    Shader shader_pbr_ibl_test = Shader("shaders/pbr_ibl_test.vert", "shaders/pbr_ibl_test.frag");
     Shader to_cubemap_shader = Shader("shaders/pbr/equirect_to_cubemap.vert", "shaders/pbr/equirect_to_cubemap.frag");
     Shader skybox_shader = Shader("shaders/pbr/skybox.vert", "shaders/pbr/skybox.frag");
     Shader irradiance_shader = Shader("shaders/pbr/irradiance_convolution.vert", "shaders/pbr/irradiance_convolution.frag");

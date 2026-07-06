@@ -22,6 +22,7 @@ public:
     void ClearSelection() { this->selected_id = -1; };
 
     void Render() const;
+    void Update(float delta_time);
 
     const std::vector<std::unique_ptr<GameObject>>& GetGameObjects() const { return game_objects; }
     

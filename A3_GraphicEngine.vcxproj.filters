@@ -114,9 +114,6 @@
     <ClCompile Include="src\renderer\Mesh.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\Log.cpp">
-      <Filter>Source\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="src\renderer\Model.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
@@ -155,6 +152,18 @@
     </ClCompile>
     <ClCompile Include="src\scenes\PBRIBLScene2_Spheres.cpp">
       <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\PBRIBLScene4_SingleTex.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Time.cpp">
+      <Filter>Source\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\Recorder.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\Log.cpp">
+      <Filter>Source\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp">
       <Filter>Source\Scenes</Filter>
@@ -236,6 +245,9 @@
     <None Include="shaders\pbr\skybox.vert">
       <Filter>Shader\PBR_IBL</Filter>
     </None>
+    <None Include="..\..\..\Downloads\icon.svg">
+      <Filter>Resource</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h">
@@ -306,6 +318,15 @@
     </ClInclude>
     <ClInclude Include="include\scenes\PBRIBLScene2_Spheres.h">
       <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\PBRIBLScene4_SingleTex.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\Time.h">
+      <Filter>Headers\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\Recorder.h">
+      <Filter>Headers\Utils</Filter>
     </ClInclude>
     <ClInclude Include="include\scenes\PBRIBLScene3_Single.h">
       <Filter>Headers\Scenes</Filter>

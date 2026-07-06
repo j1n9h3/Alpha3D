@@ -21,6 +21,10 @@ struct PBRTestComponent {
 
 class GameObject {
 public:
+    float rotate_speed_x;
+    float rotate_speed_y;
+    float rotate_speed_z;
+
     std::optional<LightComponent> light;
     std::optional<PBRTestComponent> pbr_sphere;
 
@@ -64,7 +68,10 @@ public:
     // Draw
     void Draw() const;
 
+    void Update();
 private:
+
+
     uint32_t id;
     std::string name;
     std::string type;

@@ -16,7 +16,7 @@ void PBRIBLScene2_Spheres::Load(Window& window)
         for (int col = 0; col < pbr_test_grid; col++)
         {
             std::string name = "sphere_" + std::to_string(row) + "_" + std::to_string(col);
-            GameObject& s = scene.AddGameObject(name, &mesh_sphere, &shader_pbr_ibl_test_sphere);
+            GameObject& s = scene.AddGameObject(name, &mesh_sphere, &shader_pbr_ibl_test);
             s.SetPosition(origin + glm::vec3(0.0f, -row * spacing, col * spacing));
             s.SetScale(1.2f);
             s.pbr_sphere = PBRTestComponent{};
@@ -33,14 +33,14 @@ void PBRIBLScene2_Spheres::Render(Camera& camera)
 {
 
     // shader_pbr_ibl_test
-    ibl.Bind(shader_pbr_ibl_test_sphere);
-    shader_pbr_ibl_test_sphere.setMat4("view", camera.GetView());
-    shader_pbr_ibl_test_sphere.setMat4("projection", camera.GetProjection());
-    shader_pbr_ibl_test_sphere.setVec3("light.ambient", ambient);
-    shader_pbr_ibl_test_sphere.setVec3("light.intensity", glm::vec3(0.0f, 0.0f, 0.0f));
-    shader_pbr_ibl_test_sphere.setVec3("viewPos", camera.GetPosition());
-    shader_pbr_ibl_test_sphere.setVec3("lightPos", glm::vec3(0.0f, 0.0f, 0.0f));
-    shader_pbr_ibl_test_sphere.setVec3("baseColor", sphere_albedo);
+    ibl.Bind(shader_pbr_ibl_test);
+    shader_pbr_ibl_test.setMat4("view", camera.GetView());
+    shader_pbr_ibl_test.setMat4("projection", camera.GetProjection());
+    shader_pbr_ibl_test.setVec3("light.ambient", ambient);
+    shader_pbr_ibl_test.setVec3("light.intensity", glm::vec3(0.0f, 0.0f, 0.0f));
+    shader_pbr_ibl_test.setVec3("viewPos", camera.GetPosition());
+    shader_pbr_ibl_test.setVec3("lightPos", glm::vec3(0.0f, 0.0f, 0.0f));
+    shader_pbr_ibl_test.setVec3("baseColor", sphere_albedo);
 
     scene.Render();
 

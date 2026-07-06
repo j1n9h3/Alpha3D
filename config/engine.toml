@@ -4,8 +4,8 @@ fov = 90.0
 nearClip = 0.10000000149011612
 
 [window]
-height = 1494
+height = 800
 title = 'Alpha3D'
-width = 2560
-x = 0
-y = 34
+width = 1600
+x = 100
+y = 100

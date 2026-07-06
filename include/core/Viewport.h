@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 
 // Viewport.h
+class Camera;
 class Viewport {
 public:
     void Init(int width, int height);

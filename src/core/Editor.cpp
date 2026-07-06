@@ -15,6 +15,7 @@
 #include "core/LogSink.h"
 
 #include "scenes/BaseScene.h"
+#include "utils/Recorder.h"
 
 static GLuint LoadSVGIcon(const char* path, int w, int h) {
 	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
@@ -179,7 +180,7 @@ Editor::~Editor()
 
 
 //void Editor::BeginFrame()
-void Editor::BeginFrame(Viewport* viewport)
+void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 {
     ImGui_ImplOpenGL3_NewFrame();
     
@@ -200,11 +201,47 @@ void Editor::BeginFrame(Viewport* viewport)
 	ImGui::Image((void*)(intptr_t)viewport -> GetColorTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 	this->isViewportHovered = ImGui::IsItemHovered();
 
+	// —— 录制取景框 ——
+	if (recorder && recorder->GetShowGuide()) {
+		float recAspect = (float)recorder->GetWidth() / recorder->GetHeight();
+		float vpAspect = viewportSize.x / viewportSize.y;
+
+		float w, h;
+		if (vpAspect > recAspect) { h = viewportSize.y; w = h * recAspect; }
+		else { w = viewportSize.x; h = w / recAspect; }
+
+		ImVec2 rectMin(viewportPos.x + (viewportSize.x - w) * 0.5f,
+			viewportPos.y + (viewportSize.y - h) * 0.5f);
+		ImVec2 rectMax(rectMin.x + w, rectMin.y + h);
+
+		ImDrawList* dl = ImGui::GetWindowDrawList();
+
+		ImU32 white = IM_COL32(255, 160, 0, 230);
+		ImU32 whiteThin = IM_COL32(255, 160, 0, 230);
+
+		// 外框
+		dl->AddRect(rectMin, rectMax, white, 0.0f, 0, 5.0f);
+
+		// 九宫格三分线
+		float thirdX = w / 3.0f;
+		float thirdY = h / 3.0f;
+		for (int i = 1; i <= 2; ++i) {
+			float x = rectMin.x + thirdX * i;
+			dl->AddLine(ImVec2(x, rectMin.y), ImVec2(x, rectMax.y), whiteThin, 3.0f);
+			float y = rectMin.y + thirdY * i;
+			dl->AddLine(ImVec2(rectMin.x, y), ImVec2(rectMax.x, y), whiteThin, 3.0f);
+		}
+
+		// 尺寸标注
+		char buf[32];
+		snprintf(buf, sizeof(buf), "%dx%d", recorder->GetWidth(), recorder->GetHeight());
+		dl->AddText(ImVec2(rectMin.x + 4, rectMin.y + 4), white, buf);
+	}
+
+
 	ImGui::End();
 
 	ImGui::PopStyleVar(); // style
-
-	ImGui::ShowDemoWindow();
 }
 
 void Editor::BeginCamera(Camera & camera) {
@@ -245,7 +282,7 @@ void Editor::BeginDetails(GameObject& game_object) {
 
 	ImGui::Text(game_object.GetName().c_str());
 
-	if (ImGui::CollapsingHeader("Transform")) {
+	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Text("Location:");
 		ImGui::DragFloat("X##trans_x", &transform.position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
 		ImGui::DragFloat("Y##trans_y", &transform.position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
@@ -266,7 +303,15 @@ void Editor::BeginDetails(GameObject& game_object) {
 		transform.SyncToMatrix();
 	}
 
-	if (ImGui::CollapsingHeader("Inspector")) {
+
+	if (ImGui::CollapsingHeader("Animate", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Text("Rotation Speed:");
+		ImGui::SliderFloat("X##rotate_speed_x", &game_object.rotate_speed_x, -90.0f, 90.0f, "%.0f deg/s");
+		ImGui::SliderFloat("Y##rotate_speed_y", &game_object.rotate_speed_y, -90.0f, 90.0f, "%.0f deg/s");
+		ImGui::SliderFloat("Z##rotate_speed_z", &game_object.rotate_speed_z, -90.0f, 90.0f, "%.0f deg/s");
+	}
+
+	if (ImGui::CollapsingHeader("Inspector", ImGuiTreeNodeFlags_DefaultOpen)) {
 
 		if (game_object.light) {
 			ImGui::Text("Light:");
@@ -364,7 +409,85 @@ void Editor::BeginLog() {
 	ImGui::End();
 }
 
-void Editor::BeginMainMenu(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window) {
+// Editor.cpp
+void Editor::BeginRecorder(Recorder& recorder) {
+
+	bool locked = recorder.IsRecording();
+
+	ImGui::Begin("Recorder");
+
+
+	if (locked) {
+		ImGui::BeginDisabled();
+	}
+
+	static char file_name[256] = "record/output.mp4";
+	ImGui::InputText("Filename", file_name, sizeof(file_name));
+
+	static const char* labels[] = {
+		"1280x720", "1920x1080", "2560x1440", "3840x2160",
+		"1440x2560 (Vertical)", "1080x1920 (Vertical)", "720x1280 (Vertical)", "1080x1080 (Square)",
+		"Custom"
+	};
+	static const int dims[][2] = {
+		{1280,720}, {1920,1080}, {2560,1440}, {3840,2160},
+		{1440, 2560}, {1080,1920}, {720,1280}, {1080,1080}
+	};
+	static int sel = 1;
+	static int custom[2] = { 1920, 1080 };
+	const int customIndex = IM_ARRAYSIZE(labels) - 1;
+
+	if (ImGui::Combo("Resolution", &sel, labels, IM_ARRAYSIZE(labels))) {
+		if (sel != customIndex && !recorder.IsRecording()) {
+			recorder.Destroy();
+			recorder.Init(dims[sel][0], dims[sel][1]);
+		}
+	}
+	if (sel == customIndex) {
+		ImGui::InputInt2("Custom Size", custom);
+		if (!recorder.IsRecording() && ImGui::Button("Apply Custom Resolution", ImVec2(ImGui::CalcItemWidth(), 0))) {
+			int w = custom[0] > 0 ? custom[0] : 1;
+			int h = custom[1] > 0 ? custom[1] : 1;
+			recorder.Destroy();
+			recorder.Init(w, h);
+		}
+	}
+
+	// 帧率
+	static int fps = 60;
+	ImGui::InputInt("FPS", &fps);
+	fps = fps < 1 ? 1 : (fps > 240 ? 240 : fps);
+
+	// 码率 (Mbps)
+	static int bitrate = 20;
+	ImGui::InputInt("Bitrate (Mbps)", &bitrate);
+	bitrate = bitrate < 1 ? 1 : bitrate;
+
+	if (locked) {
+		ImGui::EndDisabled();
+	}
+
+	if (recorder.IsRecording()) {
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+		if (ImGui::Button("Stop Recording", ImVec2(ImGui::CalcItemWidth(), 0)))
+			recorder.StopRecording();
+		ImGui::PopStyleColor();
+		ImGui::SameLine();
+		ImGui::Text("Recording...");
+	}
+	else {
+		if (ImGui::Button("Start Record", ImVec2(ImGui::CalcItemWidth(), 0)))
+			recorder.StartRecording(file_name, fps, bitrate);
+	}
+
+	bool guide = recorder.GetShowGuide();
+	if (ImGui::Checkbox("Show Framing Guide", &guide))
+		recorder.SetShowGuide(guide);
+
+	ImGui::End();
+}
+
+void Editor::BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window) {
 	ImGui::Begin("Scene");
 
 	if (ImGui::BeginCombo("Load Scene", currentScene->GetName().c_str())) {
@@ -472,7 +595,6 @@ void Editor::BeginHierarchy(Scene& scene) {
 		ImGui::PopID();
 	};
 
-	// 根节点:只要有任何物体被选中就高亮
 	bool root_has_selected = (selected != nullptr);
 	ImGuiTreeNodeFlags root_flags = base_flags | ImGuiTreeNodeFlags_DefaultOpen;
 	if (root_has_selected) {

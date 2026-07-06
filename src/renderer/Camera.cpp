@@ -3,7 +3,7 @@
 #include "core/WindowContext.h"
 #include "core/Log.h"
 
-
+#include "core/Time.h"
 
 void mouse_callback(GLFWwindow* glfw_window, double xpos, double ypos)
 {
@@ -74,21 +74,22 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
     if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
         moving = true;
 
-
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        float cameraSpeed = moveSpeed * deltaTime; // adjust accordingly
-        if (glfwGetKey(glfw_window, GLFW_KEY_W) == GLFW_PRESS)
+        float cameraSpeed = moveSpeed * Time::DeltaTime();
+        if (glfwGetKey(glfw_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            cameraSpeed *= 2; // adjust accordingly
+        }
+        if (glfwGetKey(glfw_window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(glfw_window, GLFW_KEY_UP)) {
             position += cameraSpeed * direction;
-        if (glfwGetKey(glfw_window, GLFW_KEY_S) == GLFW_PRESS)
+        }
+        if (glfwGetKey(glfw_window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(glfw_window, GLFW_KEY_DOWN)) {
             position -= cameraSpeed * direction;
-        if (glfwGetKey(glfw_window, GLFW_KEY_A) == GLFW_PRESS)
+        }
+        if (glfwGetKey(glfw_window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(glfw_window, GLFW_KEY_LEFT)) {
             position -= glm::normalize(glm::cross(direction, up)) * cameraSpeed;
-        if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS)
+        }
+        if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(glfw_window, GLFW_KEY_RIGHT)) {
             position += glm::normalize(glm::cross(direction, up)) * cameraSpeed;
-        
+        }
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         view = glm::lookAt(position, position + direction, up);

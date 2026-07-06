@@ -23,6 +23,7 @@
     <ClCompile Include="src\core\Config.cpp" />
     <ClCompile Include="src\core\Editor.cpp" />
     <ClCompile Include="src\core\Log.cpp" />
+    <ClCompile Include="src\core\Time.cpp" />
     <ClCompile Include="src\core\Viewport.cpp" />
     <ClCompile Include="src\core\Window.cpp" />
     <ClCompile Include="src\glad.c" />
@@ -37,10 +38,12 @@
     <ClCompile Include="src\scenes\BaseScene.cpp" />
     <ClCompile Include="src\scenes\PBRIBLScene1_Custom.cpp" />
     <ClCompile Include="src\scenes\PBRIBLScene2_Spheres.cpp" />
-    <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene4_SingleTex.cpp" />
     <ClCompile Include="src\scenes\PBRIBLScene0_Base.cpp" />
+    <ClCompile Include="src\scenes\PBRIBLScene3_Single.cpp" />
     <ClCompile Include="src\scene\GameObject.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
+    <ClCompile Include="src\utils\Recorder.cpp" />
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="third_party\imgui_docking\backends\imgui_impl_opengl3.cpp" />
@@ -51,6 +54,7 @@
     <ClCompile Include="third_party\imgui_docking\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\Downloads\icon.svg" />
     <None Include="config\engine.toml" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
@@ -82,6 +86,7 @@
     <ClInclude Include="include\core\Editor.h" />
     <ClInclude Include="include\core\Log.h" />
     <ClInclude Include="include\core\LogSink.h" />
+    <ClInclude Include="include\core\Time.h" />
     <ClInclude Include="include\core\Viewport.h" />
     <ClInclude Include="include\core\Window.h" />
     <ClInclude Include="include\core\WindowContext.h" />
@@ -96,8 +101,10 @@
     <ClInclude Include="include\scenes\BaseScene.h" />
     <ClInclude Include="include\scenes\PBRIBLScene1_Custom.h" />
     <ClInclude Include="include\scenes\PBRIBLScene2_Spheres.h" />
-    <ClInclude Include="include\scenes\PBRIBLScene3_Single.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene4_SingleTex.h" />
     <ClInclude Include="include\scenes\PBRIBLScene0_Base.h" />
+    <ClInclude Include="include\scenes\PBRIBLScene3_Single.h" />
+    <ClInclude Include="include\utils\Recorder.h" />
     <ClInclude Include="include\utils\Transform.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />
     <ClInclude Include="include\scene\GameObject.h" />

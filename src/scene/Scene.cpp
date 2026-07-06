@@ -34,6 +34,8 @@ GameObject* Scene::GetSelected() {
 
 void Scene::Render() const {
     for (const auto& game_object : game_objects) {
+        game_object->Update(); // update position
+
         if (game_object->pbr_sphere.has_value()) {
             Shader* shader = game_object->GetShader(); // ÐèÒª GameObject ±©Â¶ GetShader()
             shader->setVec3("baseColor", (*game_object->pbr_sphere).albedo);
@@ -43,5 +45,4 @@ void Scene::Render() const {
         game_object->Draw();
     }
 }
-
 

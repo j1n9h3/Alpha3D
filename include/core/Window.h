@@ -28,8 +28,11 @@ public:
     void SetResizeCallback(std::function<void(int, int)> callback);
     void SetScaleCallback(std::function<void(float)> callback);
 
-
+    float GetDeltaTime() { return delta_time; }
 private:
+    float delta_time = 0.0f;
+    double last_time = 0.0f;
+
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     GLFWwindow* glfw_window;
     int width, height;
