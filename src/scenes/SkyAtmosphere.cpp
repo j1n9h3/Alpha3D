@@ -8,7 +8,8 @@ void SkyAtmosphere::Load(Window& window)
 void SkyAtmosphere::Render(Camera& camera)
 {
     shader_sky_atmosphere.use();
-    shader_sky_atmosphere.setVec3("viewPos", camera.GetPosition());
+    shader_sky_atmosphere.setMat4("invProjection", glm::inverse(camera.GetProjection()));
+    shader_sky_atmosphere.setVec3("cameraPos", camera.GetPosition());
     cubeMesh.Draw();
 }
 

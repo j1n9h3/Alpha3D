@@ -3,6 +3,7 @@
 #include "core/Log.h"
 #include <vector>
 #include <algorithm>
+#include <filesystem>
 
 #ifdef _WIN32
     #define popen _popen
@@ -12,6 +13,24 @@
 #include "stb_image_write.h"
 
 #include "renderer/Camera.h"
+
+static std::string MakeUniquePath(const std::string& output_path) {
+    std::filesystem::path path(output_path);
+    if (!std::filesystem::exists(path)) {
+        return output_path;
+    }
+
+    std::filesystem::path parent = path.parent_path();
+    std::string stem = path.stem().string();
+    std::string extension = path.extension().string();
+
+    for (int index = 1;; ++index) {
+        std::filesystem::path candidate = parent / (stem + "-" + std::to_string(index) + extension);
+        if (!std::filesystem::exists(candidate)) {
+            return candidate.string();
+        }
+    }
+}
 
 
 void Recorder::Init(int w, int h) {
@@ -54,6 +73,8 @@ void Recorder::EndRender() {
 }
 
 void Recorder::StartRecording(const std::string& output_path, int fps, int bitrate_mbps) {
+    std::string save_path = MakeUniquePath(output_path);
+
     std::string cmd = "ffmpeg -y -f rawvideo -pixel_format rgb24"
         " -video_size " + std::to_string(width) + "x" + std::to_string(height) +
         " -framerate " + std::to_string(fps) +
@@ -62,7 +83,7 @@ void Recorder::StartRecording(const std::string& output_path, int fps, int bitra
         " -c:v libopenh264"
         " -pix_fmt yuv420p"
         " -b:v " + std::to_string(bitrate_mbps) + "M"
-        " " + output_path +
+        " " + save_path +
         " 2> log/ffmpeg_log.txt";
     ffmpeg = popen(cmd.c_str(), "wb");
     if (!ffmpeg) {
@@ -70,7 +91,7 @@ void Recorder::StartRecording(const std::string& output_path, int fps, int bitra
         return;
     }
     is_recording = true;
-    LOG_INFO(Recorder, "Recording started: {} @ {}fps {}Mbps", output_path, fps, bitrate_mbps);
+    LOG_INFO(Recorder, "Recording started: {} @ {}fps {}Mbps", save_path, fps, bitrate_mbps);
 }
 
 void Recorder::StopRecording() {
@@ -82,6 +103,38 @@ void Recorder::StopRecording() {
     LOG_INFO(Recorder, "Recording stopped");
 }
 
+bool Recorder::ConsumePhotoRequest() {
+    if (!photo_requested) {
+        return false;
+    }
+
+    photo_requested = false;
+
+    return true;
+}
+
+
+void Recorder::SaveImage() {
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixel_buffer.data());
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
+    std::string save_path = MakeUniquePath(photo_output_path);
+
+    stbi_flip_vertically_on_write(1);
+    int success = stbi_write_png(
+        save_path.c_str(), width, height, 3, pixel_buffer.data(), width * 3
+    );
+    stbi_flip_vertically_on_write(0);
+
+    if (!success) {
+        LOG_ERROR(Recorder, "Failed to save image: {}", save_path);
+        return;
+    }
+
+    LOG_INFO(Recorder, "Image saved: {}", save_path);
+}
+
 void Recorder::CaptureFrame() {
     if (!is_recording) return;
 
@@ -89,10 +142,5 @@ void Recorder::CaptureFrame() {
     glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixel_buffer.data());
     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-    static bool saved = false;
-    if (!saved) {
-        stbi_write_png("20260624.png", width, height, 3, pixel_buffer.data(), width * 3);
-        saved = true;
-    }
     fwrite(pixel_buffer.data(), 1, pixel_buffer.size(), ffmpeg);
 }

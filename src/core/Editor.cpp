@@ -179,6 +179,12 @@ Editor::~Editor()
 }
 
 
+void Editor::ShowToast(const std::string& message, float duration) {
+	toast_message = message;
+	toast_timer = duration;
+	toast_duration = duration;
+}
+
 //void Editor::BeginFrame()
 void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 {
@@ -342,9 +348,54 @@ void Editor::BeginDetails(GameObject& game_object) {
 
 void Editor::EndFrame()
 {
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	if (toast_timer > 0.0f) {
+		toast_timer -= ImGui::GetIO().DeltaTime;
+		if (toast_timer < 0.0f) {
+			toast_timer = 0.0f;
+		}
+
+		float alpha = toast_timer < toast_fade_duration ? toast_timer / toast_fade_duration : 1.0f;
+		alpha = alpha < 0.0f ? 0.0f : (alpha > 1.0f ? 1.0f : alpha);
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 work_pos = viewport->WorkPos;
+
+		ImVec2 window_pos(
+			work_pos.x + 20.0f,
+			work_pos.y + 40.0f
+		);
+
+		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+		ImGui::SetNextWindowBgAlpha(0.85f * alpha);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+		ImGuiWindowFlags flags =
+			ImGuiWindowFlags_NoDecoration |
+			ImGuiWindowFlags_AlwaysAutoResize |
+			ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoFocusOnAppearing |
+			ImGuiWindowFlags_NoNav |
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoInputs;
+
+		if (ImGui::Begin("PhotoToast", nullptr, flags)) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, alpha));
+			ImGui::TextUnformatted(toast_message.c_str());
+			ImGui::PopStyleColor();
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		if (toast_timer < 0.0f) {
+			toast_timer = 0.0f;
+		}
+	}
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
 
 bool Editor::Hover() const
 {
@@ -414,15 +465,7 @@ void Editor::BeginRecorder(Recorder& recorder) {
 
 	bool locked = recorder.IsRecording();
 
-	ImGui::Begin("Recorder");
-
-
-	if (locked) {
-		ImGui::BeginDisabled();
-	}
-
-	static char file_name[256] = "record/output.mp4";
-	ImGui::InputText("Filename", file_name, sizeof(file_name));
+	ImGui::Begin("Output");
 
 	static const char* labels[] = {
 		"1280x720", "1920x1080", "2560x1440", "3840x2160",
@@ -437,52 +480,83 @@ void Editor::BeginRecorder(Recorder& recorder) {
 	static int custom[2] = { 1920, 1080 };
 	const int customIndex = IM_ARRAYSIZE(labels) - 1;
 
-	if (ImGui::Combo("Resolution", &sel, labels, IM_ARRAYSIZE(labels))) {
-		if (sel != customIndex && !recorder.IsRecording()) {
-			recorder.Destroy();
-			recorder.Init(dims[sel][0], dims[sel][1]);
+	if (ImGui::CollapsingHeader("Output Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (locked) {
+			ImGui::BeginDisabled();
+		}
+
+		if (ImGui::Combo("Resolution", &sel, labels, IM_ARRAYSIZE(labels))) {
+			if (sel != customIndex && !recorder.IsRecording()) {
+				recorder.Destroy();
+				recorder.Init(dims[sel][0], dims[sel][1]);
+			}
+		}
+		if (sel == customIndex) {
+			ImGui::InputInt2("Custom Size", custom);
+			if (!recorder.IsRecording() && ImGui::Button("Apply Custom Resolution", ImVec2(ImGui::CalcItemWidth(), 0))) {
+				int w = custom[0] > 0 ? custom[0] : 1;
+				int h = custom[1] > 0 ? custom[1] : 1;
+				recorder.Destroy();
+				recorder.Init(w, h);
+			}
+		}
+
+		bool guide = recorder.GetShowGuide();
+		if (ImGui::Checkbox("Show Framing Guide", &guide))
+			recorder.SetShowGuide(guide);
+
+		if (locked) {
+			ImGui::EndDisabled();
 		}
 	}
-	if (sel == customIndex) {
-		ImGui::InputInt2("Custom Size", custom);
-		if (!recorder.IsRecording() && ImGui::Button("Apply Custom Resolution", ImVec2(ImGui::CalcItemWidth(), 0))) {
-			int w = custom[0] > 0 ? custom[0] : 1;
-			int h = custom[1] > 0 ? custom[1] : 1;
-			recorder.Destroy();
-			recorder.Init(w, h);
+
+	if (ImGui::CollapsingHeader("Recorder", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (locked) {
+			ImGui::BeginDisabled();
+		}
+
+		static char file_name[256] = "record/output.mp4";
+		ImGui::InputText("Filename##Video", file_name, sizeof(file_name));
+
+		// 帧率
+		static int fps = 60;
+		ImGui::InputInt("FPS", &fps);
+		fps = fps < 1 ? 1 : (fps > 240 ? 240 : fps);
+
+		// 码率 (Mbps)
+		static int bitrate = 20;
+		ImGui::InputInt("Bitrate (Mbps)", &bitrate);
+		bitrate = bitrate < 1 ? 1 : bitrate;
+
+		if (locked) {
+			ImGui::EndDisabled();
+		}
+
+		if (recorder.IsRecording()) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+			if (ImGui::Button("Stop Recording", ImVec2(ImGui::CalcItemWidth(), 0)))
+				recorder.StopRecording();
+			ImGui::PopStyleColor();
+			ImGui::SameLine();
+			ImGui::Text("Recording...");
+			ShowToast(std::string("Video Recording!"), 1.25f);
+
+		}
+		else {
+			if (ImGui::Button("Start Record", ImVec2(ImGui::CalcItemWidth(), 0)))
+				recorder.StartRecording(file_name, fps, bitrate);
 		}
 	}
 
-	// 帧率
-	static int fps = 60;
-	ImGui::InputInt("FPS", &fps);
-	fps = fps < 1 ? 1 : (fps > 240 ? 240 : fps);
+	if (ImGui::CollapsingHeader("Capture", ImGuiTreeNodeFlags_DefaultOpen)) {
+		static char photo_name[256] = "record/photo.png";
+		ImGui::InputText("Filename##Photo", photo_name, sizeof(photo_name));
 
-	// 码率 (Mbps)
-	static int bitrate = 20;
-	ImGui::InputInt("Bitrate (Mbps)", &bitrate);
-	bitrate = bitrate < 1 ? 1 : bitrate;
-
-	if (locked) {
-		ImGui::EndDisabled();
+		if (ImGui::Button("Capture Photo", ImVec2(ImGui::CalcItemWidth(), 0))) {
+			recorder.RequestPhoto(photo_name);
+			ShowToast(std::string("Photo Captured!"), 1.25f);
+		}
 	}
-
-	if (recorder.IsRecording()) {
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
-		if (ImGui::Button("Stop Recording", ImVec2(ImGui::CalcItemWidth(), 0)))
-			recorder.StopRecording();
-		ImGui::PopStyleColor();
-		ImGui::SameLine();
-		ImGui::Text("Recording...");
-	}
-	else {
-		if (ImGui::Button("Start Record", ImVec2(ImGui::CalcItemWidth(), 0)))
-			recorder.StartRecording(file_name, fps, bitrate);
-	}
-
-	bool guide = recorder.GetShowGuide();
-	if (ImGui::Checkbox("Show Framing Guide", &guide))
-		recorder.SetShowGuide(guide);
 
 	ImGui::End();
 }
@@ -620,3 +694,4 @@ void Editor::BeginHierarchy(Scene& scene) {
 	ImGui::PopStyleColor(3);
 	ImGui::End();
 }
+

@@ -37,6 +37,8 @@ public:
     void BeginCamera(Camera& camera);
     void BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
     void BeginRecorder(Recorder& recorder);
+    void ShowToast(const std::string& message, float duration = 1.5f);
+
 private:
     float mainMenuBarHeight = 10.0f;
     std::string font_name;
@@ -51,4 +53,8 @@ private:
     ImVec2 viewportSize;
     bool isViewportHovered = false;
     static ImGuiTextBuffer log;
+    std::string toast_message;
+    float toast_timer = 0.0f;
+    float toast_duration = 0.0f;
+    float toast_fade_duration = 0.25f;
 };

@@ -77,13 +77,16 @@ int main()
     PBRIBL_Custom pbribl_scene1_custom;
     PBRIBL_Spheres pbribl_test_scene2_spheres;
     PBRIBL_SingleTex pbribl_tex_horse_statue_4k("/assets/models/horse_statue_01_4k/horse_statue_01_4k.gltf", "pbr_horse_statue_4k");
+    PBRIBL_SingleTex pbribl_tex_food_ginger_4k("/assets/models/food_ginger_01_4k/food_ginger_01_4k.gltf", "pbr_food_ginger_4k");
     PBRIBL_SingleTex pbribl_tex_lion_head_4k("/assets/models/lion_head_4k/lion_head_4k.gltf", "lion_head_4k");
     PBRIBL_Single pbribl_test_bunney("/assets/models/stanford_bunny/scene.gltf", "stanford_bunny");
     SkyAtmosphere sky_atmosphere;
 
     std::vector<BaseScene*> scenes = {
         // pbr ibl scenes
-        &pbribl_scene1_custom, &pbribl_test_scene2_spheres, &pbribl_tex_horse_statue_4k, &pbribl_tex_lion_head_4k, &pbribl_test_bunney,
+        &pbribl_test_scene2_spheres, &pbribl_test_bunney,
+        //  pbr ibl models
+        &pbribl_scene1_custom, &pbribl_tex_horse_statue_4k, &pbribl_tex_lion_head_4k, &pbribl_tex_food_ginger_4k,
         // sky atmosphere scene
         &sky_atmosphere
     };
@@ -113,6 +116,15 @@ int main()
         camera.ProcessEditorInput(window.GetGLFWWindow(), editor.IsViewportHovered());
         currentScene->Render(camera);
         viewport.EndRender();
+
+        // Photographer
+        if (recorder.ConsumePhotoRequest()) {
+            camera.SetProjection(camera.GetFov(), (float)recorder.GetWidth() / recorder.GetHeight());
+            recorder.BeginRender();
+            currentScene->Render(camera);
+            recorder.SaveImage();
+            recorder.EndRender();
+        }
 
         // Recorder
         if (recorder.IsRecording()) {
