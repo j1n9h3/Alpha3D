@@ -18,6 +18,7 @@ class BaseScene;
 class Scene;
 class Environment;
 class Recorder;
+class SkyAtmosphere;
 class Editor {
 public:
     void Init(GLFWwindow* window);
@@ -37,6 +38,7 @@ public:
     void BeginCamera(Camera& camera);
     void BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
     void BeginRecorder(Recorder& recorder);
+    void BeginSkyAtmosphere(SkyAtmosphere& sky);
     void ShowToast(const std::string& message, float duration = 1.5f);
 
 private:

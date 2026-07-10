@@ -15,6 +15,7 @@
 #include "core/LogSink.h"
 
 #include "scenes/BaseScene.h"
+#include "scenes/SkyAtmosphere.h"
 #include "utils/Recorder.h"
 
 static GLuint LoadSVGIcon(const char* path, int w, int h) {
@@ -423,6 +424,38 @@ void Editor::BeginEnvironment(Environment& env) {
 	int selected = env.GetSelected();
 	if (ImGui::Combo("HDRI", &selected, items.data(), (int)items.size()))
 		env.Select(selected);
+
+	ImGui::End();
+}
+
+void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
+	SkyAtmosphereParameters& p = sky.parameters;
+	ImGui::Begin("Sky Atmosphere");
+
+	if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat3("Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
+		if (glm::length(p.lightDirection) < 0.001f)
+			p.lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+		ImGui::SliderFloat("Intensity", &p.lightIntensity, 0.0f, 100.0f, "%.1f");
+	}
+
+	if (ImGui::CollapsingHeader("Planet", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat("Camera Height", &p.cameraHeight, 100.0f, 1.0f, 1000000.0f, "%.0f m");
+		ImGui::DragFloat("Planet Radius", &p.planetRadius, 1000.0f, 1.0f, FLT_MAX, "%.0f m");
+		ImGui::DragFloat("Atmosphere Radius", &p.atmosphereRadius, 1000.0f, p.planetRadius + 1.0f, FLT_MAX, "%.0f m");
+		p.atmosphereRadius = glm::max(p.atmosphereRadius, p.planetRadius + 1.0f);
+	}
+
+	if (ImGui::CollapsingHeader("Scattering", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat3("Rayleigh Beta", &p.rayleighBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
+		ImGui::DragFloat3("Mie Beta", &p.mieBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
+		ImGui::DragFloat3("Absorption Beta", &p.absorptionBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
+		ImGui::DragFloat("Rayleigh Height", &p.rayleighHeight, 100.0f, 1.0f, 100000.0f, "%.0f m");
+		ImGui::DragFloat("Mie Height", &p.mieHeight, 50.0f, 1.0f, 100000.0f, "%.0f m");
+		ImGui::DragFloat("Absorption Height", &p.absorptionHeight, 100.0f, 0.0f, 100000.0f, "%.0f m");
+		ImGui::DragFloat("Absorption Falloff", &p.absorptionFalloff, 100.0f, 1.0f, 100000.0f, "%.0f m");
+		ImGui::SliderFloat("Mie G", &p.mieG, -0.99f, 0.99f, "%.2f");
+	}
 
 	ImGui::End();
 }
