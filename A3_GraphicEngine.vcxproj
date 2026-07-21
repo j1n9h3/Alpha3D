@@ -77,8 +77,8 @@
     <None Include="shaders\pbr\skybox.vert" />
     <None Include="shaders\phong.frag" />
     <None Include="shaders\phong.vert" />
-    <None Include="shaders\sky_atmosphere.frag" />
-    <None Include="shaders\sky_atmosphere.vert" />
+    <None Include="shaders\sky_atmosphere_1993.frag" />
+    <None Include="shaders\sky_atmosphere_1993.vert" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>

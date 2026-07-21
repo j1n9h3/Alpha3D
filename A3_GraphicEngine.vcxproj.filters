@@ -239,10 +239,10 @@
     <None Include="..\..\..\Downloads\icon.svg">
       <Filter>Resource</Filter>
     </None>
-    <None Include="shaders\sky_atmosphere.frag">
+    <None Include="shaders\sky_atmosphere_1993.frag">
       <Filter>Shader</Filter>
     </None>
-    <None Include="shaders\sky_atmosphere.vert">
+    <None Include="shaders\sky_atmosphere_1993.vert">
       <Filter>Shader</Filter>
     </None>
     <None Include="shaders\pbr\pbr_ibl_test.frag">

@@ -27,7 +27,10 @@ public:
     void  SetFov(float fov);
     void  SetOrtho(bool isOrtho);
 
-    void SetPosition(const glm::vec3& position) { this->position = position; }
+    void SetPosition(const glm::vec3& position) {
+        this->position = position;
+        this->view = glm::lookAt(this->position, this->position + this->direction, this->up);
+    }
     void ResetMouseState();
 
     glm::vec3 GetPosition() { return position; }
@@ -37,6 +40,8 @@ public:
     void ProcessInput(GLFWwindow * window);
     void ProcessMouseMovement(float xpos, float ypos);
     void ProcessEditorInput(GLFWwindow* glfwWindow, bool isViewportHovered);
+
+    void RebuildView();
 
     float moveSpeed = 2.5f;
 

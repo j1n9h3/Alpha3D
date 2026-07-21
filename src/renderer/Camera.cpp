@@ -90,9 +90,15 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
         if (glfwGetKey(glfw_window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(glfw_window, GLFW_KEY_RIGHT)) {
             position += glm::normalize(glm::cross(direction, up)) * cameraSpeed;
         }
+        if (glfwGetKey(glfw_window, GLFW_KEY_Q) == GLFW_PRESS) {
+            position -= glm::vec3(0.0f, 1.0f, 0.0f) * cameraSpeed;
+        }
+        if (glfwGetKey(glfw_window, GLFW_KEY_E) == GLFW_PRESS) {
+            position += glm::vec3(0.0f, 1.0f, 0.0f) * cameraSpeed;
+        }
         glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-        view = glm::lookAt(position, position + direction, up);
+        RebuildView();
     }
     else {
         moving = false;
@@ -107,7 +113,23 @@ void Camera::ProcessInput(GLFWwindow* glfw_window)
     glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
     this->right = glm::normalize(glm::cross(this->direction, world_up));
     this->up = glm::normalize(glm::cross(this->right, this->direction));
-    this->view = glm::lookAt(position, position + direction, up);
+    RebuildView();
+}
+
+void Camera::RebuildView()
+{
+    glm::mat4 rotationView = glm::lookAt(
+        glm::vec3(0.0f),
+        direction,
+        up
+    );
+
+    glm::mat4 translation = glm::translate(
+        glm::mat4(1.0f),
+        -position
+    );
+
+    view = rotationView * translation;
 }
 
 Camera::Camera(float fov, Window& window, glm::vec3 position, glm::vec3 target) {

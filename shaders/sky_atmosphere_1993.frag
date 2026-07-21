@@ -6,22 +6,32 @@ in vec2 screenUV;
 
 uniform vec3 cameraPos;
 uniform mat4 invProjection;
+uniform mat4 invView;
+
+uniform bool useRayleigh;
+uniform bool useMie;
+uniform bool useAbsorption;
 
 uniform vec3 lightDirection;
 uniform float lightIntensity;
+
 uniform float cameraHeight;
 uniform float planetRadius;
 uniform float atmosphereRadius;
-uniform vec3 rayleighBeta;
-uniform vec3 mieBeta;
-uniform vec3 absorptionBeta;
-uniform float rayleighHeight;
-uniform float mieHeight;
-uniform float absorptionHeight;
-uniform float absorptionFalloff;
-uniform float mieG;
-uniform float exposure;
-uniform float gamma;
+
+const vec3 rayleighBeta = vec3(5.5e-6, 13.0e-6, 22.4e-6);
+const vec3 mieBeta = vec3(21.0e-6);
+const vec3 absorptionBeta = vec3(2.04e-5, 4.97e-5, 1.95e-6);
+
+const float rayleighHeight = 8000.0;
+const float mieHeight = 1200.0;
+const float absorptionHeight = 30000.0;
+const float absorptionFalloff = 4000.0;
+
+const float mieG = 0.7;
+const float exposure = 1.0;
+const float gamma = 2.2;
+
 const int PRIMARY_STEPS = 32;
 const int LIGHT_STEPS = 8;
 
@@ -29,7 +39,9 @@ vec3 GetViewDir()
 {
     vec2 screenNDC = screenUV * 2.0 - 1.0;
     vec4 viewPos = invProjection * vec4(screenNDC, 1.0, 1.0);
-    return normalize(viewPos.xyz / viewPos.w);
+    vec3 viewDir = normalize(viewPos.xyz / viewPos.w);
+    vec3 worldDir = normalize((invView * vec4(viewDir, 0.0)).xyz);
+    return worldDir;
 }
 
 vec2 RaySphereIntersect(vec3 origin, vec3 direction, float radius)
@@ -49,7 +61,13 @@ vec3 AtmosphereDensity(float height)
     vec2 particleDensity = exp(-height / vec2(rayleighHeight, mieHeight));
     float ozoneOffset = (absorptionHeight - height) / absorptionFalloff;
     float ozoneDensity = particleDensity.x / (ozoneOffset * ozoneOffset + 1.0);
-    return vec3(particleDensity, ozoneDensity);
+
+    // Disabling a component removes it from both the view-ray and light-ray
+    // optical depths. Rayleigh and Mie are therefore disabled for scattering
+    // and extinction together, while absorption only affects extinction.
+    return vec3(useRayleigh ? particleDensity.x : 0.0,
+                useMie ? particleDensity.y : 0.0,
+                useAbsorption ? ozoneDensity : 0.0);
 }
 
 vec3 CalculateScattering(vec3 rayOrigin, vec3 rayDirection, float maxDistance,
@@ -122,12 +140,12 @@ vec3 CalculateScattering(vec3 rayOrigin, vec3 rayDirection, float maxDistance,
 void main()
 {
     vec3 viewDirection = GetViewDir();
-
-    // The renderer currently supplies a view-space ray only. Keep the atmosphere
-    // centred on the camera horizontally and use cameraPos to preserve small
-    // vertical camera movements without losing floating-point precision.
     float heightAboveGround = max(cameraPos.y, 0.0) + cameraHeight;
-    vec3 atmosphereCamera = vec3(0.0, planetRadius + heightAboveGround, 0.0);
+        vec3 atmosphereCamera = vec3(
+        cameraPos.x,
+        planetRadius + cameraHeight + cameraPos.y,
+        cameraPos.z
+    );
     vec3 sunDirection = normalize(lightDirection);
 
     vec2 planetHit = RaySphereIntersect(atmosphereCamera, viewDirection, planetRadius);

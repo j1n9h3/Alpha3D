@@ -1,4 +1,4 @@
-// Editor.cpp
+ï»¿// Editor.cpp
 #pragma once
 #include "core/Editor.h"
 
@@ -50,32 +50,32 @@ void SetupImGuiStyle()
 	style.Alpha = 1.0f;
 	style.DisabledAlpha = 0.4f;
 	style.WindowPadding = ImVec2(8.0f, 8.0f);
-	style.WindowRounding = 0.0f;       // Blender Ö±½Ç´°¿Ú
+	style.WindowRounding = 0.0f;       // Blender ç›´è§’çª—å£
 	style.WindowBorderSize = 1.0f;
 	style.WindowMinSize = ImVec2(32.0f, 32.0f);
 	style.WindowTitleAlign = ImVec2(0.0f, 0.5f);
-	style.WindowMenuButtonPosition = ImGuiDir_None; // Blender Ã»ÓĞ×óÉÏ½ÇÕÛµş°´Å¥
+	style.WindowMenuButtonPosition = ImGuiDir_None; // Blender æ²¡æœ‰å·¦ä¸Šè§’æŠ˜å æŒ‰é’®
 	style.ChildRounding = 0.0f;
 	style.ChildBorderSize = 1.0f;
 	style.PopupRounding = 0.0f;
 	style.PopupBorderSize = 1.0f;
-	style.FramePadding = ImVec2(6.0f, 4.0f);  // ÉÔ¿í£¬Blender °´Å¥¸ü¿íËÉ
-	style.FrameRounding = 3.0f;                 // ÇáÎ¢Ô²½Ç
+	style.FramePadding = ImVec2(6.0f, 4.0f);  // ç¨å®½ï¼ŒBlender æŒ‰é’®æ›´å®½æ¾
+	style.FrameRounding = 3.0f;                 // è½»å¾®åœ†è§’
 	style.FrameBorderSize = 0.0f;
 	style.ItemSpacing = ImVec2(8.0f, 4.0f);
 	style.ItemInnerSpacing = ImVec2(4.0f, 4.0f);
 	style.CellPadding = ImVec2(4.0f, 2.0f);
-	//style.IndentSpacing = 12.0f;       // Blender Ëõ½ø¸üĞ¡
+	//style.IndentSpacing = 12.0f;       // Blender ç¼©è¿›æ›´å°
 	style.ColumnsMinSpacing = 6.0f;
-	style.ScrollbarSize = 10.0f;       // Blender ¹ö¶¯ÌõÏ¸
-	style.ScrollbarRounding = 0.0f;        // Ö±½Ç¹ö¶¯Ìõ
+	style.ScrollbarSize = 10.0f;       // Blender æ»šåŠ¨æ¡ç»†
+	style.ScrollbarRounding = 0.0f;        // ç›´è§’æ»šåŠ¨æ¡
 	style.GrabMinSize = 8.0f;
 	style.GrabRounding = 3.0f;
 	style.TabRounding = 3.0f;
 	style.TabBorderSize = 0.0f;
 	style.ColorButtonPosition = ImGuiDir_Right;
 	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
-	style.SelectableTextAlign = ImVec2(0.0f, 0.5f);  // ´¹Ö±¾ÓÖĞ£¬Blender ÁĞ±íÏî¶ÔÆë
+	style.SelectableTextAlign = ImVec2(0.0f, 0.5f);  // å‚ç›´å±…ä¸­ï¼ŒBlender åˆ—è¡¨é¡¹å¯¹é½
 	style.TabBarBorderSize = 0.0f;
 	style.ChildBorderSize = 0.0f;
 	style.TreeLinesSize = 1.5f;
@@ -133,8 +133,8 @@ void SetupImGuiStyle()
 	style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.50f);
-	style.Colors[ImGuiCol_TreeLines] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);  // ¼ÓÉîÏßµÄÑÕÉ«
-	style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // Ñ¡ÖĞ tab ÉÏµÄºáÌõ
+	style.Colors[ImGuiCol_TreeLines] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);  // åŠ æ·±çº¿çš„é¢œè‰²
+	style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);  // é€‰ä¸­ tab ä¸Šçš„æ¨ªæ¡
 	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
@@ -196,7 +196,7 @@ void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 	ImGui::DockSpaceOverViewport();
 
 
-	// 1.1 ÊÓ´°
+	// 1.1 è§†çª—
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // style
 
 	ImGui::Begin("Viewport");
@@ -208,7 +208,7 @@ void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 	ImGui::Image((void*)(intptr_t)viewport -> GetColorTexture(), ImGui::GetContentRegionAvail(), ImVec2(0, 1), ImVec2(1, 0));
 	this->isViewportHovered = ImGui::IsItemHovered();
 
-	// ¡ª¡ª Â¼ÖÆÈ¡¾°¿ò ¡ª¡ª
+	// â€”â€” å½•åˆ¶å–æ™¯æ¡† â€”â€”
 	if (recorder && recorder->GetShowGuide()) {
 		float recAspect = (float)recorder->GetWidth() / recorder->GetHeight();
 		float vpAspect = viewportSize.x / viewportSize.y;
@@ -226,10 +226,10 @@ void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 		ImU32 white = IM_COL32(255, 160, 0, 230);
 		ImU32 whiteThin = IM_COL32(255, 160, 0, 230);
 
-		// Íâ¿ò
+		// å¤–æ¡†
 		dl->AddRect(rectMin, rectMax, white, 0.0f, 0, 5.0f);
 
-		// ¾Å¹¬¸ñÈı·ÖÏß
+		// ä¹å®«æ ¼ä¸‰åˆ†çº¿
 		float thirdX = w / 3.0f;
 		float thirdY = h / 3.0f;
 		for (int i = 1; i <= 2; ++i) {
@@ -239,7 +239,7 @@ void Editor::BeginFrame(Viewport* viewport, Recorder* recorder)
 			dl->AddLine(ImVec2(rectMin.x, y), ImVec2(rectMax.x, y), whiteThin, 3.0f);
 		}
 
-		// ³ß´ç±ê×¢
+		// å°ºå¯¸æ ‡æ³¨
 		char buf[32];
 		snprintf(buf, sizeof(buf), "%dx%d", recorder->GetWidth(), recorder->GetHeight());
 		dl->AddText(ImVec2(rectMin.x + 4, rectMin.y + 4), white, buf);
@@ -269,13 +269,16 @@ void Editor::BeginCamera(Camera & camera) {
 	float mm = fovToMm(fov);
 
 	if (ImGui::SliderFloat("Focal Length", &mm, fovToMm(170.0f), fovToMm(10.0f), "%.1f mm")) {
-		mm = glm::clamp(mm, 1.0f, 500.0f); // ·ÀÖ¹¼«¶ËÖµ
+		mm = glm::clamp(mm, 1.0f, 500.0f); // é˜²æ­¢æç«¯å€¼
 		camera.SetFov(mmToFov(mm));
 	}
 
 	ImGui::Text("Movement:");
 
-
+	glm::vec3 position = camera.GetPosition();
+	if (ImGui::InputFloat3("Position", &position.x, "%.2f")) {
+		camera.SetPosition(position);
+	}
 	ImGui::InputFloat("Speed", &camera.moveSpeed, 0.5f, 1.0f, "%.1f");
 
 
@@ -417,7 +420,7 @@ void Editor::BeginEnvironment(Environment& env) {
 
 	const auto& names = env.GetNames();
 
-	// °Ñ vector<string> ×ª³É ImGui ĞèÒªµÄ¸ñÊ½
+	// æŠŠ vector<string> è½¬æˆ ImGui éœ€è¦çš„æ ¼å¼
 	std::vector<const char*> items;
 	for (const auto& n : names) items.push_back(n.c_str());
 
@@ -433,10 +436,10 @@ void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 	ImGui::Begin("Sky Atmosphere");
 
 	if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat3("Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
+		ImGui::DragFloat3("Light Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
 		if (glm::length(p.lightDirection) < 0.001f)
 			p.lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-		ImGui::SliderFloat("Intensity", &p.lightIntensity, 0.0f, 100.0f, "%.1f");
+		ImGui::SliderFloat("Light Intensity", &p.lightIntensity, 0.0f, 100.0f, "%.1f");
 	}
 
 	if (ImGui::CollapsingHeader("Planet", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -447,14 +450,9 @@ void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 	}
 
 	if (ImGui::CollapsingHeader("Scattering", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat3("Rayleigh Beta", &p.rayleighBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
-		ImGui::DragFloat3("Mie Beta", &p.mieBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
-		ImGui::DragFloat3("Absorption Beta", &p.absorptionBeta.x, 1e-7f, 0.0f, 1e-3f, "%.7f");
-		ImGui::DragFloat("Rayleigh Height", &p.rayleighHeight, 100.0f, 1.0f, 100000.0f, "%.0f m");
-		ImGui::DragFloat("Mie Height", &p.mieHeight, 50.0f, 1.0f, 100000.0f, "%.0f m");
-		ImGui::DragFloat("Absorption Height", &p.absorptionHeight, 100.0f, 0.0f, 100000.0f, "%.0f m");
-		ImGui::DragFloat("Absorption Falloff", &p.absorptionFalloff, 100.0f, 1.0f, 100000.0f, "%.0f m");
-		ImGui::SliderFloat("Mie G", &p.mieG, -0.99f, 0.99f, "%.2f");
+		ImGui::Checkbox("Use Rayleigh Scattering", &p.useRayleigh);
+		ImGui::Checkbox("Use Mie Scattering", &p.useMie);
+		ImGui::Checkbox("Use Absorption", &p.useAbsorption);
 	}
 
 	ImGui::End();
@@ -551,12 +549,12 @@ void Editor::BeginRecorder(Recorder& recorder) {
 		static char file_name[256] = "record/output.mp4";
 		ImGui::InputText("Filename##Video", file_name, sizeof(file_name));
 
-		// Ö¡ÂÊ
+		// å¸§ç‡
 		static int fps = 60;
 		ImGui::InputInt("FPS", &fps);
 		fps = fps < 1 ? 1 : (fps > 240 ? 240 : fps);
 
-		// ÂëÂÊ (Mbps)
+		// ç ç‡ (Mbps)
 		static int bitrate = 20;
 		ImGui::InputInt("Bitrate (Mbps)", &bitrate);
 		bitrate = bitrate < 1 ? 1 : bitrate;
@@ -628,13 +626,13 @@ void Editor::BeginHierarchy(Scene& scene) {
 	ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.0f));
 	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.0f));
 
-	static int item_index = 0; // ÔÚ DrawGroup µ÷ÓÃÇ°ÖØÖÃ
+	static int item_index = 0; // åœ¨ DrawGroup è°ƒç”¨å‰é‡ç½®
 
 	auto DrawObject = [&](GameObject* obj, int index) {
 		ImGui::PushID(obj->GetID());
 		ImGuiTreeNodeFlags flags = base_flags | ImGuiTreeNodeFlags_Leaf;
 
-		// ½»Ìæ±³¾°
+		// äº¤æ›¿èƒŒæ™¯
 		float frame_padding_y = ImGui::GetStyle().FramePadding.y;
 		float row_height = ImGui::GetTextLineHeightWithSpacing() + frame_padding_y * 2;
 
@@ -705,7 +703,7 @@ void Editor::BeginHierarchy(Scene& scene) {
 	bool root_has_selected = (selected != nullptr);
 	ImGuiTreeNodeFlags root_flags = base_flags | ImGuiTreeNodeFlags_DefaultOpen;
 	if (root_has_selected) {
-		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.12f));        // ×îµ­
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.20f, 0.45f, 0.80f, 0.12f));        // æœ€æ·¡
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.28f, 0.55f, 0.90f, 0.12f));
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.28f, 0.55f, 0.90f, 0.12f));
 		root_flags |= ImGuiTreeNodeFlags_Selected;
@@ -727,4 +725,3 @@ void Editor::BeginHierarchy(Scene& scene) {
 	ImGui::PopStyleColor(3);
 	ImGui::End();
 }
-
