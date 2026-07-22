@@ -67,6 +67,9 @@
     <Filter Include="Headers\Scenes">
       <UniqueIdentifier>{3b61b604-9d93-48a6-a166-2226c5436385}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Sky_Atmosphere">
+      <UniqueIdentifier>{5f525fe4-0033-4ea4-94db-f6844ddef0ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
@@ -239,17 +242,20 @@
     <None Include="..\..\..\Downloads\icon.svg">
       <Filter>Resource</Filter>
     </None>
-    <None Include="shaders\sky_atmosphere_1993.frag">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="shaders\sky_atmosphere_1993.vert">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="shaders\pbr\pbr_ibl_test.frag">
       <Filter>Shader\PBR_IBL</Filter>
     </None>
     <None Include="shaders\pbr\pbr_ibl_test.vert">
       <Filter>Shader\PBR_IBL</Filter>
+    </None>
+    <None Include="shaders\sky_atmosphere\single_scattering.frag">
+      <Filter>Shader\Sky_Atmosphere</Filter>
+    </None>
+    <None Include="shaders\sky_atmosphere\render_transmittance_lut.frag">
+      <Filter>Shader\Sky_Atmosphere</Filter>
+    </None>
+    <None Include="shaders\sky_atmosphere\full_screen.vert">
+      <Filter>Shader\Sky_Atmosphere</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
