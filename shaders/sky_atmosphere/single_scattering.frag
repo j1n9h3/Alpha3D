@@ -12,28 +12,52 @@ uniform bool useRayleigh;
 uniform bool useMie;
 uniform bool useAbsorption;
 
+uniform bool useTransmittanceLUT;
+
 uniform vec3 lightDirection;
 uniform float lightIntensity;
+
 
 uniform float cameraHeight;
 uniform float planetRadius;
 uniform float atmosphereRadius;
+uniform vec3 rayleighBeta;
+uniform vec3 mieBeta;
+uniform vec3 absorptionBeta;
+uniform float rayleighHeight;
+uniform float mieHeight;
+uniform float absorptionHeight;
+uniform float absorptionFalloff;
+uniform float mieG;
+uniform float exposure;
+uniform float gamma;
+uniform int primarySteps;
+uniform int lightSteps;
 
-const vec3 rayleighBeta = vec3(5.5e-6, 13.0e-6, 22.4e-6);
-const vec3 mieBeta = vec3(21.0e-6);
-const vec3 absorptionBeta = vec3(2.04e-5, 4.97e-5, 1.95e-6);
+uniform sampler2D transmittanceLUT;
 
-const float rayleighHeight = 8000.0;
-const float mieHeight = 1200.0;
-const float absorptionHeight = 30000.0;
-const float absorptionFalloff = 4000.0;
 
-const float mieG = 0.7;
-const float exposure = 1.0;
-const float gamma = 2.2;
+vec2 transmittanceParamsToUv(float viewRadius, float viewZenithCos)
+{
+    float H = sqrt(max(atmosphereRadius * atmosphereRadius - planetRadius * planetRadius, 0.0));
+    float rho = sqrt(max(viewRadius * viewRadius - planetRadius * planetRadius, 0.0));
+    float discriminant = viewRadius * viewRadius * (viewZenithCos * viewZenithCos - 1.0) + atmosphereRadius * atmosphereRadius;
+    float distanceToTop = -viewRadius * viewZenithCos + sqrt(max(discriminant, 0.0));
+    float dMin = atmosphereRadius - viewRadius;
+    float dMax = rho + H;
+    float xMu = (distanceToTop - dMin) / max(dMax - dMin, 1e-6);
+    float xR = rho / max(H, 1e-6);
+    return clamp(vec2(xMu, xR), vec2(0.0), vec2(1.0));
+}
 
-const int PRIMARY_STEPS = 32;
-const int LIGHT_STEPS = 8;
+vec3 SampleTransmittanceLUT(vec3 position, vec3 direction)
+{
+    float radius = length(position);
+    vec3 upDirection = position / radius;
+    float zenithCos = dot(upDirection, direction);
+    vec2 uv = transmittanceParamsToUv(radius, zenithCos);
+    return texture(transmittanceLUT, uv).rgb;
+}
 
 vec3 GetViewDir()
 {
@@ -83,7 +107,9 @@ vec3 CalculateScattering(vec3 rayOrigin, vec3 rayDirection, float maxDistance,
         return background;
 
     bool allowMie = maxDistance > atmosphereHit.y;
-    float stepSize = (rayEnd - rayStart) / float(PRIMARY_STEPS);
+    int viewSampleCount = max(primarySteps, 1);
+    int lightSampleCount = max(lightSteps, 1);
+    float stepSize = (rayEnd - rayStart) / float(viewSampleCount);
     float rayPosition = rayStart + stepSize * 0.5;
 
     vec3 opticalDepth = vec3(0.0);
@@ -100,7 +126,7 @@ vec3 CalculateScattering(vec3 rayOrigin, vec3 rayDirection, float maxDistance,
     if (!allowMie)
         miePhase = 0.0;
 
-    for (int i = 0; i < PRIMARY_STEPS; ++i)
+    for (int i = 0; i < viewSampleCount; ++i)
     {
         vec3 samplePosition = rayOrigin + rayDirection * rayPosition;
         float height = max(length(samplePosition) - planetRadius, 0.0);
@@ -108,22 +134,30 @@ vec3 CalculateScattering(vec3 rayOrigin, vec3 rayDirection, float maxDistance,
         opticalDepth += localDensity;
 
         vec2 lightHit = RaySphereIntersect(samplePosition, lightDirection, atmosphereRadius);
-        float lightStepSize = max(lightHit.y, 0.0) / float(LIGHT_STEPS);
+        float lightStepSize = max(lightHit.y, 0.0) / float(lightSampleCount);
         float lightPosition = lightStepSize * 0.5;
         vec3 lightOpticalDepth = vec3(0.0);
+        vec3 attenuation = vec3(0.0);
 
-        for (int j = 0; j < LIGHT_STEPS; ++j)
-        {
-            vec3 lightSample = samplePosition + lightDirection * lightPosition;
-            float lightHeight = max(length(lightSample) - planetRadius, 0.0);
-            lightOpticalDepth += AtmosphereDensity(lightHeight) * lightStepSize;
-            lightPosition += lightStepSize;
+        if (useTransmittanceLUT) {
+            vec3 viewTransmittance = exp(-rayleighBeta * opticalDepth.x - mieBeta * opticalDepth.y - absorptionBeta * opticalDepth.z);
+            vec3 sunTransmittance = SampleTransmittanceLUT(samplePosition, lightDirection);
+            attenuation = viewTransmittance * sunTransmittance;
+        }
+        else {
+            for (int j = 0; j < lightSampleCount; ++j)
+            {
+                vec3 lightSample = samplePosition + lightDirection * lightPosition;
+                float lightHeight = max(length(lightSample) - planetRadius, 0.0);
+                lightOpticalDepth += AtmosphereDensity(lightHeight) * lightStepSize;
+                lightPosition += lightStepSize;
+            }
+            vec3 combinedDepth = opticalDepth + lightOpticalDepth;
+            attenuation = exp(-rayleighBeta * combinedDepth.x
+                - mieBeta * combinedDepth.y
+                - absorptionBeta * combinedDepth.z);
         }
 
-        vec3 combinedDepth = opticalDepth + lightOpticalDepth;
-        vec3 attenuation = exp(-rayleighBeta * combinedDepth.x
-                               - mieBeta * combinedDepth.y
-                               - absorptionBeta * combinedDepth.z);
         totalRayleigh += localDensity.x * attenuation;
         totalMie += localDensity.y * attenuation;
         rayPosition += stepSize;

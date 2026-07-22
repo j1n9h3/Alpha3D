@@ -4,6 +4,7 @@
 #include "core/Editor.h"
 #include "renderer/Environment.h"
 #include "renderer/Primitive.h"
+#include "core/Log.h"
 
 class Editor;
 class Window;
@@ -22,6 +23,7 @@ public:
 
     virtual std::string GetName() = 0;
     void SetDeltaTime(float dt) { delta_time = dt; }
+    void RenderFullscreenTriangle();
 protected:
     float delta_time = 0.0f;
     Scene scene;

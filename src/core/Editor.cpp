@@ -455,6 +455,15 @@ void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 		ImGui::Checkbox("Use Absorption", &p.useAbsorption);
 	}
 
+	if (ImGui::CollapsingHeader("Ray Marching", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::SliderInt("Primary Steps", &p.primarySteps, 1, 128);
+		ImGui::SliderInt("Light Steps", &p.lightSteps, 1, 128);
+	}
+	
+	if (ImGui::CollapsingHeader("Accelerating", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::Checkbox("Use Transmittance LUT", &p.useTransmittanceLUT);
+	}
+
 	ImGui::End();
 }
 

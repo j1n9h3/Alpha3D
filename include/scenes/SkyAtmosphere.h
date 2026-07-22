@@ -16,11 +16,25 @@ struct SkyAtmosphereParameters
     bool useRayleigh = true;
     bool useMie = true;
     bool useAbsorption = true;
+    bool useTransmittanceLUT = true;
     glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0f, 0.55f, -0.84f));
     float lightIntensity = 40.0f;
     float cameraHeight = 100.0f;
     float planetRadius = 6371000.0f;
     float atmosphereRadius = 6471000.0f;
+    glm::vec3 rayleighBeta = glm::vec3(5.5e-6f, 13.0e-6f, 22.4e-6f);
+    glm::vec3 mieBeta = glm::vec3(21.0e-6f);
+    glm::vec3 absorptionBeta = glm::vec3(2.04e-5f, 4.97e-5f, 1.95e-6f);
+    float rayleighHeight = 8000.0f;
+    float mieHeight = 1200.0f;
+    float absorptionHeight = 30000.0f;
+    float absorptionFalloff = 4000.0f;
+    float mieG = 0.7f;
+    float exposure = 1.0f;
+    float gamma = 2.2f;
+    int primarySteps = 32;
+    int lightSteps = 8;
+    int transmittanceSteps = 64;
 };
 
 class SkyAtmosphere : public BaseScene
@@ -35,12 +49,19 @@ public:
     GameObject* GetMainGameObject() { return nullptr; }
 
     // Shaders
-    Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere_1993.vert", "shaders/sky_atmosphere_1993.frag");
+    Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/single_scattering.frag");
+    Shader shader_render_transmittance_lut = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/render_transmittance_lut.frag");
     SkyAtmosphereParameters parameters;
+    void RenderTransmittanceLUT();
+    bool SaveTransmittanceLUT(const std::string& outputPath) const;
 
     IBL ibl;
     Environment env_map;
 private:
+    GLsizei transmittanceLUTWidth = 256;
+    GLsizei transmittanceLUTHeight = 64;
+    unsigned int transmittanceLUT = 0;
+    unsigned int captureFBO = 0;
     std::string name = "sky_atmosphere";
 
 };

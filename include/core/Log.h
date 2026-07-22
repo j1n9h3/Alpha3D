@@ -13,7 +13,8 @@
     X(Config) \
     X(Camera) \
     X(Editor) \
-    X(Recorder)
+    X(Recorder) \
+    X(SkyAtmosphere)
 
 #define LOG_TRACE(name, ...)  Log::Get##name##Logger()->trace(__VA_ARGS__)
 #define LOG_INFO(name, ...)  Log::Get##name##Logger()->info(__VA_ARGS__)
