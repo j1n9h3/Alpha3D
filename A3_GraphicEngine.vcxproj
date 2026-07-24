@@ -79,8 +79,7 @@
     <None Include="shaders\phong.frag" />
     <None Include="shaders\phong.vert" />
     <None Include="shaders\sky_atmosphere\full_screen.vert" />
-    <None Include="shaders\sky_atmosphere\render_transmittance_lut.frag" />
-    <None Include="shaders\sky_atmosphere\single_scattering.frag" />
+    <None Include="shaders\sky_atmosphere\sky_atmosphere.frag" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>

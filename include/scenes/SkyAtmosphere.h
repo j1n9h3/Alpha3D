@@ -34,7 +34,7 @@ struct SkyAtmosphereParameters
     float gamma = 2.2f;
     int primarySteps = 32;
     int lightSteps = 8;
-    int transmittanceSteps = 64;
+    int transmittanceLUTSteps = 64;
 };
 
 class SkyAtmosphere : public BaseScene
@@ -49,8 +49,7 @@ public:
     GameObject* GetMainGameObject() { return nullptr; }
 
     // Shaders
-    Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/single_scattering.frag");
-    Shader shader_render_transmittance_lut = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/render_transmittance_lut.frag");
+    Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/sky_atmosphere.frag");
     SkyAtmosphereParameters parameters;
     void RenderTransmittanceLUT();
     bool SaveTransmittanceLUT(const std::string& outputPath) const;

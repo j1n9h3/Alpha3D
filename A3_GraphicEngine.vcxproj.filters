@@ -251,10 +251,7 @@
     <None Include="shaders\pbr\pbr_ibl_test.vert">
       <Filter>Shader\PBR_IBL</Filter>
     </None>
-    <None Include="shaders\sky_atmosphere\single_scattering.frag">
-      <Filter>Shader\Sky_Atmosphere</Filter>
-    </None>
-    <None Include="shaders\sky_atmosphere\render_transmittance_lut.frag">
+    <None Include="shaders\sky_atmosphere\sky_atmosphere.frag">
       <Filter>Shader\Sky_Atmosphere</Filter>
     </None>
     <None Include="shaders\sky_atmosphere\full_screen.vert">

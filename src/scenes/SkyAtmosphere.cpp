@@ -42,6 +42,8 @@ void SkyAtmosphere::Render(RenderContext& context)
     A3_PROFILE_PASS(context.profiler, "Atmosphere");
     Camera& camera = context.camera;
     shader_sky_atmosphere.use();
+    shader_sky_atmosphere.setInt("MODE", 0);
+
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, transmittanceLUT);
@@ -90,11 +92,12 @@ void SkyAtmosphere::RenderTransmittanceLUT() {
 
     glViewport(0, 0, transmittanceLUTWidth, transmittanceLUTHeight);
     glDisable(GL_DEPTH_TEST);
-    shader_render_transmittance_lut.use();
+    shader_sky_atmosphere.use();
+    shader_sky_atmosphere.setInt("MODE", 1);
 
-    SetAtmosphereUniforms(shader_render_transmittance_lut, parameters);
+    SetAtmosphereUniforms(shader_sky_atmosphere, parameters);
 
-    shader_render_transmittance_lut.setInt("transmittanceSteps", parameters.transmittanceSteps);
+    shader_sky_atmosphere.setInt("transmittanceLUTSteps", parameters.transmittanceLUTSteps);
     glClear(GL_COLOR_BUFFER_BIT);
     RenderFullscreenTriangle();
 
