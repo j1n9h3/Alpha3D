@@ -17,7 +17,7 @@ class PBRIBL_Spheres : public PBRIBL_Base
 public:
 
     void Load(Window& window);
-    void Render(Camera& camera);
+    void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
 

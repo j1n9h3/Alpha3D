@@ -8,6 +8,7 @@
 
 class Editor;
 class Window;
+struct RenderContext;
 
 class BaseScene
 {
@@ -15,7 +16,7 @@ public:
     virtual ~BaseScene() = default;
 
     virtual void Load(Window& window);
-    virtual void Render(Camera& camera) = 0;
+    virtual void Render(RenderContext& context) = 0;
     virtual void Unload() = 0;
 
     virtual void RenderEditor(Editor& editor);

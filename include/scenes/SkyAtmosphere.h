@@ -41,7 +41,7 @@ class SkyAtmosphere : public BaseScene
 {
 public:
     void Load(Window& window);
-    void Render(Camera& camera);
+    void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
     std::string GetName() { return this->name; }

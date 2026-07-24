@@ -1,12 +1,14 @@
 #include "scenes/SkyAtmosphere2020.h"
+#include "renderer/RenderContext.h"
 
 void SkyAtmosphere2020::Load(Window& window)
 {
     BaseScene::Load(window); // glEnable
 }
 
-void SkyAtmosphere2020::Render(Camera& camera)
+void SkyAtmosphere2020::Render(RenderContext& context)
 {
+    Camera& camera = context.camera;
     shader_sky_atmosphere.use();
     shader_sky_atmosphere.setBool("useRayleigh", parameters.useRayleigh);
     shader_sky_atmosphere.setBool("useMie", parameters.useMie);

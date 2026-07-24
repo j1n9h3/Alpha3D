@@ -17,6 +17,9 @@
 #include "scenes/BaseScene.h"
 #include "scenes/SkyAtmosphere.h"
 #include "utils/Recorder.h"
+#include "renderer/RenderProfiler.h"
+
+#include <algorithm>
 
 static GLuint LoadSVGIcon(const char* path, int w, int h) {
 	NSVGimage* image = nsvgParseFromFile(path, "px", 96);
@@ -398,6 +401,132 @@ void Editor::EndFrame()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Editor::BeginPerformance(RenderProfiler& profiler)
+{
+	ImGui::Begin("Performance");
+
+	bool enabled = profiler.IsEnabled();
+	if (ImGui::Checkbox("Profiling", &enabled)) profiler.SetEnabled(enabled);
+	ImGui::SameLine();
+	bool paused = profiler.IsPaused();
+	if (ImGui::Checkbox("Pause", &paused)) profiler.SetPaused(paused);
+	ImGui::SameLine();
+	if (ImGui::Button("Reset")) profiler.Reset();
+
+	ImGui::SameLine();
+
+	const double averageFrameMs = profiler.GetAverageFrameCpuMs();
+	const double averageFps = averageFrameMs > 0.0 ? 1000.0 / averageFrameMs : 0.0;
+	ImGui::Text("Frame Avg: %.2f ms  |  FPS Avg: %.1f", averageFrameMs, averageFps);
+
+	auto stats = profiler.GetStats();
+	std::stable_sort(stats.begin(), stats.end(), [](const auto& left, const auto& right) {
+		if (left.averageGpuMs != right.averageGpuMs)
+			return left.averageGpuMs > right.averageGpuMs;
+		return left.averageCpuMs > right.averageCpuMs;
+	});
+	const double averageFrameGpuMs = profiler.GetAverageFrameGpuMs();
+
+	const ImGuiTableFlags flags = ImGuiTableFlags_BordersInnerV |
+		ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable |
+		ImGuiTableFlags_ScrollY | ImGuiTableFlags_SizingStretchProp;
+	ImGui::TextUnformatted("Frame Regions");
+	if (ImGui::BeginTable("Frame regions", 5, flags, ImVec2(0.0f, 260.0f))) {
+		ImGui::TableSetupColumn("Region", ImGuiTableColumnFlags_WidthStretch, 2.5f);
+		ImGui::TableSetupColumn("CPU", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+		ImGui::TableSetupColumn("GPU", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+		ImGui::TableSetupColumn("Avg GPU", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+		ImGui::TableSetupColumn("GPU Avg Load", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+		ImGui::TableHeadersRow();
+
+		for (const auto& region : stats) {
+			if (region.name.rfind("One-time/", 0) == 0) continue;
+			ImGui::PushID(region.name.c_str());
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+			ImGui::TextUnformatted(region.name.c_str());
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip("GPU min %.3f ms, max %.3f ms\n%llu CPU / %llu GPU samples",
+					region.minGpuMs, region.maxGpuMs,
+					static_cast<unsigned long long>(region.cpuSamples),
+					static_cast<unsigned long long>(region.gpuSamples));
+			}
+			ImGui::TableSetColumnIndex(1);
+			if (region.name == "Top-level GPU") ImGui::TextUnformatted("-");
+			else ImGui::Text("%.3f ms", region.cpuMs);
+			ImGui::TableSetColumnIndex(2);
+			if (region.gpuSamples == 0 && region.gpuPending) ImGui::TextUnformatted("pending");
+			else ImGui::Text("%.3f ms", region.gpuMs);
+			ImGui::TableSetColumnIndex(3);
+			ImGui::Text("%.3f ms", region.averageGpuMs);
+			ImGui::TableSetColumnIndex(4);
+			const float fraction = averageFrameGpuMs > 0.0
+				? static_cast<float>(std::min(region.averageGpuMs / averageFrameGpuMs, 1.0)) : 0.0f;
+			char loadLabel[16];
+			snprintf(loadLabel, sizeof(loadLabel), "%.1f%%", fraction * 100.0f);
+			ImGui::ProgressBar(fraction, ImVec2(-FLT_MIN, 0.0f), loadLabel);
+			ImGui::PopID();
+		}
+		ImGui::EndTable();
+	}
+
+	bool hasOneTimeTasks = false;
+	for (const auto& region : stats) {
+		if (region.name.rfind("One-time/", 0) == 0) {
+			hasOneTimeTasks = true;
+			break;
+		}
+	}
+
+	if (hasOneTimeTasks) {
+		ImGui::Spacing();
+		ImGui::TextUnformatted("One-time Tasks");
+		if (ImGui::BeginTable("One-time tasks", 4,
+			ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg |
+			ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+			ImGui::TableSetupColumn("Task", ImGuiTableColumnFlags_WidthStretch, 2.5f);
+			ImGui::TableSetupColumn("CPU", ImGuiTableColumnFlags_WidthFixed, 85.0f);
+			ImGui::TableSetupColumn("GPU", ImGuiTableColumnFlags_WidthFixed, 85.0f);
+			ImGui::TableSetupColumn("Avg GPU", ImGuiTableColumnFlags_WidthFixed, 85.0f);
+			ImGui::TableHeadersRow();
+
+			for (const auto& task : stats) {
+				constexpr const char* prefix = "One-time/";
+				if (task.name.rfind(prefix, 0) != 0) continue;
+				ImGui::PushID(task.name.c_str());
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::TextUnformatted(task.name.c_str() + std::char_traits<char>::length(prefix));
+				if (ImGui::IsItemHovered()) {
+					ImGui::SetTooltip("GPU min %.3f ms, max %.3f ms\n%llu samples",
+						task.minGpuMs, task.maxGpuMs,
+						static_cast<unsigned long long>(task.gpuSamples));
+				}
+				ImGui::TableSetColumnIndex(1);
+				ImGui::Text("%.3f ms", task.cpuMs);
+				ImGui::TableSetColumnIndex(2);
+				if (task.gpuSamples == 0 && task.gpuPending) ImGui::TextUnformatted("pending");
+				else ImGui::Text("%.3f ms", task.gpuMs);
+				ImGui::TableSetColumnIndex(3);
+				ImGui::Text("%.3f ms", task.averageGpuMs);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+	}
+
+	ImGui::End();
+}
+
+bool Editor::HasPerformanceAffectingEdit() const
+{
+	const ImGuiContext* context = ImGui::GetCurrentContext();
+	return context != nullptr &&
+		(context->ActiveIdHasBeenEditedThisFrame ||
+			(context->DeactivatedItemData.ElapseFrame == context->FrameCount &&
+			 context->DeactivatedItemData.HasBeenEditedBefore));
 }
 
 

@@ -1,11 +1,13 @@
 #include "scenes/PBRIBL_Spheres.h"
+#include "renderer/RenderContext.h"
+#include "renderer/RenderProfiler.h"
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
 
 void PBRIBL_Spheres::Load(Window& window)
 {
-    PBRIBL_Base::Load(window);  // Ö´ÐÐ glEnable µÈ
+    PBRIBL_Base::Load(window);  // æ‰§è¡Œ glEnable ç­‰
 
     const int pbr_test_grid = 6;
     const float spacing = 1.4f;
@@ -29,8 +31,9 @@ void PBRIBL_Spheres::Load(Window& window)
     scene.SetSelected(scene.GetGameObjects()[0]->GetID());
 }
 
-void PBRIBL_Spheres::Render(Camera& camera)
+void PBRIBL_Spheres::Render(RenderContext& context)
 {
+    Camera& camera = context.camera;
 
     // shader_pbr_ibl_test
     ibl.Bind(shader_pbr_ibl_test);
@@ -42,9 +45,12 @@ void PBRIBL_Spheres::Render(Camera& camera)
     shader_pbr_ibl_test.setVec3("lightPos", glm::vec3(0.0f, 0.0f, 0.0f));
     shader_pbr_ibl_test.setVec3("baseColor", sphere_albedo);
 
-    scene.Render();
+    {
+        A3_PROFILE_PASS(context.profiler, "Opaque Scene");
+        scene.Render();
+    }
 
-    PBRIBL_Base::Render(camera);
+    PBRIBL_Base::Render(context);
 
 }
 

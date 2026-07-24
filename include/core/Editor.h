@@ -19,6 +19,7 @@ class Scene;
 class Environment;
 class Recorder;
 class SkyAtmosphere;
+class RenderProfiler;
 class Editor {
 public:
     void Init(GLFWwindow* window);
@@ -39,6 +40,8 @@ public:
     void BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
     void BeginRecorder(Recorder& recorder);
     void BeginSkyAtmosphere(SkyAtmosphere& sky);
+    void BeginPerformance(RenderProfiler& profiler);
+    bool HasPerformanceAffectingEdit() const;
     void ShowToast(const std::string& message, float duration = 1.5f);
 
 private:

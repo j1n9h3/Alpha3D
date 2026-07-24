@@ -33,6 +33,7 @@
     <ClCompile Include="src\renderer\Mesh.cpp" />
     <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\renderer\Primitive.cpp" />
+    <ClCompile Include="src\renderer\RenderProfiler.cpp" />
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
     <ClCompile Include="src\scenes\BaseScene.cpp" />
@@ -98,6 +99,8 @@
     <ClInclude Include="include\renderer\Mesh.h" />
     <ClInclude Include="include\renderer\Model.h" />
     <ClInclude Include="include\renderer\Primitive.h" />
+    <ClInclude Include="include\renderer\RenderProfiler.h" />
+    <ClInclude Include="include\renderer\RenderContext.h" />
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
     <ClInclude Include="include\scenes\BaseScene.h" />

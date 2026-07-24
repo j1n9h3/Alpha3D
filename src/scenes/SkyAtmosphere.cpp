@@ -1,6 +1,8 @@
 #include "scenes/SkyAtmosphere.h"
 #include "core/Log.h"
 #include "stb_image_write.h"
+#include "renderer/RenderProfiler.h"
+#include "renderer/RenderContext.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -35,8 +37,10 @@ void SkyAtmosphere::Load(Window& window)
     SaveTransmittanceLUT("record/transmittance_lut.png");
 }
 
-void SkyAtmosphere::Render(Camera& camera)
+void SkyAtmosphere::Render(RenderContext& context)
 {
+    A3_PROFILE_PASS(context.profiler, "Atmosphere");
+    Camera& camera = context.camera;
     shader_sky_atmosphere.use();
 
     glActiveTexture(GL_TEXTURE0);

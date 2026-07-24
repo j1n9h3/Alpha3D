@@ -2,11 +2,13 @@
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
+#include "renderer/RenderContext.h"
+#include "renderer/RenderProfiler.h"
 
 void PBRIBL_Custom::Load(Window& window)
 {
 
-    PBRIBL_Base::Load(window);  // Ö´ÐÐ glEnable µÈ
+    PBRIBL_Base::Load(window);  // æ‰§è¡Œ glEnable ç­‰
 
     // Scene
     sphere = &scene.AddGameObject("PBR_sphere", &mesh_sphere, &shader_pbr_ibl_test);
@@ -27,8 +29,9 @@ void PBRIBL_Custom::Load(Window& window)
     scene.SetSelected(bulb->GetID());
 }
 
-void PBRIBL_Custom::Render(Camera& camera)
+void PBRIBL_Custom::Render(RenderContext& context)
 {
+    Camera& camera = context.camera;
 
     glm::vec4 worldLightPos = bulb->GetTransform().matrix * glm::vec4(localLightPos, 1.0f);
     glm::vec3 lightPos = glm::vec3(worldLightPos);
@@ -65,9 +68,12 @@ void PBRIBL_Custom::Render(Camera& camera)
     shader_pbr_ibl_test.setVec3("viewPos", camera.GetPosition());
     shader_pbr_ibl_test.setVec3("lightPos", lightPos);
 
-    scene.Render();
+    {
+        A3_PROFILE_PASS(context.profiler, "Opaque Scene");
+        scene.Render();
+    }
 
-    PBRIBL_Base::Render(camera);
+    PBRIBL_Base::Render(context);
 
 }
 

@@ -1,12 +1,14 @@
 #include "scenes/SkyAtmosphere.h"
+#include "renderer/RenderContext.h"
 
 void SkyAtmosphere1993::Load(Window& window)
 {
     BaseScene::Load(window); // glEnable
 }
 
-void SkyAtmosphere1993::Render(Camera& camera)
+void SkyAtmosphere1993::Render(RenderContext& context)
 {
+    Camera& camera = context.camera;
     shader_sky_atmosphere.use();
     shader_sky_atmosphere.setBool("useRayleigh", parameters.useRayleigh);
     shader_sky_atmosphere.setBool("useMie", parameters.useMie);

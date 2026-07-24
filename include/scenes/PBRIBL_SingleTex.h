@@ -18,7 +18,7 @@ public:
 
     PBRIBL_SingleTex(std::string path, std::string inst_name);
     void Load(Window& window);
-    void Render(Camera& camera);
+    void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
 

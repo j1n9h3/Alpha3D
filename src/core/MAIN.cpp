@@ -42,6 +42,8 @@
 #include "scenes/PBRIBL_SingleTex.h"
 #include "scenes/SkyAtmosphere.h"
 #include "core/Time.h"
+#include "renderer/RenderProfiler.h"
+#include "renderer/RenderContext.h"
 
 #include "utils/Recorder.h"
 
@@ -93,7 +95,11 @@ int main()
 
     BaseScene* currentScene = &sky_atmosphere;
 
-    currentScene->Load(window);
+    RenderProfiler profiler;
+    {
+        A3_PROFILE_PASS(profiler, "One-time/Initial Scene Load");
+        currentScene->Load(window);
+    }
 
     Camera camera(config.renderer.fov, window, glm::vec3(-0.0f, 0.0f, -0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     window.GetWindowContext().camera = &camera;
@@ -104,49 +110,67 @@ int main()
 
     Recorder recorder;
     recorder.Init(1920, 1080);
+    RenderContext renderContext{ camera, profiler };
 
     while (!window.ShouldClose())
     {
+        profiler.BeginFrame();
         Time::Update();
         editor.BeginFrame(&viewport, &recorder);
         camera.SetProjection(camera.GetFov(), viewport.GetWidth() / viewport.GetHeight());
 
         // Viewport
-        viewport.BeginRender();
-        camera.ProcessEditorInput(window.GetGLFWWindow(), editor.IsViewportHovered());
-        currentScene->Render(camera);
-        viewport.EndRender();
+        {
+            A3_PROFILE_PASS(profiler, "Viewport");
+            viewport.BeginRender();
+            camera.ProcessEditorInput(window.GetGLFWWindow(), editor.IsViewportHovered());
+            currentScene->Render(renderContext);
+            viewport.EndRender();
+        }
 
         // Photographer
         if (recorder.ConsumePhotoRequest()) {
+            A3_PROFILE_PASS(profiler, "Photo");
             camera.SetProjection(camera.GetFov(), (float)recorder.GetWidth() / recorder.GetHeight());
             recorder.BeginRender();
-            currentScene->Render(camera);
+            currentScene->Render(renderContext);
             recorder.SaveImage();
             recorder.EndRender();
         }
 
         // Recorder
         if (recorder.IsRecording()) {
+            A3_PROFILE_PASS(profiler, "Recorder");
             camera.SetProjection(camera.GetFov(), (float)recorder.GetWidth() / recorder.GetHeight());
             recorder.BeginRender();
-            currentScene->Render(camera);
+            currentScene->Render(renderContext);
             recorder.CaptureFrame();
             recorder.EndRender();
         }
 
         // Editor
-        editor.BeginSceneSelect(currentScene, scenes, window);
-        editor.BeginLog();
-        editor.BeginCamera(camera);
-        editor.BeginRecorder(recorder);
-        currentScene->RenderEditor(editor);
-        editor.EndFrame();
+        {
+            A3_PROFILE_PASS(profiler, "Editor UI");
+            editor.BeginSceneSelect(currentScene, scenes, window);
+            editor.BeginLog();
+            editor.BeginCamera(camera);
+            editor.BeginRecorder(recorder);
+            currentScene->RenderEditor(editor);
+            if (editor.HasPerformanceAffectingEdit())
+                profiler.ResetFrameHistory();
+            editor.BeginPerformance(profiler);
+            editor.EndFrame();
+        }
 
-        window.Update();
+        {
+            A3_PROFILE_PASS(profiler, "Present");
+            window.Update();
+        }
+        profiler.EndFrame();
     }
 
     recorder.Destroy();
+    profiler.Shutdown();
     window.Destroy();
     glfwTerminate();
 

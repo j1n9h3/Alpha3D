@@ -1,4 +1,6 @@
 #include "scenes/PBRIBL_SingleTex.h"
+#include "renderer/RenderContext.h"
+#include "renderer/RenderProfiler.h"
 #include "core/Window.h"
 #include "scene/GameObject.h"
 #include "renderer/Primitive.h"
@@ -19,8 +21,9 @@ void PBRIBL_SingleTex::Load(Window& window)
     scene.SetSelected(game_object->GetID());
 }
 
-void PBRIBL_SingleTex::Render(Camera& camera)
+void PBRIBL_SingleTex::Render(RenderContext& context)
 {
+    Camera& camera = context.camera;
     // shader_pbr
     ibl.Bind(shader_pbr_ibl_object);
     shader_pbr_ibl_object.setBool("isLight", false);
@@ -32,9 +35,12 @@ void PBRIBL_SingleTex::Render(Camera& camera)
     shader_pbr_ibl_object.setVec3("lightPos", glm::vec3(0, 0, 0));
 
 
-    scene.Render();
+    {
+        A3_PROFILE_PASS(context.profiler, "Opaque Scene");
+        scene.Render();
+    }
 
-    PBRIBL_Base::Render(camera);
+    PBRIBL_Base::Render(context);
 
 }
 

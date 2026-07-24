@@ -15,7 +15,7 @@ class PBRIBL_Base : public BaseScene
 {
 public:
     void Load(Window& window);
-    void Render(Camera& camera);
+    void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
 

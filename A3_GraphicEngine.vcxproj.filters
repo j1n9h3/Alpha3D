@@ -123,6 +123,9 @@
     <ClCompile Include="src\renderer\Primitive.cpp">
       <Filter>Source\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\RenderProfiler.cpp">
+      <Filter>Source\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\scene\Scene.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
@@ -296,6 +299,12 @@
       <Filter>Headers\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\Primitive.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\RenderProfiler.h">
+      <Filter>Headers\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer\RenderContext.h">
       <Filter>Headers\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="include\renderer\Shader.h">
