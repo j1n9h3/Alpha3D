@@ -69,6 +69,23 @@ void Camera::ProcessEditorInput(GLFWwindow* glfwWindow, bool isViewportHovered) 
     }
 }
 
+void Camera::SetDirection(const glm::vec3& newDirection)
+{
+    const float directionLength = glm::length(newDirection);
+    if (directionLength <= glm::epsilon<float>())
+        return;
+
+    direction = newDirection / directionLength;
+
+    yaw = glm::degrees(std::atan2(direction.z, direction.x));
+    pitch = glm::degrees(std::asin(glm::clamp(direction.y, -1.0f, 1.0f)));
+
+    const glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
+    right = glm::normalize(glm::cross(direction, worldUp));
+    up = glm::normalize(glm::cross(right, direction));
+    RebuildView();
+}
+
 void Camera::ProcessInput(GLFWwindow* glfw_window)
 {
     if (glfwGetMouseButton(glfw_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {

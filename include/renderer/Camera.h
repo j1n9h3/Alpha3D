@@ -34,6 +34,8 @@ public:
     void ResetMouseState();
 
     glm::vec3 GetPosition() { return position; }
+    glm::vec3 GetDirection() const { return direction; }
+    void SetDirection(const glm::vec3& direction);
     glm::mat4 GetView() { return view; }
     glm::mat4 GetProjection() { return projection; }
     

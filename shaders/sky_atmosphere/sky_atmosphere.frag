@@ -342,18 +342,16 @@ vec4 computeSkyViewLUT()
     uvToSkyViewParams(viewZenithCos, lightViewCos, viewHeight, screenUV);
 
     float sunZenithCos = clamp(normalize(lightDirection).y, -1.0, 1.0);
-    vec3 sunDirection = normalize(vec3(
-        sqrt(max(1.0 - sunZenithCos * sunZenithCos, 0.0)),
-        0.0,
-        sunZenithCos));
+    vec3 sunDirection = normalize(vec3(sqrt(max(1.0 - sunZenithCos * sunZenithCos, 0.0)), sunZenithCos, 0.0));
 
     float viewZenithSin = sqrt(max(1.0 - viewZenithCos * viewZenithCos, 0.0));
     vec3 viewDirection = normalize(vec3(
         viewZenithSin * lightViewCos,
-        viewZenithSin * sqrt(max(1.0 - lightViewCos * lightViewCos, 0.0)),
-        viewZenithCos));
+        viewZenithCos,
+        viewZenithSin * sqrt(max(1.0 - lightViewCos * lightViewCos, 0.0))
+    ));
 
-    vec3 atmosphereCamera = vec3(0.0, 0.0, viewHeight);
+    vec3 atmosphereCamera = vec3(0.0, viewHeight, 0.0);
 
     vec2 planetHit = RaySphereIntersect(atmosphereCamera, viewDirection, planetRadius);
     float sceneDepth = 1e20;

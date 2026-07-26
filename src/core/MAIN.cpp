@@ -101,7 +101,7 @@ int main()
         currentScene->Load(window);
     }
 
-    Camera camera(config.renderer.fov, window, glm::vec3(-0.0f, 0.0f, -0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Camera camera(config.renderer.fov, window, glm::vec3(-0.0f, 0.0f, -0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     window.GetWindowContext().camera = &camera;
 
     window.SetResizeCallback([&](int width, int height) {

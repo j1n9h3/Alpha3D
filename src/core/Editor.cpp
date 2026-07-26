@@ -282,6 +282,11 @@ void Editor::BeginCamera(Camera & camera) {
 	if (ImGui::InputFloat3("Position", &position.x, "%.2f")) {
 		camera.SetPosition(position);
 	}
+
+	glm::vec3 direction = camera.GetDirection();
+	if (ImGui::InputFloat3("Direction", &direction.x, "%.3f")) {
+		camera.SetDirection(direction);
+	}
 	ImGui::InputFloat("Speed", &camera.moveSpeed, 0.5f, 1.0f, "%.1f");
 
 
