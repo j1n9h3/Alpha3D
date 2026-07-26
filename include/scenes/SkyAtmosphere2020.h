@@ -30,7 +30,7 @@ public:
     void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
-    std::string GetName() { return this->name; }
+    std::string GetName() const { return this->name; }
 
     GameObject* GetMainGameObject() { return nullptr; }
 

@@ -562,36 +562,49 @@ void Editor::BeginEnvironment(Environment& env) {
 
 void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 	SkyAtmosphereParameters& p = sky.parameters;
+	bool parametersChanged = false;
 	ImGui::Begin("Sky Atmosphere");
 
 	if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat3("Light Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
-		if (glm::length(p.lightDirection) < 0.001f)
-			p.lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-		ImGui::SliderFloat("Light Intensity", &p.lightIntensity, 0.0f, 100.0f, "%.1f");
+		parametersChanged |= ImGui::DragFloat("Longitude", &p.sunLongitude, 0.5f, -180.0f, 180.0f, "%.1f deg");
+		parametersChanged |= ImGui::DragFloat("Latitude", &p.sunLatitude, 0.5f, -90.0f, 90.0f, "%.1f deg");
+		p.sunLatitude = glm::clamp(p.sunLatitude, -90.0f, 90.0f);
+		if (parametersChanged) {
+			const float longitude = glm::radians(p.sunLongitude);
+			const float latitude = glm::radians(p.sunLatitude);
+			p.lightDirection = glm::normalize(glm::vec3(
+				cos(latitude) * cos(longitude),
+				sin(latitude),
+				cos(latitude) * sin(longitude)));
+		}
+		parametersChanged |= ImGui::SliderFloat("Light Intensity", &p.lightIntensity, 0.0f, 100.0f, "%.1f");
 	}
 
 	if (ImGui::CollapsingHeader("Planet", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat("Camera Height", &p.cameraHeight, 100.0f, 1.0f, 1000000.0f, "%.0f m");
-		ImGui::DragFloat("Planet Radius", &p.planetRadius, 1000.0f, 1.0f, FLT_MAX, "%.0f m");
-		ImGui::DragFloat("Atmosphere Radius", &p.atmosphereRadius, 1000.0f, p.planetRadius + 1.0f, FLT_MAX, "%.0f m");
+		parametersChanged |= ImGui::DragFloat("Camera Height", &p.cameraHeight, 100.0f, 1.0f, 1000000.0f, "%.0f m");
+		parametersChanged |= ImGui::DragFloat("Planet Radius", &p.planetRadius, 1000.0f, 1.0f, FLT_MAX, "%.0f m");
+		parametersChanged |= ImGui::DragFloat("Atmosphere Radius", &p.atmosphereRadius, 1000.0f, p.planetRadius + 1.0f, FLT_MAX, "%.0f m");
 		p.atmosphereRadius = glm::max(p.atmosphereRadius, p.planetRadius + 1.0f);
 	}
 
 	if (ImGui::CollapsingHeader("Scattering", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Checkbox("Use Rayleigh Scattering", &p.useRayleigh);
-		ImGui::Checkbox("Use Mie Scattering", &p.useMie);
-		ImGui::Checkbox("Use Absorption", &p.useAbsorption);
+		parametersChanged |= ImGui::Checkbox("Use Rayleigh Scattering", &p.useRayleigh);
+		parametersChanged |= ImGui::Checkbox("Use Mie Scattering", &p.useMie);
+		parametersChanged |= ImGui::Checkbox("Use Absorption", &p.useAbsorption);
 	}
 
 	if (ImGui::CollapsingHeader("Ray Marching", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::SliderInt("Primary Steps", &p.primarySteps, 1, 128);
-		ImGui::SliderInt("Light Steps", &p.lightSteps, 1, 128);
+		parametersChanged |= ImGui::SliderInt("Primary Steps", &p.primarySteps, 1, 128);
+		parametersChanged |= ImGui::SliderInt("Light Steps", &p.lightSteps, 1, 128);
 	}
 	
 	if (ImGui::CollapsingHeader("Accelerating", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::Checkbox("Use Transmittance LUT", &p.useTransmittanceLUT);
+		parametersChanged |= ImGui::Checkbox("Use Transmittance LUT", &p.useTransmittanceLUT);
+		parametersChanged |= ImGui::Checkbox("Use Sky-View LUT", &p.useSkyViewLUT);
 	}
+
+	if (parametersChanged)
+		sky.MarkParametersDirty();
 
 	ImGui::End();
 }

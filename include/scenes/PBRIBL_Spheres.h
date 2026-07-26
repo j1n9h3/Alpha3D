@@ -23,7 +23,7 @@ public:
 
     //GameObject* GetMainGameObject() { return sphere; }
 
-    std::string GetName() { return name; }
+    std::string GetName() const { return name; }
 
 private:
     std::string name = "PBRIBL_Spheres";

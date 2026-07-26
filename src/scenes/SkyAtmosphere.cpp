@@ -1,12 +1,7 @@
 #include "scenes/SkyAtmosphere.h"
 #include "core/Log.h"
-#include "stb_image_write.h"
 #include "renderer/RenderProfiler.h"
 #include "renderer/RenderContext.h"
-
-#include <algorithm>
-#include <filesystem>
-#include <vector>
 
 namespace {
 void SetAtmosphereUniforms(const Shader& shader, const SkyAtmosphereParameters& p)
@@ -24,6 +19,22 @@ void SetAtmosphereUniforms(const Shader& shader, const SkyAtmosphereParameters& 
     shader.setFloat("absorptionHeight", p.absorptionHeight);
     shader.setFloat("absorptionFalloff", p.absorptionFalloff);
 }
+
+void SetScatteringUniforms(const Shader& shader, const SkyAtmosphereParameters& p)
+{
+    shader.setBool("useTransmittanceLUT", p.useTransmittanceLUT);
+    shader.setBool("useSkyViewLUT", p.useSkyViewLUT);
+    shader.setInt("transmittanceLUT", 0);
+    shader.setInt("skyViewLUT", 1);
+    shader.setFloat("lightIntensity", p.lightIntensity);
+    shader.setVec3("lightDirection", glm::normalize(p.lightDirection));
+    shader.setFloat("cameraHeight", p.cameraHeight);
+    shader.setFloat("mieG", p.mieG);
+    shader.setFloat("exposure", p.exposure);
+    shader.setFloat("gamma", p.gamma);
+    shader.setInt("primarySteps", p.primarySteps);
+    shader.setInt("lightSteps", p.lightSteps);
+}
 }
 
 void SkyAtmosphere::Load(Window& window)
@@ -31,10 +42,18 @@ void SkyAtmosphere::Load(Window& window)
     BaseScene::Load(window); // glEnable
 
     glGenTextures(1, &transmittanceLUT);
+    glGenTextures(1, &skyViewLUT);
     glGenFramebuffers(1, &captureFBO);
 
+    shader_sky_atmosphere.use();
+    SetAtmosphereUniforms(shader_sky_atmosphere, parameters);
+    SetScatteringUniforms(shader_sky_atmosphere, parameters);
+
     RenderTransmittanceLUT();
-    SaveTransmittanceLUT("record/transmittance_lut.png");
+    SaveTransmittanceLUT("transmittance_lut.png");
+    RenderSkyViewLUT();
+    SaveSkyViewLUT("sky_view_lut.png");
+    parametersDirty = false;
 }
 
 void SkyAtmosphere::Render(RenderContext& context)
@@ -42,117 +61,66 @@ void SkyAtmosphere::Render(RenderContext& context)
     A3_PROFILE_PASS(context.profiler, "Atmosphere");
     Camera& camera = context.camera;
     shader_sky_atmosphere.use();
-    shader_sky_atmosphere.setInt("MODE", 0);
-
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, transmittanceLUT);
-    shader_sky_atmosphere.setInt("transmittanceLUT", 0);
-
-    SetAtmosphereUniforms(shader_sky_atmosphere, parameters);
-    shader_sky_atmosphere.setBool("useTransmittanceLUT", parameters.useTransmittanceLUT);
     shader_sky_atmosphere.setMat4("invProjection", glm::inverse(camera.GetProjection()));
     shader_sky_atmosphere.setMat4("invView", glm::inverse(camera.GetView()));
     shader_sky_atmosphere.setVec3("cameraPos", camera.GetPosition());
-    shader_sky_atmosphere.setVec3("lightDirection", glm::normalize(parameters.lightDirection));
-    shader_sky_atmosphere.setFloat("lightIntensity", parameters.lightIntensity);
-    shader_sky_atmosphere.setFloat("cameraHeight", parameters.cameraHeight);
-    shader_sky_atmosphere.setFloat("mieG", parameters.mieG);
-    shader_sky_atmosphere.setFloat("exposure", parameters.exposure);
-    shader_sky_atmosphere.setFloat("gamma", parameters.gamma);
-    shader_sky_atmosphere.setInt("primarySteps", parameters.primarySteps);
-    shader_sky_atmosphere.setInt("lightSteps", parameters.lightSteps);
+    shader_sky_atmosphere.setInt("MODE", 0);
+
+    if (parametersDirty) {
+        SetAtmosphereUniforms(shader_sky_atmosphere, parameters);
+        SetScatteringUniforms(shader_sky_atmosphere, parameters);
+        RenderSkyViewLUT();
+        shader_sky_atmosphere.setInt("MODE", 0);
+        parametersDirty = false;
+    }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, transmittanceLUT);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, skyViewLUT);
+    glActiveTexture(GL_TEXTURE0);
     RenderFullscreenTriangle();
 }
 
 void SkyAtmosphere::RenderTransmittanceLUT() {
 
-    GLint previousFramebuffer = 0;
-    GLint previousViewport[4] = {};
-    GLboolean depthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFramebuffer);
-    glGetIntegerv(GL_VIEWPORT, previousViewport);
+    BaseScene::RenderLUT(transmittanceLUT, transmittanceLUTWidth, transmittanceLUTHeight, captureFBO, shader_sky_atmosphere, [&](Shader& shader) {
+        shader.setInt("MODE", 1);
+        shader.setInt("transmittanceLUTSteps", parameters.transmittanceLUTSteps);
+    });
+}
 
+void SkyAtmosphere::RenderSkyViewLUT()
+{
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, transmittanceLUT);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, transmittanceLUTWidth, transmittanceLUTHeight, 0, GL_RGB, GL_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glActiveTexture(GL_TEXTURE1);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, transmittanceLUT, 0);
+    BaseScene::RenderLUT(skyViewLUT, skyViewLUTWidth, skyViewLUTHeight, captureFBO, shader_sky_atmosphere, [&](Shader& shader) {
+        shader.setInt("MODE", 2);
+    });
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        LOG_ERROR(SkyAtmosphere, "Transmittance LUT framebuffer is incomplete");
-        glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
-        glViewport(previousViewport[0], previousViewport[1], previousViewport[2], previousViewport[3]);
-        return;
-    }
-
-    glViewport(0, 0, transmittanceLUTWidth, transmittanceLUTHeight);
-    glDisable(GL_DEPTH_TEST);
-    shader_sky_atmosphere.use();
-    shader_sky_atmosphere.setInt("MODE", 1);
-
-    SetAtmosphereUniforms(shader_sky_atmosphere, parameters);
-
-    shader_sky_atmosphere.setInt("transmittanceLUTSteps", parameters.transmittanceLUTSteps);
-    glClear(GL_COLOR_BUFFER_BIT);
-    RenderFullscreenTriangle();
-
-    if (depthTestEnabled) glEnable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
-    glViewport(previousViewport[0], previousViewport[1], previousViewport[2], previousViewport[3]);
+    glActiveTexture(GL_TEXTURE0);
 }
 
 bool SkyAtmosphere::SaveTransmittanceLUT(const std::string& outputPath) const
 {
-    if (transmittanceLUT == 0) return false;
+    return SaveTextureLUT(transmittanceLUT, transmittanceLUTWidth, transmittanceLUTHeight, outputPath);
+}
 
-    GLint previousTexture = 0;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
-    std::vector<float> pixels(transmittanceLUTWidth * transmittanceLUTHeight * 3);
-    glBindTexture(GL_TEXTURE_2D, transmittanceLUT);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, pixels.data());
-    glBindTexture(GL_TEXTURE_2D, previousTexture);
-
-    std::vector<unsigned char> preview(pixels.size());
-    float minValue = 1.0f;
-    float maxValue = 0.0f;
-    for (int y = 0; y < transmittanceLUTHeight; ++y) {
-        const int flippedY = transmittanceLUTHeight - 1 - y;
-        for (int x = 0; x < transmittanceLUTWidth * 3; ++x) {
-            const float value = pixels[(y * transmittanceLUTWidth * 3) + x];
-            minValue = std::min(minValue, value);
-            maxValue = std::max(maxValue, value);
-            preview[(flippedY * transmittanceLUTWidth * 3) + x] =
-                static_cast<unsigned char>(std::clamp(value, 0.0f, 1.0f) * 255.0f + 0.5f);
-        }
-    }
-
-    const std::filesystem::path path(outputPath);
-    if (!path.parent_path().empty()) {
-        std::filesystem::create_directories(path.parent_path());
-    }
-    const int success = stbi_write_png(path.string().c_str(), transmittanceLUTWidth,
-        transmittanceLUTHeight, 3, preview.data(), transmittanceLUTWidth * 3);
-    if (!success) {
-        LOG_ERROR(SkyAtmosphere, "Failed to save transmittance LUT: {}", path.string());
-        return false;
-    }
-
-    LOG_INFO(SkyAtmosphere, "Transmittance LUT saved: {} (range [{}, {}])",
-        path.string(), minValue, maxValue);
-    return true;
+bool SkyAtmosphere::SaveSkyViewLUT(const std::string& outputPath) const
+{
+    return SaveTextureLUT(skyViewLUT, skyViewLUTWidth, skyViewLUTHeight, outputPath);
 }
 
 void SkyAtmosphere::Unload()
 {
     glDeleteFramebuffers(1, &captureFBO);
     glDeleteTextures(1, &transmittanceLUT);
+    glDeleteTextures(1, &skyViewLUT);
     captureFBO = 0;
     transmittanceLUT = 0;
+    skyViewLUT = 0;
     scene.Clear();
 }
 

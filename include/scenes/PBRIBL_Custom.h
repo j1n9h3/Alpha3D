@@ -23,7 +23,7 @@ public:
 
     GameObject* GetMainGameObject() { return bulb; }
 
-    std::string GetName() { return name; }
+    std::string GetName() const { return name; }
 
 private:
     std::string name = "PBRIBL_Custom";

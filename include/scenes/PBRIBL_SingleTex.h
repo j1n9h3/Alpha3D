@@ -24,7 +24,7 @@ public:
 
     GameObject* GetMainGameObject() { return game_object; }
 
-    std::string GetName() { return name; }
+    std::string GetName() const { return name; }
 
 private:
     std::string name = "PBRIBLScene3";

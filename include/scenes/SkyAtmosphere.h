@@ -17,7 +17,10 @@ struct SkyAtmosphereParameters
     bool useMie = true;
     bool useAbsorption = true;
     bool useTransmittanceLUT = true;
+    bool useSkyViewLUT = true;
     glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0f, 0.55f, -0.84f));
+    float sunLongitude = -90.0f;
+    float sunLatitude = 33.4f;
     float lightIntensity = 40.0f;
     float cameraHeight = 100.0f;
     float planetRadius = 6371000.0f;
@@ -44,7 +47,7 @@ public:
     void Render(RenderContext& context);
     void Unload();
     void RenderEditor(Editor& editor);
-    std::string GetName() { return this->name; }
+    std::string GetName() const { return this->name; }
 
     GameObject* GetMainGameObject() { return nullptr; }
 
@@ -52,7 +55,9 @@ public:
     Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/sky_atmosphere.frag");
     SkyAtmosphereParameters parameters;
     void RenderTransmittanceLUT();
+    void RenderSkyViewLUT();
     bool SaveTransmittanceLUT(const std::string& outputPath) const;
+    bool SaveSkyViewLUT(const std::string& outputPath) const;
 
     IBL ibl;
     Environment env_map;
@@ -60,6 +65,9 @@ private:
     GLsizei transmittanceLUTWidth = 256;
     GLsizei transmittanceLUTHeight = 64;
     unsigned int transmittanceLUT = 0;
+    GLsizei skyViewLUTWidth = 192;
+    GLsizei skyViewLUTHeight = 108;
+    unsigned int skyViewLUT = 0;
     unsigned int captureFBO = 0;
     std::string name = "sky_atmosphere";
 
