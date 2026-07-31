@@ -95,11 +95,11 @@ void Mesh::FillMissingTextures() {
 void Mesh::Draw() {
 	glBindVertexArray(vao);
 
-	if (indices.empty()) {
-		glDrawArrays(GL_TRIANGLES, 0, vertex_count);        // Cube 走这里
+	if (indices.empty()) { // Cube
+		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 	}
-	else {
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // Sphere 走这里
+	else { // Sphere
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	}
 
 	glBindVertexArray(0);

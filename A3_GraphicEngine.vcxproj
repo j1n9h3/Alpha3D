@@ -37,12 +37,14 @@
     <ClCompile Include="src\renderer\Shader.cpp" />
     <ClCompile Include="src\renderer\Texture.cpp" />
     <ClCompile Include="src\scenes\BaseScene.cpp" />
+    <ClCompile Include="src\scenes\Landscape.cpp" />
     <ClCompile Include="src\scenes\PBRIBL_Custom.cpp" />
     <ClCompile Include="src\scenes\PBRIBL_Spheres.cpp" />
     <ClCompile Include="src\scenes\PBRIBL_SingleTex.cpp" />
     <ClCompile Include="src\scenes\PBRIBL_Base.cpp" />
     <ClCompile Include="src\scenes\PBRIBL_Single.cpp" />
     <ClCompile Include="src\scenes\SkyAtmosphere.cpp" />
+    <ClCompile Include="src\scenes\VolumetricCloud.cpp" />
     <ClCompile Include="src\scene\GameObject.cpp" />
     <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="src\utils\Recorder.cpp" />
@@ -80,6 +82,8 @@
     <None Include="shaders\phong.vert" />
     <None Include="shaders\sky_atmosphere\full_screen.vert" />
     <None Include="shaders\sky_atmosphere\sky_atmosphere.frag" />
+    <None Include="shaders\volumetric_cloud\cube.vert" />
+    <None Include="shaders\volumetric_cloud\cube.frag" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>
@@ -103,12 +107,14 @@
     <ClInclude Include="include\renderer\Shader.h" />
     <ClInclude Include="include\renderer\Texture.h" />
     <ClInclude Include="include\scenes\BaseScene.h" />
+    <ClInclude Include="include\scenes\Landscape.h" />
     <ClInclude Include="include\scenes\PBRIBL_Custom.h" />
     <ClInclude Include="include\scenes\PBRIBL_Spheres.h" />
     <ClInclude Include="include\scenes\PBRIBL_SingleTex.h" />
     <ClInclude Include="include\scenes\PBRIBL_Base.h" />
     <ClInclude Include="include\scenes\PBRIBL_Single.h" />
     <ClInclude Include="include\scenes\SkyAtmosphere.h" />
+    <ClInclude Include="include\scenes\VolumetricCloud.h" />
     <ClInclude Include="include\utils\Recorder.h" />
     <ClInclude Include="include\utils\Transform.h" />
     <ClInclude Include="third_party\ImGuizmo\ImGradient.h" />

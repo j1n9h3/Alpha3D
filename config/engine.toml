@@ -1,7 +1,7 @@
 [renderer]
 farClip = 100.0
 fov = 90.0
-nearClip = 0.10000000149011612
+nearClip = 0.0
 
 [window]
 height = 800

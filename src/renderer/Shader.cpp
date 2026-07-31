@@ -36,7 +36,7 @@ unsigned int CompileShader(const char* shaderCode, const char* shaderpath, GLenu
     if (!success)
     {
         glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Shader compiled failed: {}.", shaderpath);
+        LOG_ERROR(Shader, "Shader compiled failed: {}. {}", shaderpath, infoLog);
     }
     else {
         LOG_INFO(Shader, "Shader compiled: {}.", shaderpath);
@@ -58,7 +58,7 @@ unsigned int LinkShader(
     if (!success)
     {
         glGetProgramInfoLog(programId, 512, NULL, infoLog);
-        LOG_ERROR(Shader, "Shaders linking failed: {}, {}.", vShaderPath, fShaderPath);
+        LOG_ERROR(Shader, "Shaders linking failed: {}, {}. {}", vShaderPath, fShaderPath, infoLog);
     }
     else {
         LOG_INFO(Shader, "Shader linked: {} and {}.", vShaderPath, fShaderPath);

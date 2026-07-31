@@ -72,9 +72,6 @@ vec2 RaySphereIntersect(vec3 origin, vec3 direction, float radius) {
     return vec2((-b - root) * 0.5, (-b + root) * 0.5);
 }
 
-
-
-
 float fromSubUvsToUnit(float value, float resolution)
 {
     return clamp((value - 0.5 / resolution) * resolution / (resolution - 1.0), 0.0, 1.0);

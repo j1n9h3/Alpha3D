@@ -4,8 +4,6 @@
 #include "renderer/Shader.h"
 #include "renderer/Camera.h"
 #include "renderer/Primitive.h"
-#include "renderer/IBL.h"
-#include "renderer/Environment.h"
 #include "scene/Scene.h"
 #include "scenes/BaseScene.h"
 
@@ -58,9 +56,6 @@ public:
     void RenderSkyViewLUT();
     bool SaveTransmittanceLUT(const std::string& outputPath) const;
     bool SaveSkyViewLUT(const std::string& outputPath) const;
-
-    IBL ibl;
-    Environment env_map;
 private:
     GLsizei transmittanceLUTWidth = 256;
     GLsizei transmittanceLUTHeight = 64;

@@ -70,6 +70,9 @@
     <Filter Include="Shader\Sky_Atmosphere">
       <UniqueIdentifier>{5f525fe4-0033-4ea4-94db-f6844ddef0ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Volumetric_Cloud">
+      <UniqueIdentifier>{ebb39615-9ecf-42f9-92ab-c5aa0291b98e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="third_party\ImGuizmo\ImGuizmo.cpp">
@@ -177,6 +180,12 @@
     <ClCompile Include="src\scenes\SkyAtmosphere.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\scenes\VolumetricCloud.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\Landscape.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\test.vert">
@@ -256,6 +265,12 @@
     </None>
     <None Include="shaders\sky_atmosphere\full_screen.vert">
       <Filter>Shader\Sky_Atmosphere</Filter>
+    </None>
+    <None Include="shaders\volumetric_cloud\cube.frag">
+      <Filter>Shader\Volumetric_Cloud</Filter>
+    </None>
+    <None Include="shaders\volumetric_cloud\cube.vert">
+      <Filter>Shader\Volumetric_Cloud</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +362,12 @@
       <Filter>Headers\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="include\scenes\SkyAtmosphere.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\VolumetricCloud.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scenes\Landscape.h">
       <Filter>Headers\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
