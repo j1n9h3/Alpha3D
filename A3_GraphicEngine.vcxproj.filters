@@ -266,7 +266,7 @@
     <None Include="shaders\sky_atmosphere\full_screen.vert">
       <Filter>Shader\Sky_Atmosphere</Filter>
     </None>
-    <None Include="shaders\volumetric_cloud\cube.frag">
+    <None Include="shaders\volumetric_cloud\volumetric_cloud.frag">
       <Filter>Shader\Volumetric_Cloud</Filter>
     </None>
     <None Include="shaders\volumetric_cloud\cube.vert">

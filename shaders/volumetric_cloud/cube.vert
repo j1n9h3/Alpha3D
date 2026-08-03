@@ -21,8 +21,7 @@ void main()
         mat3(transpose(inverse(model))) * aNormal
     );
 
-    vec4 clipPosition =
-        projection * view * vec4(worldPosition, 1.0);
+    vec4 clipPosition = projection * view * vec4(worldPosition, 1.0);
 
     gl_Position = clipPosition;
 

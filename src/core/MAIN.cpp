@@ -40,8 +40,7 @@
 //#include "scenes/PBRIBL_Spheres.h"
 //#include "scenes/PBRIBL_Single.h"
 //#include "scenes/PBRIBL_SingleTex.h"
-#include "scenes/SkyAtmosphere.h"
-#include "scenes/VolumetricCloud.h"
+#include "scenes/Landscape.h"
 
 #include "core/Time.h"
 #include "renderer/RenderProfiler.h"
@@ -84,19 +83,11 @@ int main()
     //PBRIBL_SingleTex pbribl_tex_food_ginger_4k("/assets/models/food_ginger_01_4k/food_ginger_01_4k.gltf", "pbr_food_ginger_4k");
     //PBRIBL_SingleTex pbribl_tex_lion_head_4k("/assets/models/lion_head_4k/lion_head_4k.gltf", "lion_head_4k");
     //PBRIBL_Single pbribl_test_bunney("/assets/models/stanford_bunny/scene.gltf", "stanford_bunny");
+    Landscape landscape;
     SkyAtmosphere sky_atmosphere;
     VolumetricCloud volumetric_cloud;
 
-    //std::vector<BaseScene*> scenes = {
-    //    // pbr ibl scenes
-    //    &pbribl_test_scene2_spheres, &pbribl_test_bunney,
-    //    //  pbr ibl models
-    //    &pbribl_scene1_custom, &pbribl_tex_horse_statue_4k, &pbribl_tex_lion_head_4k, &pbribl_tex_food_ginger_4k,
-    //    // sky atmosphere scene
-    //    &sky_atmosphere, &volumetric_cloud
-    //};
-
-    std::vector<BaseScene*> scenes = { &sky_atmosphere, &volumetric_cloud };
+    std::vector<BaseScene*> scenes = { &landscape, &sky_atmosphere, &volumetric_cloud };
 
     BaseScene* currentScene = &volumetric_cloud;
 

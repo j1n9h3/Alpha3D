@@ -19,6 +19,7 @@ class Scene;
 class Environment;
 class Recorder;
 class SkyAtmosphere;
+class VolumetricCloud;
 class RenderProfiler;
 class Editor {
 public:
@@ -40,6 +41,7 @@ public:
     void BeginSceneSelect(BaseScene*& currentScene, std::vector<BaseScene*>& scenes, Window& window);
     void BeginRecorder(Recorder& recorder);
     void BeginSkyAtmosphere(SkyAtmosphere& sky);
+    void BeginVolumetricCloud(VolumetricCloud& cloud);
     void BeginPerformance(RenderProfiler& profiler);
     bool HasPerformanceAffectingEdit() const;
     void ShowToast(const std::string& message, float duration = 1.5f);

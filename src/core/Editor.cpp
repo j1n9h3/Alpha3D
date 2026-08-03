@@ -16,6 +16,7 @@
 
 #include "scenes/BaseScene.h"
 #include "scenes/SkyAtmosphere.h"
+#include "scenes/VolumetricCloud.h"
 #include "utils/Recorder.h"
 #include "renderer/RenderProfiler.h"
 
@@ -296,29 +297,37 @@ void Editor::BeginCamera(Camera & camera) {
 void Editor::BeginDetails(GameObject& game_object) {
 	Transform& transform = game_object.GetTransform();
 
-	ImGui::Begin("Details");
+	if (!ImGui::Begin("Details")) {
+		ImGui::End();
+		return;
+	}
 
 	ImGui::Text(game_object.GetName().c_str());
 
 	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::Text("Location:");
-		ImGui::DragFloat("X##trans_x", &transform.position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
-		ImGui::DragFloat("Y##trans_y", &transform.position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
-		ImGui::DragFloat("Z##trans_z", &transform.position[2], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		glm::vec3 position = transform.position;
+		bool positionChanged = false;
+		positionChanged |= ImGui::DragFloat("X##trans_x", &position[0], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		positionChanged |= ImGui::DragFloat("Y##trans_y", &position[1], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		positionChanged |= ImGui::DragFloat("Z##trans_z", &position[2], 0.005f, -FLT_MAX, +FLT_MAX, "%.2f m");
+		if (positionChanged)
+			transform.SetPosition(position);
 		ImGui::Spacing();
 
 		ImGui::Text("Rotation:");
-		ImGui::DragFloat("X##rotate_x", &transform.rotation[0], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
-		ImGui::DragFloat("Y##rotate_y", &transform.rotation[1], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
-		ImGui::DragFloat("Z##rotate_z", &transform.rotation[2], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		glm::vec3 rotation = transform.rotation;
+		bool rotationChanged = false;
+		rotationChanged |= ImGui::DragFloat("X##rotate_x", &rotation[0], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		rotationChanged |= ImGui::DragFloat("Y##rotate_y", &rotation[1], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		rotationChanged |= ImGui::DragFloat("Z##rotate_z", &rotation[2], 0.2f, -FLT_MAX, +FLT_MAX, "%.0f deg");
+		if (rotationChanged)
+			transform.SetRotation(rotation);
 
-		float scale = transform.scale[0];
 		ImGui::Text("Scale:");
-		ImGui::DragFloat("Scale##scale", &scale, 0.05f, -FLT_MAX, +FLT_MAX, "XYZ %.3f");
-
-		transform.SetScale(glm::vec3(scale));
-
-		transform.SyncToMatrix();
+		glm::vec3 scale = transform.scale;
+		if (ImGui::DragFloat3("Scale##scale", &scale.x, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f"))
+			transform.SetScale(scale);
 	}
 
 
@@ -610,6 +619,96 @@ void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 
 	if (parametersChanged)
 		sky.MarkParametersDirty();
+
+	ImGui::End();
+}
+
+void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
+	VolumetricCloudParameters& p = cloud.parameters;
+	static const char* noiseNames[] = {
+		"Perlin-Worley",
+		"Worley 1",
+		"Worley 2",
+		"Worley 3",
+		"Cloud Map (R)",
+		"Low Resolution Cloud",
+		"Eroded Cloud",
+		"Layered Cube Noise"
+	};
+	bool parametersChanged = false;
+	if (!ImGui::Begin("Volumetric Cloud")) {
+		ImGui::End();
+		return;
+	}
+
+	if (ImGui::CollapsingHeader("Preview", ImGuiTreeNodeFlags_DefaultOpen)) {
+		int selectedNoise = p.noiseMode;
+		if (ImGui::Combo("Noise", &selectedNoise, noiseNames, IM_ARRAYSIZE(noiseNames))) {
+			cloud.SetNoiseMode(selectedNoise);
+			parametersChanged = true;
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Density", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::SliderFloat("Density Scale", &p.densityScale, 0.0f, 10.0f, "%.2f");
+		parametersChanged |= ImGui::SliderFloat("Extinction", &p.extinction, 0.0f, 10.0f, "%.2f");
+		if (p.noiseMode == 5 || p.noiseMode == 6) {
+			parametersChanged |= ImGui::DragFloat("Shape Scale", &p.shapeScale, 0.001f, 0.001f, 1.0f, "%.3f");
+		}
+		if (p.noiseMode == 6) {
+			parametersChanged |= ImGui::DragFloat("High Frequency Scale", &p.detailScale, 0.001f, 0.001f, 2.0f, "%.3f");
+			parametersChanged |= ImGui::SliderFloat("High Frequency Erosion", &p.erosionStrength, 0.0f, 1.0f, "%.2f");
+		}
+		if (p.noiseMode == 5 || p.noiseMode == 6) {
+			parametersChanged |= ImGui::SliderFloat("Coverage R/G Blend", &p.cloudCoverageBlend, 0.0f, 1.0f, "%.2f");
+			parametersChanged |= ImGui::DragFloat3("Wind Direction", &p.windDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
+			parametersChanged |= ImGui::DragFloat("Cloud Speed", &p.cloudSpeed, 0.1f, 0.0f, 100.0f, "%.1f");
+			parametersChanged |= ImGui::DragFloat("Cloud Top Offset", &p.cloudTopOffset, 1.0f, 0.0f, 2000.0f, "%.1f");
+			parametersChanged |= ImGui::SliderFloat("Anvil Bias", &p.anvilBias, 0.0f, 1.0f, "%.2f");
+		}
+		if (p.noiseMode == 7) {
+			parametersChanged |= ImGui::DragFloat("Cube Noise Scale", &p.cubeNoiseScale, 0.05f, 0.05f, 32.0f, "%.2f");
+			parametersChanged |= ImGui::SliderFloat("Cube Detail Strength", &p.cubeDetailStrength, 0.0f, 1.0f, "%.2f");
+			parametersChanged |= ImGui::SliderFloat("Cube Density Threshold", &p.cubeDensityThreshold, 0.0f, 1.0f, "%.2f");
+			parametersChanged |= ImGui::SliderFloat("Cube Edge Softness", &p.cubeEdgeSoftness, 0.001f, 1.0f, "%.3f");
+			parametersChanged |= ImGui::SliderFloat("Cube Bottom Fade", &p.cubeBottomFade, 0.001f, 1.0f, "%.3f");
+			parametersChanged |= ImGui::SliderFloat("Cube Top Fade", &p.cubeTopFade, 0.001f, 1.0f, "%.3f");
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::DragFloat3("Light Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
+		parametersChanged |= ImGui::ColorEdit3("Light Color", &p.lightColor.x, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR);
+		parametersChanged |= ImGui::ColorEdit3("Ambient Light", &p.ambientLight.x, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR);
+		parametersChanged |= ImGui::SliderFloat("Light Intensity", &p.lightIntensity, 0.0f, 50.0f, "%.1f");
+	}
+
+	if (ImGui::CollapsingHeader("Ray Marching", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::SliderInt("Primary Steps", &p.maxSteps, 1, 96);
+		parametersChanged |= ImGui::SliderInt("Light Steps", &p.lightSteps, 1, 64);
+		parametersChanged |= ImGui::SliderFloat("Ray Jitter", &p.rayJitterStrength, 0.0f, 1.0f, "%.2f");
+		parametersChanged |= ImGui::DragFloat("Transmittance Cutoff", &p.transmittanceCutoff, 0.0005f, 0.0001f, 0.1f, "%.4f");
+	}
+
+	if (ImGui::CollapsingHeader("Nubis Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::SliderFloat("Phase G", &p.phaseG, -0.95f, 0.95f, "%.2f");
+	}
+
+	if (ImGui::CollapsingHeader("Cloud Layer Volume", ImGuiTreeNodeFlags_DefaultOpen)) {
+		glm::vec3 scale = p.cloudMapVolumeScale;
+		glm::vec3 translation = p.cloudMapVolumeTranslation;
+		bool transformChanged = false;
+		transformChanged |= ImGui::DragFloat3("Volume Scale", &scale.x, 0.5f, 0.01f, 1000.0f, "%.2f");
+		transformChanged |= ImGui::DragFloat3("Volume Translation", &translation.x, 0.5f, -1000.0f, 1000.0f, "%.2f");
+		if (transformChanged) {
+			scale = glm::max(scale, glm::vec3(0.01f));
+			cloud.SetCloudMapVolumeTransform(scale, translation);
+			parametersChanged = true;
+		}
+	}
+
+	if (parametersChanged)
+		cloud.MarkParametersDirty();
 
 	ImGui::End();
 }

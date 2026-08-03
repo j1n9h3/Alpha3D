@@ -83,7 +83,7 @@
     <None Include="shaders\sky_atmosphere\full_screen.vert" />
     <None Include="shaders\sky_atmosphere\sky_atmosphere.frag" />
     <None Include="shaders\volumetric_cloud\cube.vert" />
-    <None Include="shaders\volumetric_cloud\cube.frag" />
+    <None Include="shaders\volumetric_cloud\volumetric_cloud.frag" />
     <None Include="shaders\test.frag" />
     <None Include="shaders\test.vert" />
   </ItemGroup>
