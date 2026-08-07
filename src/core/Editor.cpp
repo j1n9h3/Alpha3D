@@ -575,7 +575,7 @@ void Editor::BeginEnvironment(Environment& env) {
 }
 
 void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
-	SkyAtmosphereParameters& p = sky.parameters;
+	SkyAtmosphereParams& p = sky.parameters;
 	bool parametersChanged = false;
 	ImGui::Begin("Sky Atmosphere");
 

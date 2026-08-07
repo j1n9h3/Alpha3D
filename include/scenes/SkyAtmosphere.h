@@ -9,32 +9,46 @@
 
 class Window;
 
-struct SkyAtmosphereParameters
-{
-    bool useRayleigh = true;
-    bool useMie = true;
-    bool useAbsorption = true;
-    bool useTransmittanceLUT = true;
-    bool useSkyViewLUT = true;
-    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0f, 0.55f, -0.84f));
+struct SkyAtmosphereParams {
+
     float sunLongitude = -90.0f;
     float sunLatitude = 33.4f;
     float lightIntensity = 40.0f;
+    glm::vec3 lightDirection = glm::normalize(glm::vec3(0.0f, 0.55f, -0.84f));
     float cameraHeight = 100.0f;
+
+    // test
+    bool useRayleigh = true;
+    bool useMie = true;
+    bool useAbsorption = true;
+
+    // radius
     float planetRadius = 6371000.0f;
     float atmosphereRadius = 6471000.0f;
+
+    // scattering params
     glm::vec3 rayleighBeta = glm::vec3(5.5e-6f, 13.0e-6f, 22.4e-6f);
     glm::vec3 mieBeta = glm::vec3(21.0e-6f);
     glm::vec3 absorptionBeta = glm::vec3(2.04e-5f, 4.97e-5f, 1.95e-6f);
+
+    // scattering
     float rayleighHeight = 8000.0f;
     float mieHeight = 1200.0f;
     float absorptionHeight = 30000.0f;
     float absorptionFalloff = 4000.0f;
     float mieG = 0.7f;
+
+    // post-effects
     float exposure = 1.0f;
     float gamma = 2.2f;
+
+    // ray-marching
     int primarySteps = 32;
     int lightSteps = 8;
+
+    // lut params
+    bool useTransmittanceLUT = true;
+    bool useSkyViewLUT = true;
     int transmittanceLUTSteps = 64;
 };
 
@@ -51,7 +65,7 @@ public:
 
     // Shaders
     Shader shader_sky_atmosphere = Shader("shaders/sky_atmosphere/full_screen.vert", "shaders/sky_atmosphere/sky_atmosphere.frag");
-    SkyAtmosphereParameters parameters;
+    SkyAtmosphereParams parameters;
     void RenderTransmittanceLUT();
     void RenderSkyViewLUT();
     bool SaveTransmittanceLUT(const std::string& outputPath) const;

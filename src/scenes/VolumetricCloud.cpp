@@ -9,7 +9,7 @@
 
 bool VolumetricCloud::LoadCloudMapTexture() {
 	int width = 0, height = 0, channels = 0;
-	unsigned char* data = stbi_load("assets/textures/cloud-map.png", &width, &height, &channels, 4);
+	unsigned char* data = stbi_load("assets/textures/cloudmap2.png", &width, &height, &channels, 4);
 	if (!data) {
 		LOG_ERROR(Texture, "Reading cloud map texture failed!");
 		return false;

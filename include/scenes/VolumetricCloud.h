@@ -14,9 +14,9 @@ struct VolumetricCloudParameters
 
     float densityScale = 1.0f;
     float extinction = 1.0f;
-    float shapeScale = 0.02f;
-    float detailScale = 0.10f;
-    float erosionStrength = 0.20f;
+    float shapeScale = 0.015f;
+    float detailScale = 0.02f;
+    float erosionStrength = 0.50f;
     glm::vec3 windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
     float cloudSpeed = 10.0f;
     float cloudTopOffset = 0.0f;
@@ -42,7 +42,7 @@ struct VolumetricCloudParameters
 
     float phaseG = 0.5f;
 
-    glm::vec3 cloudMapVolumeScale = glm::vec3(1000.0f, 60.0f, 1000.0f);
+    glm::vec3 cloudMapVolumeScale = glm::vec3(1000.0f, 100.0f, 1000.0f);
     glm::vec3 cloudMapVolumeTranslation = glm::vec3(0.0f, 200.0f, 0.0f);
 };
 

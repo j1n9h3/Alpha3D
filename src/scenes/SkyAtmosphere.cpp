@@ -4,7 +4,7 @@
 #include "renderer/RenderContext.h"
 
 namespace {
-void SetAtmosphereUniforms(const Shader& shader, const SkyAtmosphereParameters& p)
+void SetAtmosphereUniforms(const Shader& shader, const SkyAtmosphereParams& p)
 {
     shader.setBool("useRayleigh", p.useRayleigh);
     shader.setBool("useMie", p.useMie);
@@ -20,7 +20,7 @@ void SetAtmosphereUniforms(const Shader& shader, const SkyAtmosphereParameters& 
     shader.setFloat("absorptionFalloff", p.absorptionFalloff);
 }
 
-void SetScatteringUniforms(const Shader& shader, const SkyAtmosphereParameters& p)
+void SetScatteringUniforms(const Shader& shader, const SkyAtmosphereParams& p)
 {
     shader.setBool("useTransmittanceLUT", p.useTransmittanceLUT);
     shader.setBool("useSkyViewLUT", p.useSkyViewLUT);
