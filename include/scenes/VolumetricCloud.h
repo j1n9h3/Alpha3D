@@ -10,8 +10,6 @@
 
 struct VolumetricCloudParameters
 {
-    int noiseMode = 6;
-
     float densityScale = 1.0f;
     float extinction = 1.0f;
     float shapeScale = 0.015f;
@@ -22,13 +20,6 @@ struct VolumetricCloudParameters
     float cloudTopOffset = 0.0f;
     float anvilBias = 0.0f;
     float cloudCoverageBlend = 0.0f;
-
-    float cubeNoiseScale = 1.0f;
-    float cubeDetailStrength = 0.5f;
-    float cubeDensityThreshold = 0.0f;
-    float cubeEdgeSoftness = 0.1f;
-    float cubeBottomFade = 0.0f;
-    float cubeTopFade = 1.0f;
 
     glm::vec3 lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 lightColor = glm::vec3(1.0f, 0.95f, 0.85f);
@@ -55,41 +46,27 @@ public:
     void RenderEditor(Editor& editor) override;
 
     std::string GetName() const override { return name; }
-    int GetNoiseMode() const { return parameters.noiseMode; }
-    void SetNoiseMode(int mode);
-    void SetCloudMapVolumeTransform(const glm::vec3& scale, const glm::vec3& translation);
+    void updateVolumeTransform(const glm::vec3& scale, const glm::vec3& translation);
 
     VolumetricCloudParameters parameters;
 private:
     static bool UsesNoisePreviewScale(int mode);
-    void RemoveModeTransform(int mode);
-    void ApplyModeTransform(int mode);
-
-    bool LoadNoiseTexture(unsigned int& texture, int channel);
-    bool LoadHighFrequencyNoiseTexture();
-    bool LoadCloudMapTexture();
+    bool LoadcloudMapTex();
     bool LoadHeightMapTexture(unsigned int& texture, const char* fileName);
 
     static constexpr int noiseTextureSize = 128;
     static constexpr int noiseTextureChannels = 4;
-    static constexpr int highFrequencyNoiseTextureSize = 32;
+    static constexpr int highFreqNoiseTexSize = 32;
     static constexpr float noisePreviewScale = 1000.0f;
 
     std::string name = "volumetric_cloud";
 
-    Shader shader_volumetric_cloud = Shader(
-        "shaders/volumetric_cloud/cube.vert",
-        "shaders/volumetric_cloud/volumetric_cloud.frag");
+    Shader shader_volumetric_cloud = Shader("shaders/volumetric_cloud/cube.vert", "shaders/volumetric_cloud/volumetric_cloud.frag");
     Mesh cubeMesh = Primitive::Cube();
-    GameObject* test_object = nullptr;
-    unsigned int perlinWorleyNoiseTexture = 0;
-    unsigned int worleyNoise1 = 0;
-    unsigned int worleyNoise2 = 0;
-    unsigned int worleyNoise3 = 0;
-    unsigned int highFrequencyNoiseTexture = 0;
-    unsigned int cloudMapTexture = 0;
-    unsigned int cumulusHeightTexture = 0;
-    unsigned int cumulonimbusHeightTexture = 0;
-    unsigned int stratusHeightTexture = 0;
-    unsigned int baseReduceTexture = 0;
+    GameObject* cloudVolume = nullptr;
+
+    unsigned int lowFreqNoiseTex = 0;
+    unsigned int highFreqNoiseTex = 0;    
+    unsigned int cloudMapTex = 0;
+    unsigned int heightTex = 0;
 };

@@ -625,55 +625,16 @@ void Editor::BeginSkyAtmosphere(SkyAtmosphere& sky) {
 
 void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
 	VolumetricCloudParameters& p = cloud.parameters;
-	static const char* noiseNames[] = {
-		"Perlin-Worley",
-		"Worley 1",
-		"Worley 2",
-		"Worley 3",
-		"Cloud Map (R)",
-		"Low Resolution Cloud",
-		"Eroded Cloud",
-		"Layered Cube Noise"
-	};
+
 	bool parametersChanged = false;
 	if (!ImGui::Begin("Volumetric Cloud")) {
 		ImGui::End();
 		return;
 	}
 
-	if (ImGui::CollapsingHeader("Preview", ImGuiTreeNodeFlags_DefaultOpen)) {
-		int selectedNoise = p.noiseMode;
-		if (ImGui::Combo("Noise", &selectedNoise, noiseNames, IM_ARRAYSIZE(noiseNames))) {
-			cloud.SetNoiseMode(selectedNoise);
-			parametersChanged = true;
-		}
-	}
-
 	if (ImGui::CollapsingHeader("Density", ImGuiTreeNodeFlags_DefaultOpen)) {
 		parametersChanged |= ImGui::SliderFloat("Density Scale", &p.densityScale, 0.0f, 10.0f, "%.2f");
 		parametersChanged |= ImGui::SliderFloat("Extinction", &p.extinction, 0.0f, 10.0f, "%.2f");
-		if (p.noiseMode == 5 || p.noiseMode == 6) {
-			parametersChanged |= ImGui::DragFloat("Shape Scale", &p.shapeScale, 0.001f, 0.001f, 1.0f, "%.3f");
-		}
-		if (p.noiseMode == 6) {
-			parametersChanged |= ImGui::DragFloat("High Frequency Scale", &p.detailScale, 0.001f, 0.001f, 2.0f, "%.3f");
-			parametersChanged |= ImGui::SliderFloat("High Frequency Erosion", &p.erosionStrength, 0.0f, 1.0f, "%.2f");
-		}
-		if (p.noiseMode == 5 || p.noiseMode == 6) {
-			parametersChanged |= ImGui::SliderFloat("Coverage R/G Blend", &p.cloudCoverageBlend, 0.0f, 1.0f, "%.2f");
-			parametersChanged |= ImGui::DragFloat3("Wind Direction", &p.windDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
-			parametersChanged |= ImGui::DragFloat("Cloud Speed", &p.cloudSpeed, 0.1f, 0.0f, 100.0f, "%.1f");
-			parametersChanged |= ImGui::DragFloat("Cloud Top Offset", &p.cloudTopOffset, 1.0f, 0.0f, 2000.0f, "%.1f");
-			parametersChanged |= ImGui::SliderFloat("Anvil Bias", &p.anvilBias, 0.0f, 1.0f, "%.2f");
-		}
-		if (p.noiseMode == 7) {
-			parametersChanged |= ImGui::DragFloat("Cube Noise Scale", &p.cubeNoiseScale, 0.05f, 0.05f, 32.0f, "%.2f");
-			parametersChanged |= ImGui::SliderFloat("Cube Detail Strength", &p.cubeDetailStrength, 0.0f, 1.0f, "%.2f");
-			parametersChanged |= ImGui::SliderFloat("Cube Density Threshold", &p.cubeDensityThreshold, 0.0f, 1.0f, "%.2f");
-			parametersChanged |= ImGui::SliderFloat("Cube Edge Softness", &p.cubeEdgeSoftness, 0.001f, 1.0f, "%.3f");
-			parametersChanged |= ImGui::SliderFloat("Cube Bottom Fade", &p.cubeBottomFade, 0.001f, 1.0f, "%.3f");
-			parametersChanged |= ImGui::SliderFloat("Cube Top Fade", &p.cubeTopFade, 0.001f, 1.0f, "%.3f");
-		}
 	}
 
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -702,7 +663,7 @@ void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
 		transformChanged |= ImGui::DragFloat3("Volume Translation", &translation.x, 0.5f, -1000.0f, 1000.0f, "%.2f");
 		if (transformChanged) {
 			scale = glm::max(scale, glm::vec3(0.01f));
-			cloud.SetCloudMapVolumeTransform(scale, translation);
+			cloud.updateVolumeTransform(scale, translation);
 			parametersChanged = true;
 		}
 	}

@@ -7,93 +7,97 @@ noperspective in vec2 screenUV;
 
 out vec4 FragColor;
 
+// transform and camera options
+uniform mat4 model;
+uniform mat4 inverseModel;
+uniform mat4 invProjection;
+uniform mat4 invView;
 uniform vec3 cameraPos;
+
+// light options
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform vec3 ambientLight;
 uniform float lightIntensity;
+
+// density options
 uniform float densityScale;
 uniform float extinction;
-uniform float shapeScale;
-uniform float detailScale;
-uniform float erosionStrength;
-uniform vec3 windDirection;
-uniform float cloudSpeed;
 uniform float cloudTopOffset;
 uniform float anvilBias;
 uniform float cloudCoverageBlend;
+
+// noise options
+uniform float shapeScale;
+uniform float detailScale;
+uniform float erosionStrength;
+
+// animation options
+uniform vec3 windDirection;
+uniform float cloudSpeed;
 uniform float time;
+
+// cube noise options
 uniform float cubeNoiseScale;
 uniform float cubeDetailStrength;
 uniform float cubeDensityThreshold;
 uniform float cubeEdgeSoftness;
 uniform float cubeBottomFade;
 uniform float cubeTopFade;
+
+// ray marching options
 uniform int maxSteps;
 uniform int lightSteps;
 uniform float rayJitterStrength;
 uniform float transmittanceCutoff;
 uniform float phaseG;
+
+// rendering mode
 uniform int MODE;
+
+// volume textures
+// R: perlin-worley noise
+// G: worley noise fmb 1
+// B: worley noise fmb 2
+// A: worley noise fmb 3
+uniform sampler3D lowFreqNoiseTex;
+uniform sampler3D highFreqNoiseTex;
+
+// cloud map
+// R/G: cloud coverage probabilities
+// B: cloud type probability
+uniform sampler2D cloudMapTex;
+
+// cloud height map
+uniform sampler2D heightTex;
+
 
 const float PI = 3.14159265359;
 const float EPSILON = 0.0001;
 
-uniform mat4 invProjection;
-uniform mat4 invView;
-uniform mat4 model;
-uniform mat4 inverseModel;
-
-uniform sampler3D perlinWorleyNoiseTexture;
-uniform sampler3D worleyNoise1;
-uniform sampler3D worleyNoise2;
-uniform sampler3D worleyNoise3;
-uniform sampler3D highFrequencyNoiseTexture;
-// R/G: cloud coverage probabilities, B: cloud type probability.
-uniform sampler2D cloudMapTexture;
-uniform sampler2D cumulusHeightTexture;
-uniform sampler2D cumulonimbusHeightTexture;
-uniform sampler2D stratusHeightTexture;
-uniform sampler2D baseReduceTexture;
-
-float remap(float value, float inMin, float inMax, float outMin, float outMax);
-
-float Remap(float value, float inMin, float inMax, float outMin, float outMax) { return remap(value, inMin, inMax, outMin, outMax); }
-float saturate(float value) { return clamp(value, 0.0, 1.0); }
 float lerp(float value0, float value1, float amount) { return mix(value0, value1, amount); }
+float remap(float value, float inMin, float inMax, float outMin, float outMax);
+float saturate(float value) { return clamp(value, 0.0, 1.0); }
 
 float sampleCloudHeight(float height, float cloudType)
 {
     vec2 heightUV = vec2(0.5, 1.0 - height);
-    float stratus = texture(stratusHeightTexture, heightUV).r;
-    float cumulus = texture(cumulusHeightTexture, heightUV).r;
-    float cumulonimbus = texture(cumulonimbusHeightTexture, heightUV).r;
+    float stratus = texture(heightTex, heightUV).r;
+    float cumulus = texture(heightTex, heightUV).g;
+    float cumulonimbus = texture(heightTex, heightUV).b;
     if (cloudType < 0.5) return mix(stratus, cumulus, cloudType * 2.0);
     return mix(cumulus, cumulonimbus, (cloudType - 0.5) * 2.0);
 }
 
 float sampleBaseReduction(float height)
 {
-    return texture(baseReduceTexture, vec2(0.5, 1.0 - height)).r;
+    return texture(heightTex, vec2(0.5, 1.0 - height)).a;
 }
 
 float getNoiseLod(float stepSize, float noiseScale, float textureSize)
 {
     float texelFootprint = max(stepSize * noiseScale * textureSize, 1.0);
     return clamp(log2(texelFootprint), 0.0, log2(textureSize));
-}
-
-float samplePreviewField(vec3 uvw)
-{
-    switch (MODE)
-    {
-        case 0: return texture(perlinWorleyNoiseTexture, uvw).r;
-        case 1: return texture(worleyNoise1, uvw).r;
-        case 2: return texture(worleyNoise2, uvw).r;
-        case 3: return texture(worleyNoise3, uvw).r;
-        case 4: return texture(cloudMapTexture, uvw.xz).r;
-        default: return 0.0;
-    }
 }
 
 vec3 getNoiseWorldPosition(vec3 uvw)
@@ -114,12 +118,12 @@ vec4 sampleLowFrequencyNoises(vec3 noiseWorldPosition, float stepSize)
 {
     float shapeLod = getNoiseLod(stepSize, shapeScale, 128.0);
     vec3 noiseUVW = noiseWorldPosition * shapeScale;
-    return vec4(textureLod(perlinWorleyNoiseTexture, noiseUVW, shapeLod).r, textureLod(worleyNoise1, noiseUVW, shapeLod).r, textureLod(worleyNoise2, noiseUVW, shapeLod).r, textureLod(worleyNoise3, noiseUVW, shapeLod).r);
+    return textureLod(lowFreqNoiseTex, noiseUVW, shapeLod).rgba;
 }
 
 float buildBaseCloud(vec3 uvw, float stepSize)
 {
-    vec4 cloudMap = texture(cloudMapTexture, uvw.xz);
+    vec4 cloudMap = texture(cloudMapTex, uvw.xz);
     vec3 noiseWorldPosition = getAnimatedNoiseWorldPosition(uvw);
     vec4 lowFrequencyNoises = sampleLowFrequencyNoises(noiseWorldPosition, stepSize);
     float lowFrequencyFBM = dot(lowFrequencyNoises.gba, vec3(0.625, 0.250, 0.125));
@@ -143,61 +147,28 @@ float buildErodedCloud(vec3 uvw, float stepSize)
     float baseCloud = buildBaseCloud(uvw, stepSize);
     vec3 detailUVW = getAnimatedNoiseWorldPosition(uvw) * detailScale;
     float detailLod = getNoiseLod(stepSize, detailScale, 32.0);
-    vec3 highFrequencyNoises = textureLod(highFrequencyNoiseTexture, detailUVW, detailLod).rgb;
+    vec3 highFrequencyNoises = textureLod(highFreqNoiseTex, detailUVW, detailLod).rgb;
     float highFrequencyFBM = dot(highFrequencyNoises, vec3(0.625, 0.250, 0.125));
     float highFrequencyNoiseModifier = mix(highFrequencyFBM, 1.0 - highFrequencyFBM, clamp(uvw.y * 10.0, 0.0, 1.0));
     float erodedCloud = clamp(remap(baseCloud, highFrequencyNoiseModifier * erosionStrength, 1.0, 0.0, 1.0), 0.0, 1.0);
     return erodedCloud * sampleBaseReduction(uvw.y);
 }
 
-float buildLayeredCubeNoise(vec3 uvw)
-{
-    vec3 noiseUVW = uvw * cubeNoiseScale;
-    float baseNoise = textureLod(perlinWorleyNoiseTexture, noiseUVW, 0.0).r;
-    float worley1 = textureLod(worleyNoise1, noiseUVW, 0.0).r;
-    float density = baseNoise - worley1 * cubeDetailStrength;
-    float bottomFade = clamp(uvw.y / max(cubeBottomFade, EPSILON), 0.0, 1.0);
-    float topFade = clamp((1.0 - uvw.y) / max(cubeTopFade, EPSILON), 0.0, 1.0);
-    density *= bottomFade * topFade;
-    return smoothstep(cubeDensityThreshold, cubeDensityThreshold + max(cubeEdgeSoftness, EPSILON), density);
-}
-
-vec3 GetViewDir() {
-    vec2 screenNDC = screenUV * 2.0 - 1.0;
-    vec4 viewPos = invProjection * vec4(screenNDC, 1.0, 1.0);
-    vec3 viewDir = normalize(viewPos.xyz / viewPos.w);
-    vec3 worldDir = normalize((invView * vec4(viewDir, 0.0)).xyz);
-    return worldDir;
-}
-
-float remap(float value, float inMin, float inMax, float outMin, float outMax)
-{
-    return outMin + (value - inMin) * (outMax - outMin) / max(inMax - inMin, EPSILON);
-}
 
 float interleavedGradientNoise(vec2 pixelPosition)
 {
     return fract(52.9829189 * fract(dot(pixelPosition, vec2(0.06711056, 0.00583715))));
 }
 
-float sampleCloudDensity(vec3 localPos, float stepSize, bool doCheaply)
+float sampleCloudDensity(vec3 localPos, float stepSize)
 {
     vec3 uvw = localPos + 0.5;
     if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0))))
         return 0.0;
 
-    float density = 0.0;
-    if (MODE >= 0 && MODE <= 4) density = samplePreviewField(uvw);
-    else if (MODE == 5) density = buildLowResolutionCloud(uvw, stepSize);
-    else if (MODE == 6) density = doCheaply ? buildLowResolutionCloud(uvw, stepSize) : buildErodedCloud(uvw, stepSize);
-    else if (MODE == 7) density = buildLayeredCubeNoise(uvw);
-    return density * densityScale;
+    return buildErodedCloud(uvw, stepSize) * densityScale;
 }
 
-float cloudDensity(vec3 localPos, float stepSize)
-{
-    return sampleCloudDensity(localPos, stepSize, false);
-}
 
 float henyeyGreenstein(float g, float mu)
 {
@@ -241,7 +212,7 @@ float traceLightDensity(vec3 position, out float lightStepSize)
         if (i >= stepCount)
             break;
 
-        densityAlongLightRay += sampleCloudDensity(p, lightStepSize, true) * (6.0 / float(stepCount));
+        densityAlongLightRay += sampleCloudDensity(p, lightStepSize) * (6.0 / float(stepCount));
         p += localLightDirection * lightStepSize;
     }
 
@@ -260,10 +231,10 @@ float GetLightEnergy(vec3 p, float height_fraction, float dl, float ds_loded, fl
 {
     float primary_attenuation = exp(-dl);
     float secondary_attenuation = exp(-dl * 0.25) * 0.7;
-    float attenuation_probability = saturate(max(Remap(cos_angle, 0.7, 1.0, secondary_attenuation, secondary_attenuation * 0.25), primary_attenuation));
-    float height_exponent = lerp(0.5, 2.0, saturate(Remap(height_fraction, 0.3, 0.85, 0.0, 1.0)));
+    float attenuation_probability = saturate(max(remap(cos_angle, 0.7, 1.0, secondary_attenuation, secondary_attenuation * 0.25), primary_attenuation));
+    float height_exponent = lerp(0.5, 2.0, saturate(remap(height_fraction, 0.3, 0.85, 0.0, 1.0)));
     float depth_probability = saturate(lerp(0.05 + pow(saturate(ds_loded), height_exponent), 1.0, saturate(dl / step_size)));
-    float vertical_probability = pow(saturate(Remap(height_fraction, 0.17, 0.27, 0.1, 1.0)), 0.8);
+    float vertical_probability = pow(saturate(remap(height_fraction, 0.17, 0.27, 0.1, 1.0)), 0.8);
     float in_scatter_probability = depth_probability * vertical_probability;
     float light_energy = attenuation_probability * in_scatter_probability * phase_probability * brightness;
     return light_energy;
@@ -273,7 +244,7 @@ vec3 evaluateNubisLighting(vec3 position, float stepSize)
 {
     float lightStepSize = 1.0;
     float dl = traceLightDensity(position, lightStepSize);
-    float dsLoded = sampleCloudDensity(position, stepSize * 4.0, true);
+    float dsLoded = sampleCloudDensity(position, stepSize * 4.0);
     float heightFraction = position.y + 0.5;
     float cosAngle = getScatteringMu(position);
     float phaseProbability = henyeyGreenstein(phaseG, cosAngle);
@@ -289,7 +260,7 @@ void AccumulateEmission(
     inout float transmittance,
     inout vec3 radiance)
 {
-    float density = cloudDensity(position, stepSize);
+    float density = sampleCloudDensity(position, stepSize);
     float sampleT = exp(-density * stepSize * extinction);
 
     radiance += transmittance * vec3(density) * stepSize;
@@ -302,7 +273,7 @@ void AccumulateNubisLighting(
     inout float transmittance,
     inout vec3 radiance)
 {
-    float density = cloudDensity(position, stepSize);
+    float density = sampleCloudDensity(position, stepSize);
     if (density <= 0.0)
         return;
 
@@ -313,6 +284,15 @@ void AccumulateNubisLighting(
 
     radiance += transmittance * (luminance - luminance * sampleT) / sampleSigmaE;
     transmittance *= sampleT;
+}
+
+
+vec3 GetViewDir() {
+    vec2 screenNDC = screenUV * 2.0 - 1.0;
+    vec4 viewPos = invProjection * vec4(screenNDC, 1.0, 1.0);
+    vec3 viewDir = normalize(viewPos.xyz / viewPos.w);
+    vec3 worldDir = normalize((invView * vec4(viewDir, 0.0)).xyz);
+    return worldDir;
 }
 
 void main()

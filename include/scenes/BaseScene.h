@@ -31,9 +31,16 @@ public:
     virtual std::string GetName() const = 0;
     void SetDeltaTime(float dt) { delta_time = dt; }
     void MarkParametersDirty() { parametersDirty = true; }
+    
     void RenderFullscreenTriangle();
+
+    bool LoadVolumeTex(unsigned int& texture, unsigned int texSize, std::string pathTemplate);
+    bool LoadTex(unsigned int& texture, std::string path);
+    
     void RenderLUT(GLuint lutTexture, int width, int height, GLuint framebuffer, Shader& shader, std::function<void(Shader&)> setUniforms);
     bool SaveTextureLUT(GLuint texture, int width, int height, const std::string& fileName) const;
+
+
 protected:
     float delta_time = 0.0f;
     bool parametersDirty = true;
