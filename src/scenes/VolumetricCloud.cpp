@@ -17,14 +17,15 @@ void VolumetricCloud::Load(Window& window) {
 	cloudVolume = &scene.AddGameObject("cloudVolume", &cubeMesh, &shader_volumetric_cloud);
 	scene.SetSelected(cloudVolume->GetID());
 
-	cloudVolume->Translate(-parameters.cloudMapVolumeTranslation);
-	cloudVolume->Scale(glm::vec3(1.0f) / parameters.cloudMapVolumeScale);
+	cloudVolume->Translate(parameters.cloudMapVolumeTranslation);
+	cloudVolume->Scale(parameters.cloudMapVolumeScale);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LoadVolumeTex(lowFreqNoiseTex, 128, "assets/textures/nubis2017_lowFrexqTex_128x128/nubis2017.%03d.tga");
-	LoadVolumeTex(highFreqNoiseTex, 128, "assets/textures/nubis2017_highFrexqTex_32x32/nubis-2017-high-freq.%03d.tga");	
+	LoadVolumeTex(highFreqNoiseTex, 32, "assets/textures/nubis2017_highFrexqTex_32x32/nubis-2017-high-freq.%03d.tga");	
 	LoadTex(heightTex, "assets/textures/cloud_height.png");
+	LoadTex(cloudMapTex, "assets/textures/cloud_map.png");
 }
 
 void VolumetricCloud::Render(RenderContext& context) {
@@ -143,7 +144,7 @@ void VolumetricCloud::Unload() {
 	glDeleteTextures(1, &lowFreqNoiseTex);
 	glDeleteTextures(1, &highFreqNoiseTex);
 	glDeleteTextures(1, &cloudMapTex);
-	glDeleteTextures(4, &heightTex);
+	glDeleteTextures(1, &heightTex);
 
 	lowFreqNoiseTex = 0;
 	highFreqNoiseTex = 0;

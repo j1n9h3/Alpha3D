@@ -52,9 +52,6 @@ uniform float rayJitterStrength;
 uniform float transmittanceCutoff;
 uniform float phaseG;
 
-// rendering mode
-uniform int MODE;
-
 // volume textures
 // R: perlin-worley noise
 // G: worley noise fmb 1
@@ -76,7 +73,7 @@ const float PI = 3.14159265359;
 const float EPSILON = 0.0001;
 
 float lerp(float value0, float value1, float amount) { return mix(value0, value1, amount); }
-float remap(float value, float inMin, float inMax, float outMin, float outMax);
+float remap(float value, float inMin, float inMax, float outMin, float outMax) { return outMin + (value - inMin) * (outMax - outMin) / (inMax - inMin); }
 float saturate(float value) { return clamp(value, 0.0, 1.0); }
 
 float sampleCloudHeight(float height, float cloudType)
@@ -315,12 +312,7 @@ void main()
     for (int i = 0; i < 96; ++i)
     {
         if (i >= maxSteps || transmittance < transmittanceCutoff) break;
-
-        if (MODE >= 0 && MODE <= 3)
-            AccumulateEmission(position, stepSize, transmittance, radiance);
-        else
-            AccumulateNubisLighting(position, stepSize, transmittance, radiance);
-
+        AccumulateNubisLighting(position, stepSize, transmittance, radiance);
         position += rayDirection * stepSize;
     }
 
