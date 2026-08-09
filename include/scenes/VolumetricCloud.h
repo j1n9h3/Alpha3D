@@ -26,7 +26,7 @@ struct VolumetricCloudParameters
     glm::vec3 ambientLight = glm::vec3(0.6f);
     float lightIntensity = 10.0f;
 
-    int maxSteps = 64;
+    int primarySteps = 64;
     int lightSteps = 8;
     float rayJitterStrength = 1.0f;
     float transmittanceCutoff = 0.01f;

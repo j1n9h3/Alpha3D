@@ -645,7 +645,7 @@ void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
 	}
 
 	if (ImGui::CollapsingHeader("Ray Marching", ImGuiTreeNodeFlags_DefaultOpen)) {
-		parametersChanged |= ImGui::SliderInt("Primary Steps", &p.maxSteps, 1, 96);
+		parametersChanged |= ImGui::SliderInt("Primary Steps", &p.primarySteps, 1, 96);
 		parametersChanged |= ImGui::SliderInt("Light Steps", &p.lightSteps, 1, 64);
 		parametersChanged |= ImGui::SliderFloat("Ray Jitter", &p.rayJitterStrength, 0.0f, 1.0f, "%.2f");
 		parametersChanged |= ImGui::DragFloat("Transmittance Cutoff", &p.transmittanceCutoff, 0.0005f, 0.0001f, 0.1f, "%.4f");

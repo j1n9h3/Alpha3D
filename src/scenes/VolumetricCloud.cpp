@@ -74,7 +74,7 @@ void VolumetricCloud::Render(RenderContext& context) {
 
 
 	// ray marching options
-	shader_volumetric_cloud.setInt("maxSteps", parameters.maxSteps);
+	shader_volumetric_cloud.setInt("primarySteps", parameters.primarySteps);
 	shader_volumetric_cloud.setInt("lightSteps", parameters.lightSteps);
 	shader_volumetric_cloud.setFloat("rayJitterStrength", parameters.rayJitterStrength);
 	shader_volumetric_cloud.setFloat("transmittanceCutoff", parameters.transmittanceCutoff);
@@ -126,6 +126,8 @@ void VolumetricCloud::Render(RenderContext& context) {
 	glCullFace(cameraInsideVolume ? GL_FRONT : GL_BACK);
 	glDepthMask(GL_FALSE);
 	glDepthFunc(GL_LEQUAL);
+
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	cloudVolume->Draw();
 
