@@ -89,7 +89,7 @@ int main()
 
     std::vector<BaseScene*> scenes = { &landscape, &sky_atmosphere, &volumetric_cloud };
 
-    BaseScene* currentScene = &volumetric_cloud;
+    BaseScene* currentScene = &landscape;
 
     RenderProfiler profiler;
     {

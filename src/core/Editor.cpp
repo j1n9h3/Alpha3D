@@ -637,6 +637,20 @@ void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
 		parametersChanged |= ImGui::SliderFloat("Extinction", &p.extinction, 0.0f, 10.0f, "%.2f");
 	}
 
+	if (ImGui::CollapsingHeader("Cloud Map", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::DragFloat("Cloud Map Scale", &p.cloudMapScale, 0.5f, 1.0f, 10000000.0f, "%.2f");
+	}
+
+	if (ImGui::CollapsingHeader("Noise", ImGuiTreeNodeFlags_DefaultOpen)) {
+		parametersChanged |= ImGui::Checkbox("Use Low Frequency Noise", &p.useLowFreqNoise);
+		parametersChanged |= ImGui::DragFloat("Low Frequency Noise Scale", &p.lowFreqNoiseScale, 0.5f, 1.0f, 10000000.0f, "%.2f");
+
+		parametersChanged |= ImGui::Checkbox("Use High Frequency Noise", &p.useHighFreqNoise);
+		parametersChanged |= ImGui::DragFloat("High Frequency Noise Scale", &p.highFreqNoiseScale, 0.5f, 1.0f, 10000000.0f, "%.2f");
+
+		parametersChanged |= ImGui::SliderFloat("Erosion Strength", &p.erosionStrength, 0.0f, 1.0f, "%.2f");
+	}
+
 	if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
 		parametersChanged |= ImGui::DragFloat3("Light Direction", &p.lightDirection.x, 0.01f, -1.0f, 1.0f, "%.2f");
 		parametersChanged |= ImGui::ColorEdit3("Light Color", &p.lightColor.x, ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR);
@@ -655,16 +669,18 @@ void Editor::BeginVolumetricCloud(VolumetricCloud& cloud) {
 		parametersChanged |= ImGui::SliderFloat("Phase G", &p.phaseG, -0.95f, 0.95f, "%.2f");
 	}
 
-	if (ImGui::CollapsingHeader("Cloud Layer Volume", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader("Cloud Volume", ImGuiTreeNodeFlags_DefaultOpen)) {
 		glm::vec3 scale = p.cloudMapVolumeScale;
 		glm::vec3 translation = p.cloudMapVolumeTranslation;
 		bool transformChanged = false;
-		transformChanged |= ImGui::DragFloat3("Volume Scale", &scale.x, 0.5f, 0.01f, 1000.0f, "%.2f");
-		transformChanged |= ImGui::DragFloat3("Volume Translation", &translation.x, 0.5f, -1000.0f, 1000.0f, "%.2f");
+		transformChanged |= ImGui::DragFloat3("Volume Scale", &scale.x, 0.5f, 0.01f, 10000000.0f, "%.4f");
+		transformChanged |= ImGui::DragFloat3("Volume Translation", &translation.x, 0.5f, -1000.0f, 10000000.0f, "%.4f");
 		if (transformChanged) {
 			scale = glm::max(scale, glm::vec3(0.01f));
 			cloud.updateVolumeTransform(scale, translation);
 			parametersChanged = true;
+			p.cloudMapVolumeScale = scale;
+			p.cloudMapVolumeTranslation = translation;
 		}
 	}
 

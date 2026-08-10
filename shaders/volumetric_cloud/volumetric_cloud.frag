@@ -28,9 +28,13 @@ uniform float anvilBias;
 uniform float cloudCoverageBlend;
 
 // noise options
-uniform float shapeScale;
-uniform float detailScale;
+uniform bool useLowFreqNoise;
+uniform bool useHighFreqNoise;
+uniform float lowFreqNoiseScale;
+uniform float highFreqNoiseScale;
 uniform float erosionStrength;
+
+uniform float cloudMapScale;
 
 // animation options
 uniform vec3 windDirection;
@@ -87,7 +91,7 @@ float sampleBaseReduction(float height)
 
 float getNoiseLod(float stepSize, float noiseScale, float textureSize)
 {
-    float texelFootprint = max(stepSize * noiseScale * textureSize, 1.0);
+    float texelFootprint = max(stepSize * textureSize / noiseScale, 1.0);
     return clamp(log2(texelFootprint), 0.0, log2(textureSize));
 }
 
@@ -105,47 +109,6 @@ vec3 getAnimatedNoiseWorldPosition(vec3 uvw)
     return noiseWorldPosition;
 }
 
-vec4 sampleLowFrequencyNoises(vec3 noiseWorldPosition, float stepSize)
-{
-    float shapeLod = getNoiseLod(stepSize, shapeScale, 128.0);
-    vec3 noiseUVW = noiseWorldPosition * shapeScale;
-    return textureLod(lowFreqNoiseTex, noiseUVW, shapeLod).rgba;
-}
-
-float buildBaseCloud(vec3 uvw, float stepSize)
-{
-    vec4 cloudMap = texture(cloudMapTex, uvw.xz);
-    vec3 noiseWorldPosition = getAnimatedNoiseWorldPosition(uvw);
-    vec4 lowFrequencyNoises = sampleLowFrequencyNoises(noiseWorldPosition, stepSize);
-    float lowFrequencyFBM = dot(lowFrequencyNoises.gba, vec3(0.625, 0.250, 0.125));
-    float baseCloud = clamp(remap(lowFrequencyNoises.r, -(1.0 - lowFrequencyFBM), 1.0, 0.0, 1.0), 0.0, 1.0);
-    baseCloud *= sampleCloudHeight(uvw.y, cloudMap.b);
-
-    float anvilAmount = clamp(remap(uvw.y, 0.7, 0.8, 0.0, 1.0), 0.0, 1.0);
-    float anvilExponent = mix(1.0, mix(1.0, 0.5, anvilBias), anvilAmount);
-    float cloudCoverage = pow(clamp(mix(cloudMap.r, cloudMap.g, cloudCoverageBlend), 0.0, 1.0), anvilExponent);
-    float baseCloudWithCoverage = clamp(remap(baseCloud, 1.0 - cloudCoverage, 1.0, 0.0, 1.0), 0.0, 1.0);
-    return baseCloudWithCoverage * cloudCoverage;
-}
-
-float buildLowResolutionCloud(vec3 uvw, float stepSize)
-{
-    return buildBaseCloud(uvw, stepSize) * sampleBaseReduction(uvw.y);
-}
-
-float buildErodedCloud(vec3 uvw, float stepSize)
-{
-    float baseCloud = buildBaseCloud(uvw, stepSize);
-    vec3 detailUVW = getAnimatedNoiseWorldPosition(uvw) * detailScale;
-    float detailLod = getNoiseLod(stepSize, detailScale, 32.0);
-    vec3 highFrequencyNoises = textureLod(highFreqNoiseTex, detailUVW, detailLod).rgb;
-    float highFrequencyFBM = dot(highFrequencyNoises, vec3(0.625, 0.250, 0.125));
-    float highFrequencyNoiseModifier = mix(highFrequencyFBM, 1.0 - highFrequencyFBM, clamp(uvw.y * 10.0, 0.0, 1.0));
-    float erodedCloud = clamp(remap(baseCloud, highFrequencyNoiseModifier * erosionStrength, 1.0, 0.0, 1.0), 0.0, 1.0);
-    return erodedCloud * sampleBaseReduction(uvw.y);
-}
-
-
 float interleavedGradientNoise(vec2 pixelPosition)
 {
     return fract(52.9829189 * fract(dot(pixelPosition, vec2(0.06711056, 0.00583715))));
@@ -156,7 +119,41 @@ float sampleCloudDensity(vec3 localPos, float stepSize)
     vec3 uvw = localPos + 0.5;
     if (any(lessThan(uvw, vec3(0.0))) || any(greaterThan(uvw, vec3(1.0)))) return 0.0;
 
-    return buildErodedCloud(uvw, stepSize) * densityScale;
+    vec3 cloudMapWorldPosition = getNoiseWorldPosition(uvw);
+    vec2 cloudMapUV = cloudMapWorldPosition.xz / cloudMapScale;
+    vec4 cloudMap = texture(cloudMapTex, cloudMapUV + 0.5);
+
+    float cloud = cloudMap.r;
+
+    if(useLowFreqNoise){
+        vec3 noiseWorldPosition = getAnimatedNoiseWorldPosition(uvw);
+        float shapeLod = getNoiseLod(stepSize, lowFreqNoiseScale, 128.0);
+        vec3 noiseUVW = noiseWorldPosition / lowFreqNoiseScale;
+        vec4 lowFrequencyNoises = textureLod(lowFreqNoiseTex, noiseUVW, shapeLod).rgba;
+        float lowFrequencyFBM = dot(lowFrequencyNoises.gba, vec3(0.625, 0.250, 0.125));
+        cloud = clamp(remap(lowFrequencyNoises.r, -(1.0 - lowFrequencyFBM), 1.0, 0.0, 1.0), 0.0, 1.0);
+        cloud *= sampleCloudHeight(uvw.y, cloudMap.b);
+    }
+
+
+    float anvilAmount = clamp(remap(uvw.y, 0.7, 0.8, 0.0, 1.0), 0.0, 1.0);
+    float anvilExponent = mix(1.0, mix(1.0, 0.5, 1.0), anvilAmount);
+    float cloudCoverage = pow(clamp(mix(cloudMap.r, cloudMap.g, cloudCoverageBlend), 0.0, 1.0), anvilExponent);
+    float baseCloudWithCoverage = clamp(remap(cloud, 1.0 - cloudCoverage, 1.0, 0.0, 1.0), 0.0, 1.0);
+    cloud = baseCloudWithCoverage * cloudCoverage;
+
+
+    if(useHighFreqNoise){
+        vec3 detailUVW = getAnimatedNoiseWorldPosition(uvw) / highFreqNoiseScale;
+        float detailLod = getNoiseLod(stepSize, highFreqNoiseScale, 32.0);
+        vec3 highFrequencyNoises = textureLod(highFreqNoiseTex, detailUVW, detailLod).rgb;
+        float highFrequencyFBM = dot(highFrequencyNoises, vec3(0.625, 0.250, 0.125));
+        float highFrequencyNoiseModifier = mix(highFrequencyFBM, 1.0 - highFrequencyFBM, clamp(uvw.y * 10.0, 0.0, 1.0));
+        cloud = clamp(remap(cloud, highFrequencyNoiseModifier * erosionStrength, 1.0, 0.0, 1.0), 0.0, 1.0);
+        cloud = cloud * sampleBaseReduction(uvw.y);
+    }
+    
+    return cloud;
 }
 
 
@@ -213,21 +210,21 @@ vec3 evaluateNubisLighting(vec3 position, float stepSize) {
     float dl = traceLightDensity(position, lightStepSize); // out: lightStepSize
     
     // params
-    float dsLoded = sampleCloudDensity(position, stepSize * 4.0);
+    float lodded_density = sampleCloudDensity(position, stepSize * 4.0);
     float heightFraction = position.y + 0.5;
     float height_exponent = lerp(0.5, 2.0, saturate(remap(heightFraction, 0.3, 0.85, 0.0, 1.0)));
     float mu = getScatteringMu(position); // 1: same with light dir 
     float phaseProbability = henyeyGreenstein(phaseG, mu);
 
 
-    float primary_attenuation = exp(-dl);
-    float secondary_attenuation = exp(-dl * 0.25) * 0.7;
+    float primary_attenuation = exp(-densityScale * dl);
+    float secondary_attenuation = exp(-densityScale * dl * 0.25) * 0.7;
     float attenuation_probability = saturate(max(remap(mu, 0.7, 1.0, secondary_attenuation, secondary_attenuation * 0.25), primary_attenuation));
     
     
-    float depth_probability = saturate(lerp(0.05 + pow(saturate(dsLoded), height_exponent), 1.0, saturate(dl / lightStepSize)));
-    float vertical_probability = pow(saturate(remap(heightFraction, 0.17, 0.27, 0.1, 1.0)), 0.8);
-    float in_scatter_probability = depth_probability * vertical_probability;
+    float depth_probability = saturate(lerp(0.05 + pow(saturate(lodded_density), height_exponent), 1.0, saturate(dl / lightStepSize)));
+    float vertical_probability = pow(saturate(remap(heightFraction, 0.07, 0.17, 0.1, 1.0)), 0.8);
+    float in_scatter_probability = depth_probability;
     float lightEnergy = attenuation_probability * in_scatter_probability * phaseProbability * lightIntensity;
 
     return ambientLight + lightColor * lightEnergy;
@@ -261,7 +258,7 @@ void main() {
     {
         float density = sampleCloudDensity(position, stepSize);
         if (density >  0.0){
-            float sampleSigmaE = max(extinction * density, EPSILON);
+            float sampleSigmaE = max(extinction * densityScale * density, EPSILON);
             float sampleSigmaS = sampleSigmaE;
             float sampleT = exp(-sampleSigmaE * stepSize);
             vec3 luminance = evaluateNubisLighting(position, stepSize) * sampleSigmaS;

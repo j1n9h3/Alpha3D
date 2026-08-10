@@ -177,13 +177,13 @@
     <ClCompile Include="src\scenes\PBRIBL_Spheres.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="src\scenes\SkyAtmosphere.cpp">
-      <Filter>Source\Scenes</Filter>
-    </ClCompile>
     <ClCompile Include="src\scenes\VolumetricCloud.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="src\scenes\Landscape.cpp">
+      <Filter>Source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\SkyAtmosphere.cpp">
       <Filter>Source\Scenes</Filter>
     </ClCompile>
   </ItemGroup>

@@ -8,8 +8,8 @@
 #include "core/Log.h"
 
 void VolumetricCloud::updateVolumeTransform(const glm::vec3& scale, const glm::vec3& translation) {
-	cloudVolume->Scale(scale);
-	cloudVolume->Translate(translation);
+	cloudVolume->GetTransform().SetScale(scale);
+	cloudVolume->GetTransform().SetPosition(translation);
 }
 
 void VolumetricCloud::Load(Window& window) {
@@ -24,8 +24,8 @@ void VolumetricCloud::Load(Window& window) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LoadVolumeTex(lowFreqNoiseTex, 128, "assets/textures/nubis2017_lowFrexqTex_128x128/nubis2017.%03d.tga");
 	LoadVolumeTex(highFreqNoiseTex, 32, "assets/textures/nubis2017_highFrexqTex_32x32/nubis-2017-high-freq.%03d.tga");	
-	LoadTex(heightTex, "assets/textures/cloud_height.png");
-	LoadTex(cloudMapTex, "assets/textures/cloud_map.png");
+	LoadTex(heightTex, "assets/textures/cloud_height.tga");
+	LoadTex(cloudMapTex, "assets/textures/cloud_map_5.png");
 }
 
 void VolumetricCloud::Render(RenderContext& context) {
@@ -58,11 +58,14 @@ void VolumetricCloud::Render(RenderContext& context) {
 	shader_volumetric_cloud.setFloat("densityScale", parameters.densityScale);
 	shader_volumetric_cloud.setFloat("anvilBias", parameters.anvilBias);
 	shader_volumetric_cloud.setFloat("cloudCoverageBlend", parameters.cloudCoverageBlend);
+	shader_volumetric_cloud.setFloat("cloudMapScale", parameters.cloudMapScale);
 
 	// noise options
+	shader_volumetric_cloud.setBool("useLowFreqNoise", parameters.useLowFreqNoise);
+	shader_volumetric_cloud.setBool("useHighFreqNoise", parameters.useHighFreqNoise);
+	shader_volumetric_cloud.setFloat("lowFreqNoiseScale", parameters.lowFreqNoiseScale);
+	shader_volumetric_cloud.setFloat("highFreqNoiseScale", parameters.highFreqNoiseScale);
 	shader_volumetric_cloud.setFloat("erosionStrength", parameters.erosionStrength);
-	shader_volumetric_cloud.setFloat("shapeScale", parameters.shapeScale);
-	shader_volumetric_cloud.setFloat("detailScale", parameters.detailScale);
 
 
 	// animation options

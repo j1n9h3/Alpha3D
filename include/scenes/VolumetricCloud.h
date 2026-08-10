@@ -11,10 +11,18 @@
 struct VolumetricCloudParameters
 {
     float densityScale = 1.0f;
-    float extinction = 1.0f;
-    float shapeScale = 0.015f;
-    float detailScale = 0.02f;
-    float erosionStrength = 0.50f;
+    float extinction = 0.15f;
+
+    bool useLowFreqNoise = true;
+    bool useHighFreqNoise = true;
+    float erosionStrength = 1.0f;
+
+    float lowFreqNoiseScale = 400.0f;
+    float highFreqNoiseScale = 400.0f;
+
+    float cloudMapScale = 1500.0f;
+
+
     glm::vec3 windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
     float cloudSpeed = 10.0f;
     float cloudTopOffset = 0.0f;
@@ -23,7 +31,7 @@ struct VolumetricCloudParameters
 
     glm::vec3 lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 lightColor = glm::vec3(1.0f, 0.95f, 0.85f);
-    glm::vec3 ambientLight = glm::vec3(0.6f);
+    glm::vec3 ambientLight = glm::vec3(0.75f);
     float lightIntensity = 10.0f;
 
     int primarySteps = 64;
@@ -33,8 +41,9 @@ struct VolumetricCloudParameters
 
     float phaseG = 0.5f;
 
-    glm::vec3 cloudMapVolumeScale = glm::vec3(1000.0f, 100.0f, 1000.0f);
-    glm::vec3 cloudMapVolumeTranslation = glm::vec3(0.0f, 200.0f, 0.0f);
+    glm::vec3 cloudMapVolumeScale = glm::vec3(20000.0f, 80.0f, 20000.0f);
+    glm::vec3 cloudMapVolumeTranslation = glm::vec3(0.0f, 40.0f, 0.0f);
+
 };
 
 class VolumetricCloud : public BaseScene
