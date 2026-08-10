@@ -10,29 +10,29 @@
 
 struct VolumetricCloudParameters
 {
-    float densityScale = 1.0f;
-    float extinction = 0.15f;
+    float densityScale = 0.8f;
+    float extinction = 0.6f;
 
     bool useLowFreqNoise = true;
     bool useHighFreqNoise = true;
-    float erosionStrength = 1.0f;
+    float erosionStrength = 0.5f;
 
-    float lowFreqNoiseScale = 400.0f;
-    float highFreqNoiseScale = 400.0f;
+    float lowFreqNoiseScale = 68.0f;
+    float highFreqNoiseScale = 68.0f;
 
-    float cloudMapScale = 1500.0f;
+    float cloudMapScale = 1000.0f;
 
 
     glm::vec3 windDirection = glm::vec3(1.0f, 0.0f, 0.0f);
-    float cloudSpeed = 10.0f;
+    float cloudSpeed = 2.0f;
     float cloudTopOffset = 0.0f;
     float anvilBias = 0.0f;
-    float cloudCoverageBlend = 0.0f;
+    float cloudCoverageBlend = 1.0f;
 
     glm::vec3 lightDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 lightColor = glm::vec3(1.0f, 0.95f, 0.85f);
-    glm::vec3 ambientLight = glm::vec3(0.75f);
-    float lightIntensity = 10.0f;
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 ambientLight = glm::vec3(0.65f);
+    float lightIntensity = 7.0f;
 
     int primarySteps = 64;
     int lightSteps = 8;
@@ -41,8 +41,8 @@ struct VolumetricCloudParameters
 
     float phaseG = 0.5f;
 
-    glm::vec3 cloudMapVolumeScale = glm::vec3(20000.0f, 80.0f, 20000.0f);
-    glm::vec3 cloudMapVolumeTranslation = glm::vec3(0.0f, 40.0f, 0.0f);
+    glm::vec3 cloudMapVolumeScale = glm::vec3(20000.0f, 60.0f, 20000.0f);
+    glm::vec3 cloudMapVolumeTranslation = glm::vec3(0.0f, 260.0f, 0.0f);
 
 };
 

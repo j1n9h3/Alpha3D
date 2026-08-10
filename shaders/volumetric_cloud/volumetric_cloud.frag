@@ -224,7 +224,7 @@ vec3 evaluateNubisLighting(vec3 position, float stepSize) {
     
     float depth_probability = saturate(lerp(0.05 + pow(saturate(lodded_density), height_exponent), 1.0, saturate(dl / lightStepSize)));
     float vertical_probability = pow(saturate(remap(heightFraction, 0.07, 0.17, 0.1, 1.0)), 0.8);
-    float in_scatter_probability = depth_probability;
+    float in_scatter_probability = depth_probability * vertical_probability;
     float lightEnergy = attenuation_probability * in_scatter_probability * phaseProbability * lightIntensity;
 
     return ambientLight + lightColor * lightEnergy;

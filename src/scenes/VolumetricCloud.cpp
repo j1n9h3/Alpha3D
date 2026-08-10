@@ -25,7 +25,7 @@ void VolumetricCloud::Load(Window& window) {
 	LoadVolumeTex(lowFreqNoiseTex, 128, "assets/textures/nubis2017_lowFrexqTex_128x128/nubis2017.%03d.tga");
 	LoadVolumeTex(highFreqNoiseTex, 32, "assets/textures/nubis2017_highFrexqTex_32x32/nubis-2017-high-freq.%03d.tga");	
 	LoadTex(heightTex, "assets/textures/cloud_height.tga");
-	LoadTex(cloudMapTex, "assets/textures/cloud_map_5.png");
+	LoadTex(cloudMapTex, "assets/textures/cloud_map.png");
 }
 
 void VolumetricCloud::Render(RenderContext& context) {
